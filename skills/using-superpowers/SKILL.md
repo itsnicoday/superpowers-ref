@@ -4,59 +4,59 @@ description: Use when starting any conversation - establishes how to find and us
 ---
 
 <SUBAGENT-STOP>
-If you were dispatched as a subagent to execute a specific task, ignore this skill.
+특정 작업을 실행하기 위해 서브에이전트로 디스패치된 경우, 이 스킬을 무시하세요.
 </SUBAGENT-STOP>
 
 <EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+당신이 하고 있는 작업에 스킬이 적용될 가능성이 1%라도 있다고 판단되면, 당신은 절대로 해당 스킬을 호출해야만 합니다.
 
-IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+당신의 작업에 적용되는 스킬이 존재한다면, 당신에게는 선택권이 없습니다. 반드시 사용해야 합니다.
 
-This is not negotiable. You cannot rationalize your way out of this.
+이것은 타협할 수 없는 규칙입니다. 논리적 합리화로 이 규칙을 피해갈 수 없습니다.
 </EXTREMELY-IMPORTANT>
 
-## The Rule
+## 규칙 (The Rule)
 
-**Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
+**확인 질문을 하거나, 코드베이스를 탐색하거나, 파일을 확인하는 것을 포함하여 어떠한 응답이나 동작보다도 먼저 관련되거나 요청된 스킬을 호출하세요.** 상황에 맞지 않는 것으로 확인되더라도 일단 호출한 후 사용하지 않아도 됩니다.
 
-**Before entering plan mode:** if you haven't already brainstormed, invoke the brainstorming skill first.
+**플랜 모드에 진입하기 전에:** 브레인스토밍을 아직 진행하지 않았다면, 브레인스토밍 스킬을 먼저 호출하세요.
 
-Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it has a checklist, create a todo per item.
+그런 다음 "[목적]을 위해 [스킬]을 사용합니다"라고 알리고 스킬 지침을 정확히 따르세요. 체크리스트가 포함되어 있다면 항목별로 todo를 생성하세요.
 
-## Skill Priority
+## 스킬 우선순위
 
-When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. Brainstorming and systematic-debugging are Superpowers' most common process skills, but the rule holds for any of them.
+여러 스킬이 적용될 때 프로세스 스킬이 우선합니다 — 프로세스 스킬이 접근 방식을 설정하면 구현 스킬(frontend-design 등)이 이를 실행합니다. 브레인스토밍(brainstorming)과 체계적 디버깅(systematic-debugging)은 Superpowers에서 가장 흔한 프로세스 스킬이지만, 다른 스킬에도 동일한 규칙이 적용됩니다.
 
-- "Let's build X" → superpowers:brainstorming first, then implementation skills.
-- "Fix this bug" → superpowers:systematic-debugging first, then domain skills.
+- "X를 만들자" → superpowers:brainstorming 먼저, 그 다음 구현 스킬.
+- "이 버그를 고치자" → superpowers:systematic-debugging 먼저, 그 다음 도메인 스킬.
 
-## Red Flags
+## Red Flags - 경고 신호
 
-These thoughts mean STOP—you're rationalizing:
+다음과 같은 생각이 든다면 즉시 멈추세요 — 합리화하고 있는 것입니다:
 
-| Thought | Reality |
+| 생각 | 현실 |
 |---------|---------|
-| "This is just a simple question" | Questions are tasks. Check for skills. |
-| "I need more context first" | Skill check comes BEFORE clarifying questions. |
-| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
-| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
-| "Let me gather information first" | Skills tell you HOW to gather information. |
-| "This doesn't need a formal skill" | If a skill exists, use it. |
-| "I remember this skill" | Skills evolve. Read current version. |
-| "This doesn't count as a task" | Action = task. Check for skills. |
-| "The skill is overkill" | Simple things become complex. Use it. |
-| "I'll just do this one thing first" | Check BEFORE doing anything. |
-| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
-| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+| "이건 그냥 간단한 질문일 뿐이야" | 질문도 작업입니다. 스킬이 있는지 확인하세요. |
+| "먼저 더 많은 컨텍스트가 필요해" | 스킬 확인은 확인 질문을 하기 전에 수행해야 합니다. |
+| "먼저 코드베이스를 탐색해볼게" | 스킬이 탐색 방법을 알려줍니다. 먼저 확인하세요. |
+| "git/파일을 빠르게 확인해볼 수 있어" | 파일에는 대화의 컨텍스트가 부족합니다. 스킬이 있는지 확인하세요. |
+| "먼저 정보를 수집할게" | 스킬이 정보를 수집하는 방법을 알려줍니다. |
+| "이건 정식 스킬이 필요 없어" | 스킬이 존재한다면 그것을 사용하세요. |
+| "이 스킬 내용을 기억하고 있어" | 스킬은 진화합니다. 현재 버전을 읽으세요. |
+| "이건 작업으로 치지 않아" | 동작 = 작업. 스킬이 있는지 확인하세요. |
+| "스킬을 쓰는 건 과해(overkill)" | 단순한 일이 복잡해집니다. 스킬을 사용하세요. |
+| "이거 하나만 먼저 처리하고 올게" | 어떠한 일을 하기 전에 먼저 확인하세요. |
+| "이게 생산적인 느낌이야" | 규율 없는 행동은 시간을 낭비합니다. 스킬이 이를 방지합니다. |
+| "그게 무슨 뜻인지 알고 있어" | 개념을 아는 것 ≠ 스킬을 사용하는 것. 스킬을 호출하세요. |
 
-## Platform Adaptation
+## 플랫폼 적응 (Platform Adaptation)
 
-If your harness appears here, read its reference file for special instructions:
+당신의 하네스가 여기에 기재되어 있다면, 특별 지침을 위해 해당 참조 파일을 읽으세요:
 
 - Codex: `references/codex-tools.md`
 - Pi: `references/pi-tools.md`
 - Antigravity: `references/antigravity-tools.md`
 
-## User Instructions
+## 사용자 지시사항
 
-User instructions (CLAUDE.md, AGENTS.md, GEMINI.md, etc, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.
+사용자 지시사항(CLAUDE.md, AGENTS.md, GEMINI.md 등 및 직접적인 요청)은 스킬보다 우선하며, 스킬은 기본 동작보다 우선합니다. 사람 파트너가 명시적으로 지시한 경우에만 스킬 워크플로우나 지시사항을 건너뛰세요.

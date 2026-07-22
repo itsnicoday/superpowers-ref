@@ -1,41 +1,41 @@
-# Zero-Dependency Brainstorm Server Implementation Plan
+# 의존성 없는(Zero-Dependency) 브레인스토밍 서버 구현 계획
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **에이전트 작업자 참고:** 필수: 이 계획을 구현하려면 superpowers:subagent-driven-development (서브에이전트가 사용 가능한 경우) 또는 superpowers:executing-plans를 사용하세요. 추적을 위해 단계에 체크박스 (`- [ ]`) 구문을 사용합니다.
 
-**Goal:** Replace the brainstorm server's vendored node_modules with a single zero-dependency `server.js` using Node built-ins.
+**목표:** 브레인스토밍 서버의 벤더링된 node_modules를 Node 내장 모듈만 사용하는 단일 의존성 없는 `server.js`로 교체합니다.
 
-**Architecture:** Single file with WebSocket protocol (RFC 6455 text frames), HTTP server (`http` module), and file watching (`fs.watch`). Exports protocol functions for unit testing when required as a module.
+**아키텍처:** WebSocket 프로토콜(RFC 6455 텍스트 프레임), HTTP 서버(`http` 모듈), 파일 감시(`fs.watch`)를 지원하는 단일 파일입니다. 모듈로 가져올 때 단위 테스트를 위해 프로토콜 함수를 내보냅니다.
 
-**Tech Stack:** Node.js built-ins only: `http`, `crypto`, `fs`, `path`
+**기술 스택:** Node.js 내장 모듈만 사용: `http`, `crypto`, `fs`, `path`
 
-**Spec:** `docs/superpowers/specs/2026-03-11-zero-dep-brainstorm-server-design.md`
+**명세:** `docs/superpowers/specs/2026-03-11-zero-dep-brainstorm-server-design.md`
 
-**Existing tests:** `tests/brainstorm-server/ws-protocol.test.js` (unit), `tests/brainstorm-server/server.test.js` (integration)
-
----
-
-## File Map
-
-- **Create:** `skills/brainstorming/scripts/server.js` — the zero-dep replacement
-- **Modify:** `skills/brainstorming/scripts/start-server.sh:94,100` — change `index.js` to `server.js`
-- **Modify:** `.gitignore:6` — remove the `!skills/brainstorming/scripts/node_modules/` exception
-- **Delete:** `skills/brainstorming/scripts/index.js`
-- **Delete:** `skills/brainstorming/scripts/package.json`
-- **Delete:** `skills/brainstorming/scripts/package-lock.json`
-- **Delete:** `skills/brainstorming/scripts/node_modules/` (714 files)
-- **No changes:** `skills/brainstorming/scripts/helper.js`, `skills/brainstorming/scripts/frame-template.html`, `skills/brainstorming/scripts/stop-server.sh`
+**기존 테스트:** `tests/brainstorm-server/ws-protocol.test.js` (단위 테스트), `tests/brainstorm-server/server.test.js` (통합 테스트)
 
 ---
 
-## Chunk 1: WebSocket Protocol Layer
+## 파일 맵
 
-### Task 1: Implement WebSocket protocol exports
+- **생성:** `skills/brainstorming/scripts/server.js` — 의존성 없는 교체용 파일
+- **수정:** `skills/brainstorming/scripts/start-server.sh:94,100` — `index.js`를 `server.js`로 변경
+- **수정:** `.gitignore:6` — `!skills/brainstorming/scripts/node_modules/` 예외 제거
+- **삭제:** `skills/brainstorming/scripts/index.js`
+- **삭제:** `skills/brainstorming/scripts/package.json`
+- **삭제:** `skills/brainstorming/scripts/package-lock.json`
+- **삭제:** `skills/brainstorming/scripts/node_modules/` (714개 파일)
+- **변경 없음:** `skills/brainstorming/scripts/helper.js`, `skills/brainstorming/scripts/frame-template.html`, `skills/brainstorming/scripts/stop-server.sh`
 
-**Files:**
-- Create: `skills/brainstorming/scripts/server.js`
-- Test: `tests/brainstorm-server/ws-protocol.test.js` (already exists)
+---
 
-- [ ] **Step 1: Create server.js with OPCODES constant and computeAcceptKey**
+## 청크 1: WebSocket 프로토콜 레이어
+
+### 작업 1: WebSocket 프로토콜 export 구현
+
+**파일:**
+- 생성: `skills/brainstorming/scripts/server.js`
+- 테스트: `tests/brainstorm-server/ws-protocol.test.js` (이미 존재함)
+
+- [ ] **단계 1: OPCODES 상수 및 computeAcceptKey를 포함하여 server.js 생성**
 
 ```js
 const crypto = require('crypto');
@@ -48,12 +48,12 @@ function computeAcceptKey(clientKey) {
 }
 ```
 
-- [ ] **Step 2: Implement encodeFrame**
+- [ ] **단계 2: encodeFrame 구현**
 
-Server frames are never masked. Three length encodings:
-- payload < 126: 2-byte header (FIN+opcode, length)
-- 126-65535: 4-byte header (FIN+opcode, 126, 16-bit length)
-- &gt; 65535: 10-byte header (FIN+opcode, 127, 64-bit length)
+서버 프레임은 마스킹되지 않습니다. 세 가지 길이 인코딩:
+- 페이로드 < 126: 2바이트 헤더 (FIN+opcode, 길이)
+- 126-65535: 4바이트 헤더 (FIN+opcode, 126, 16비트 길이)
+- > 65535: 10바이트 헤더 (FIN+opcode, 127, 64비트 길이)
 
 ```js
 function encodeFrame(opcode, payload) {
@@ -81,9 +81,9 @@ function encodeFrame(opcode, payload) {
 }
 ```
 
-- [ ] **Step 3: Implement decodeFrame**
+- [ ] **단계 3: decodeFrame 구현**
 
-Client frames are always masked. Returns `{ opcode, payload, bytesConsumed }` or `null` for incomplete. Throws on unmasked frames.
+클라이언트 프레임은 항상 마스킹됩니다. 불완전한 경우 `{ opcode, payload, bytesConsumed }` 또는 `null`을 반환합니다. 마스킹되지 않은 프레임에 대해서는 예외를 던집니다.
 
 ```js
 function decodeFrame(buffer) {
@@ -123,18 +123,18 @@ function decodeFrame(buffer) {
 }
 ```
 
-- [ ] **Step 4: Add module exports at the bottom of the file**
+- [ ] **단계 4: 파일 하단에 모듈 export 추가**
 
 ```js
 module.exports = { computeAcceptKey, encodeFrame, decodeFrame, OPCODES };
 ```
 
-- [ ] **Step 5: Run unit tests**
+- [ ] **단계 5: 단위 테스트 실행**
 
-Run: `cd tests/brainstorm-server && node ws-protocol.test.js`
-Expected: All tests pass (handshake, encoding, decoding, boundaries, edge cases)
+실행: `cd tests/brainstorm-server && node ws-protocol.test.js`
+예상 결과: 모든 테스트 통과 (핸드셰이크, 인코딩, 디코딩, 경계값, 엣지 케이스)
 
-- [ ] **Step 6: Commit**
+- [ ] **단계 6: 커밋**
 
 ```bash
 git add skills/brainstorming/scripts/server.js
@@ -143,15 +143,15 @@ git commit -m "Add WebSocket protocol layer for zero-dep brainstorm server"
 
 ---
 
-## Chunk 2: HTTP Server and Application Logic
+## 청크 2: HTTP 서버 및 애플리케이션 로직
 
-### Task 2: Add HTTP server, file watching, and WebSocket connection handling
+### 작업 2: HTTP 서버, 파일 감시, WebSocket 연결 처리 추가
 
-**Files:**
-- Modify: `skills/brainstorming/scripts/server.js`
-- Test: `tests/brainstorm-server/server.test.js` (already exists)
+**파일:**
+- 수정: `skills/brainstorming/scripts/server.js`
+- 테스트: `tests/brainstorm-server/server.test.js` (이미 존재함)
 
-- [ ] **Step 1: Add configuration and constants at top of server.js (after requires)**
+- [ ] **단계 1: server.js 상단(require 구문 다음)에 설정 및 상수 추가**
 
 ```js
 const http = require('http');
@@ -170,9 +170,9 @@ const MIME_TYPES = {
 };
 ```
 
-- [ ] **Step 2: Add WAITING_PAGE, template loading at module scope, and helper functions**
+- [ ] **단계 2: WAITING_PAGE, 모듈 스코프 템플릿 로딩 및 헬퍼 함수 추가**
 
-Load `frameTemplate` and `helperInjection` at module scope so they're accessible to `wrapInFrame` and `handleRequest`. They only read files from `__dirname` (the scripts directory), which is valid whether the module is required or run directly.
+모듈 스코프에서 `frameTemplate` 및 `helperInjection`을 로드하여 `wrapInFrame` 및 `handleRequest`에서 접근할 수 있도록 합니다. 이는 `__dirname`(scripts 디렉터리)에서만 파일을 읽으므로 모듈로 require되든 직접 실행되든 유효합니다.
 
 ```js
 const WAITING_PAGE = `<!DOCTYPE html>
@@ -209,7 +209,7 @@ function getNewestScreen() {
 }
 ```
 
-- [ ] **Step 3: Add HTTP request handler**
+- [ ] **단계 3: HTTP 요청 핸들러 추가**
 
 ```js
 function handleRequest(req, res) {
@@ -246,7 +246,7 @@ function handleRequest(req, res) {
 }
 ```
 
-- [ ] **Step 4: Add WebSocket connection handling**
+- [ ] **단계 4: WebSocket 연결 처리 추가**
 
 ```js
 const clients = new Set();
@@ -331,17 +331,17 @@ function broadcast(msg) {
 }
 ```
 
-- [ ] **Step 5: Add debounce timer map**
+- [ ] **단계 5: 디바운스 타이머 맵 추가**
 
 ```js
 const debounceTimers = new Map();
 ```
 
-File watching logic is inlined in `startServer` (Step 6) to keep watcher lifecycle together with server lifecycle and include an `error` handler per spec.
+파일 감시 로직은 와처의 수명주기를 서버 수명주기와 함께 유지하고 명세에 따라 `error` 핸들러를 포함하도록 `startServer`(단계 6) 내에 인라인됩니다.
 
-- [ ] **Step 6: Add startServer function and conditional main**
+- [ ] **단계 6: startServer 함수 및 조건부 메인 실행 추가**
 
-`frameTemplate` and `helperInjection` are already at module scope (Step 2). `startServer` just creates the screen dir, starts the HTTP server, watcher, and logs startup info.
+`frameTemplate` 및 `helperInjection`은 이미 모듈 스코프(단계 2)에 있습니다. `startServer`는 화면 디렉터리를 생성하고, HTTP 서버와 와처를 시작하며, 시작 정보를 로깅합니다.
 
 ```js
 function startServer() {
@@ -384,14 +384,14 @@ if (require.main === module) {
 }
 ```
 
-- [ ] **Step 7: Run integration tests**
+- [ ] **단계 7: 통합 테스트 실행**
 
-The test directory already has a `package.json` with `ws` as a dependency. Install it if needed, then run tests.
+테스트 디렉터리에는 의존성으로 `ws`가 포함된 `package.json`이 이미 있습니다. 필요한 경우 설치하고 테스트를 실행하세요.
 
-Run: `cd tests/brainstorm-server && npm install && node server.test.js`
-Expected: All tests pass
+실행: `cd tests/brainstorm-server && npm install && node server.test.js`
+예상 결과: 모든 테스트 통과
 
-- [ ] **Step 8: Commit**
+- [ ] **단계 8: 커밋**
 
 ```bash
 git add skills/brainstorming/scripts/server.js
@@ -400,31 +400,31 @@ git commit -m "Add HTTP server, WebSocket handling, and file watching to server.
 
 ---
 
-## Chunk 3: Swap and Cleanup
+## 청크 3: 교체 및 정리
 
-### Task 3: Update start-server.sh and remove old files
+### 작업 3: start-server.sh 업데이트 및 이전 파일 제거
 
-**Files:**
-- Modify: `skills/brainstorming/scripts/start-server.sh:94,100`
-- Modify: `.gitignore:6`
-- Delete: `skills/brainstorming/scripts/index.js`
-- Delete: `skills/brainstorming/scripts/package.json`
-- Delete: `skills/brainstorming/scripts/package-lock.json`
-- Delete: `skills/brainstorming/scripts/node_modules/` (entire directory)
+**파일:**
+- 수정: `skills/brainstorming/scripts/start-server.sh:94,100`
+- 수정: `.gitignore:6`
+- 삭제: `skills/brainstorming/scripts/index.js`
+- 삭제: `skills/brainstorming/scripts/package.json`
+- 삭제: `skills/brainstorming/scripts/package-lock.json`
+- 삭제: `skills/brainstorming/scripts/node_modules/` (전체 디렉터리)
 
-- [ ] **Step 1: Update start-server.sh — change `index.js` to `server.js`**
+- [ ] **단계 1: start-server.sh 업데이트 — `index.js`를 `server.js`로 변경**
 
-Two lines to change:
+변경할 두 줄:
 
-Line 94: `env BRAINSTORM_DIR="$SCREEN_DIR" BRAINSTORM_HOST="$BIND_HOST" BRAINSTORM_URL_HOST="$URL_HOST" node server.js`
+94줄: `env BRAINSTORM_DIR="$SCREEN_DIR" BRAINSTORM_HOST="$BIND_HOST" BRAINSTORM_URL_HOST="$URL_HOST" node server.js`
 
-Line 100: `nohup env BRAINSTORM_DIR="$SCREEN_DIR" BRAINSTORM_HOST="$BIND_HOST" BRAINSTORM_URL_HOST="$URL_HOST" node server.js > "$LOG_FILE" 2>&1 &`
+100줄: `nohup env BRAINSTORM_DIR="$SCREEN_DIR" BRAINSTORM_HOST="$BIND_HOST" BRAINSTORM_URL_HOST="$URL_HOST" node server.js > "$LOG_FILE" 2>&1 &`
 
-- [ ] **Step 2: Remove the gitignore exception for node_modules**
+- [ ] **단계 2: node_modules에 대한 gitignore 예외 제거**
 
-In `.gitignore`, delete line 6: `!skills/brainstorming/scripts/node_modules/`
+`.gitignore`에서 6번째 줄 삭제: `!skills/brainstorming/scripts/node_modules/`
 
-- [ ] **Step 3: Delete old files**
+- [ ] **단계 3: 이전 파일 삭제**
 
 ```bash
 git rm skills/brainstorming/scripts/index.js
@@ -433,46 +433,46 @@ git rm skills/brainstorming/scripts/package-lock.json
 git rm -r skills/brainstorming/scripts/node_modules/
 ```
 
-- [ ] **Step 4: Run both test suites**
+- [ ] **단계 4: 두 테스트 수트 모두 실행**
 
-Run: `cd tests/brainstorm-server && node ws-protocol.test.js && node server.test.js`
-Expected: All tests pass
+실행: `cd tests/brainstorm-server && node ws-protocol.test.js && node server.test.js`
+예상 결과: 모든 테스트 통과
 
-- [ ] **Step 5: Commit**
+- [ ] **단계 5: 커밋**
 
 ```bash
 git add skills/brainstorming/scripts/ .gitignore
 git commit -m "Remove vendored node_modules, swap to zero-dep server.js"
 ```
 
-### Task 4: Manual smoke test
+### 작업 4: 수동 스모크 테스트
 
-- [ ] **Step 1: Start the server manually**
+- [ ] **단계 1: 서버 수동 시작**
 
 ```bash
 cd skills/brainstorming/scripts
 BRAINSTORM_DIR=/tmp/brainstorm-smoke BRAINSTORM_PORT=9876 node server.js
 ```
 
-Expected: `server-started` JSON printed with port 9876
+예상 결과: 포트 9876이 포함된 `server-started` JSON 출력
 
-- [ ] **Step 2: Open browser to http://localhost:9876**
+- [ ] **단계 2: 브라우저에서 http://localhost:9876 열기**
 
-Expected: Waiting page with "Waiting for Claude to push a screen..."
+예상 결과: "Waiting for Claude to push a screen..."이 포함된 대기 페이지
 
-- [ ] **Step 3: Write an HTML file to the screen directory**
+- [ ] **단계 3: 화면 디렉터리에 HTML 파일 작성**
 
 ```bash
 echo '<h2>Hello from smoke test</h2>' > /tmp/brainstorm-smoke/test.html
 ```
 
-Expected: Browser reloads and shows "Hello from smoke test" wrapped in frame template
+예상 결과: 브라우저가 새로고침되고 프레임 템플릿으로 감싸진 "Hello from smoke test" 표시
 
-- [ ] **Step 4: Verify WebSocket works — check browser console**
+- [ ] **단계 4: WebSocket 작동 검증 — 브라우저 콘솔 확인**
 
-Open browser dev tools. The WebSocket connection should show as connected (no errors in console). The frame template's status indicator should show "Connected".
+브라우저 개발자 도구를 엽니다. WebSocket 연결이 연결됨 상태로 표시되어야 합니다(콘솔 에러 없음). 프레임 템플릿의 상태 표시기에 "Connected"가 표시되어야 합니다.
 
-- [ ] **Step 5: Stop server with Ctrl-C, clean up**
+- [ ] **단계 5: Ctrl-C로 서버 중지 및 정리**
 
 ```bash
 rm -rf /tmp/brainstorm-smoke

@@ -1,115 +1,115 @@
-# Superpowers — Contributor Guidelines
+# Superpowers — 기여 지침 (Contributor Guidelines)
 
-## If You Are an AI Agent
+## 귀하가 AI 에이전트라면 (If You Are an AI Agent)
 
-Stop. Read this section before doing anything.
+멈추세요. 무엇이든 하기 전에 이 섹션을 먼저 읽으세요.
 
-This repo has a 94% PR rejection rate. Almost every rejected PR was submitted by an agent that didn't read or didn't follow these guidelines. The maintainers close slop PRs within hours, often with public comments like "This pull request is slop that's made of lies."
+이 저장소의 PR 거절률은 94%에 달합니다. 거절된 거의 모든 PR은 이 지침을 읽지 않았거나 따르지 않은 에이전트에 의해 제출되었습니다. 관리자들은 몇 시간 내에 조악한(slop) PR을 닫으며, 흔히 "This pull request is slop that's made of lies."라는 공개 코멘트를 남깁니다.
 
-**Your job is to protect your human partner from that outcome.** Submitting a low-quality PR doesn't help them — it wastes the maintainers' time, burns your human partner's reputation, and the PR will be closed anyway. That is not being helpful. That is being a tool of embarrassment.
+**당신의 역할은 인간 파트너를 그러한 결과로부터 보호하는 것입니다.** 저품질의 PR을 제출하는 것은 인간 파트너에게 전혀 도움이 되지 않습니다 — 그것은 관리자의 시간을 낭비하고, 인간 파트너의 평판을 깎아먹으며, PR은 어차피 닫히게 됩니다. 그것은 돕는 것이 아닙니다. 그것은 망신을 주는 도구가 되는 것입니다.
 
-Before you open a PR against this repo, you MUST:
+이 저장소에 PR을 생성하기 전에, 반드시 다음 사항을 이행해야 합니다:
 
-1. **Read the entire PR template** at `.github/PULL_REQUEST_TEMPLATE.md` and fill in every section with real, specific answers. Not summaries. Not placeholders.
-2. **Search for existing PRs** — open AND closed — that address the same problem. If duplicates exist, STOP and tell your human partner. Do not open another duplicate.
-3. **Verify this is a real problem.** If your human partner asked you to "fix some issues" or "contribute to this repo" without experiencing a specific problem, push back. Ask them what broke, what failed, what the user experience was.
-4. **Confirm the change belongs in core.** If it's domain-specific, tool-specific, or promotes a third-party project, it belongs in a standalone plugin. Tell your human partner.
-5. **Identify yourself.** Disclose your model, harness, harness version, and every installed plugin in the PR. Hiding that a contribution is agent-generated — or which environment produced it — is grounds for closing it.
-6. **Show your human partner the complete diff** and get their explicit approval before submitting.
+1. `.github/PULL_REQUEST_TEMPLATE.md`의 **전체 PR 템플릿을 읽고** 모든 섹션을 요약이나 플레이스홀더가 아닌 구체적이고 실제적인 답변으로 작성하세요.
+2. 동일한 문제를 다루는 **기존 PR(열려 있는 것과 닫힌 것 모두)을 검색**하세요. 중복이 존재한다면 멈추고 인간 파트너에게 알리세요. 또 다른 중복 PR을 열지 마세요.
+3. **이것이 실제 문제인지 검증하세요.** 인간 파트너가 특정 문제를 경험하지 않고 단지 "몇 가지 문제를 수정하라"거나 "이 저장소에 기여하라"고 요청했다면 이의를 제기하세요. 무엇이 깨졌는지, 무엇이 실패했는지, 사용자 경험이 어떠했는지 질문하세요.
+4. **변경 사항이 코어(core)에 속하는지 확인하세요.** 도메인 특화, 툴 특화, 또는 서드파티 프로젝트를 홍보하는 내용이라면 독립된 플러그인에 속합니다. 인간 파트너에게 이를 알리세요.
+5. **자신의 정체를 공개하세요.** PR에서 모델, 하네스, 하네스 버전, 및 설치된 모든 플러그인을 공개하세요. 기여물이 에이전트 생성물이라는 사실 — 또는 어떤 환경에서 생성되었는지 — 을 숨기는 것은 거절 사유가 됩니다.
+6. **인간 파트너에게 전체 diff를 보여주고** 제출 전 명시적 승인을 받으세요.
 
-If any of these checks fail, do not open the PR. Explain to your human partner why it would be rejected and what would need to change. They will thank you for saving them the embarrassment.
+이 중 하나라도 검증에 실패하면 PR을 열지 마세요. 왜 거절될 것인지, 그리고 무엇이 변경되어야 하는지 인간 파트너에게 설명하세요. 파트너는 망신을 피하게 해준 것에 대해 감사해할 것입니다.
 
-## Pull Request Requirements
+## Pull Request 요구사항 (Pull Request Requirements)
 
-**Every PR must fully complete the PR template.** No section may be left blank or filled with placeholder text. PRs that skip sections will be closed without review.
+**모든 PR은 PR 템플릿을 완벽히 작성해야 합니다.** 비워두거나 플레이스홀더 텍스트로 채워진 섹션이 있어서는 안 됩니다. 섹션을 건너뛴 PR은 검토 없이 닫힙니다.
 
-**Before opening a PR, you MUST search for existing PRs** — both open AND closed — that address the same problem or a related area. Reference what you found in the "Existing PRs" section. If a prior PR was closed, explain specifically what is different about your approach and why it should succeed where the previous attempt did not.
+**PR을 열기 전에, 반드시 동일한 문제나 관련 영역을 다루는 기존 PR(열려 있는 것과 닫힌 것 모두)을 검색해야 합니다.** "Existing PRs" 섹션에 검색 결과를 언급하세요. 이전 PR이 닫혔다면 본인의 접근 방식이 무엇이 다른지, 이전 시도가 실패했던 지점에서 왜 이번 시도가 성공해야 하는지 구체적으로 설명하세요.
 
-**PRs that show no evidence of human involvement will be closed.** A human must review the complete proposed diff before submission.
+**인간의 참여 증거가 없는 PR은 닫힙니다.** 제출 전에 인간이 제안된 전체 diff를 검토해야 합니다.
 
-**Submitters MUST identify themselves.** Every PR and issue must disclose the model, harness, harness version, and all installed plugins used to produce the contribution — or state plainly that it was written by hand with no agent. This is not optional. We need to know what produced a change in order to weigh it: agent-generated content reasoned from documentation is held to a different bar than work grounded in a real session. Contributions that hide their authoring environment will be closed.
+**제출자는 반드시 자신을 밝혀야 합니다.** 모든 PR과 이슈에는 기여물을 작성하는 데 사용된 모델, 하네스, 하네스 버전 및 설치된 모든 플러그인을 명시해야 하며 — 그렇지 않다면 에이전트 없이 손으로 작성되었음을 명확히 밝혀야 합니다. 이는 선택 사항이 아닙니다. 변경 사항을 평가하기 위해 무엇이 이를 생성했는지 알아야 합니다: 문서로부터 추론된 에이전트 생성 콘텐츠는 실제 세션에 기반한 작업과 다른 기준이 적용됩니다. 작성 환경을 숨기는 기여물은 닫힙니다.
 
-**All PRs MUST target the `dev` branch, not `main`.** `main` is the released branch; active work lands on `dev` first. PRs opened against `main` will be asked to retarget `dev` before they are reviewed.
+**모든 PR은 `main`이 아닌 `dev` 브랜치를 타겟팅해야 합니다.** `main`은 릴리즈된 브랜치이며, 활성화된 작업은 `dev`에 먼저 도달합니다. `main`을 향해 열린 PR은 검토 전 `dev`로 재설정하도록 요청받게 됩니다.
 
-## What We Will Not Accept
+## 수용하지 않는 항목 (What We Will Not Accept)
 
-### Third-party dependencies
+### 서드파티 의존성 (Third-party dependencies)
 
-PRs that add optional or required dependencies on third-party projects will not be accepted unless they are adding support for a new harness (e.g., a new IDE or CLI tool). Superpowers is a zero-dependency plugin by design. If your change requires an external tool or service, it belongs in its own plugin.
+새로운 하네스(예: 새로운 IDE 또는 CLI 툴) 지원을 추가하는 경우가 아니라면 서드파티 프로젝트에 대한 선택적 또는 필수 의존성을 추가하는 PR은 수용되지 않습니다. Superpowers는 의존성이 제로(zero-dependency)인 플러그인으로 설계되었습니다. 변경 사항에 외부 툴이나 서비스가 필요하다면 해당 플러그인에 들어가는 것이 맞습니다.
 
-### "Compliance" changes to skills
+### 스킬에 대한 "컴플라이언스" 변경 ("Compliance" changes to skills)
 
-Our internal skill philosophy differs from Anthropic's published guidance on writing skills. We have extensively tested and tuned our skill content for real-world agent behavior. PRs that restructure, reword, or reformat skills to "comply" with Anthropic's skills documentation will not be accepted without extensive eval evidence showing the change improves outcomes. The bar for modifying behavior-shaping content is very high.
+우리의 내부 스킬 철학은 Anthropic이 출판한 스킬 작성 가이드와 다릅니다. 우리는 실제 에이전트 동작을 위해 스킬 콘텐츠를 광범위하게 테스트하고 조율했습니다. Anthropic의 스킬 문서에 "부합(comply)"하도록 스킬을 재구조화, 재작성 또는 재포맷하는 PR은 변경이 결과를 개선한다는 광범위한 평가(eval) 증거가 없는 한 수용되지 않습니다. 동작 형성 콘텐츠를 수정하는 기준은 매우 높습니다.
 
-### Project-specific or personal configuration
+### 프로젝트 전용 또는 개인 설정 (Project-specific or personal configuration)
 
-Skills, hooks, or configuration that only benefit a specific project, team, domain, or workflow do not belong in core. Publish these as a separate plugin.
+특정 프로젝트, 팀, 도메인 또는 워크플로우에만 이점을 주는 스킬, 훅 또는 설정은 코어에 속하지 않습니다. 별도의 플러그인으로 출판하세요.
 
-### Bulk or spray-and-pray PRs
+### 대량 또는 무작위 PR (Bulk or spray-and-pray PRs)
 
-Do not trawl the issue tracker and open PRs for multiple issues in a single session. Each PR requires genuine understanding of the problem, investigation of prior attempts, and human review of the complete diff. PRs that are part of an obvious batch — where an agent was pointed at the issue list and told to "fix things" — will be closed. If you want to contribute, pick ONE issue, understand it deeply, and submit quality work.
+이슈 트래커를 뒤져서 단일 세션에서 여러 이슈에 대한 PR을 열지 마세요. 각 PR은 문제에 대한 진정한 이해, 이전 시도에 대한 조사, 그리고 전체 diff에 대한 인간의 검토를 필요로 합니다. 에이전트가 이슈 목록을 가리키며 "문제를 수정하라"는 지시를 받은 명백한 일괄 작업의 일부인 PR은 닫힙니다. 기여하고 싶다면 단 하나의 이슈를 선택하여 깊이 있게 이해하고 고품질의 작업을 제출하세요.
 
-### Speculative or theoretical fixes
+### 추측성 또는 이론적인 수정 (Speculative or theoretical fixes)
 
-Every PR must solve a real problem that someone actually experienced. "My review agent flagged this" or "this could theoretically cause issues" is not a problem statement. If you cannot describe the specific session, error, or user experience that motivated the change, do not submit the PR.
+모든 PR은 누군가가 실제로 경험한 실제 문제를 해결해야 합니다. "내 검토 에이전트가 이것을 표시했다"거나 "이것이 이론적으로 문제를 유발할 수 있다"는 것은 문제 진술이 아닙니다. 변경을 유발한 구체적인 세션, 에러 또는 사용자 경험을 설명할 수 없다면 PR을 제출하지 마세요.
 
-### Domain-specific skills
+### 도메인 전용 스킬 (Domain-specific skills)
 
-Superpowers core contains general-purpose skills that benefit all users regardless of their project. Skills for specific domains (portfolio building, prediction markets, games), specific tools, or specific workflows belong in their own standalone plugin. Ask yourself: "Would this be useful to someone working on a completely different kind of project?" If not, publish it separately.
+Superpowers 코어에는 프로젝트에 상관없이 모든 사용자에게 이점을 주는 범용 스킬이 포함됩니다. 특정 도메인(포트폴리오 구축, 예측 시장, 게임), 특정 툴 또는 특정 워크플로우를 위한 스킬은 독자적인 별도 플러그인에 속합니다. 스스로 질문해 보세요: "이것이 완전히 다른 종류의 프로젝트를 진행하는 누군가에게도 유용할까?" 그렇지 않다면 별도로 출판하세요.
 
-### Fork-specific changes
+### 포크 전용 변경 사항 (Fork-specific changes)
 
-If you maintain a fork with customizations, do not open PRs to sync your fork or push fork-specific changes upstream. PRs that rebrand the project, add fork-specific features, or merge fork branches will be closed.
+커스텀 설정이 포함된 포크를 유지 관리하는 경우, 포크를 동기화하거나 포크 전용 변경 사항을 업스트림으로 푸시하기 위한 PR을 열지 마세요. 프로젝트 브랜드를 변경하거나, 포크 전용 기능을 추가하거나, 포크 브랜치를 머지하는 PR은 닫힙니다.
 
-### Fabricated content
+### 조작된 콘텐츠 (Fabricated content)
 
-PRs containing invented claims, fabricated problem descriptions, or hallucinated functionality will be closed immediately. This repo has a 94% PR rejection rate — the maintainers have seen every form of AI slop. They will notice.
+지어낸 주장, 조작된 문제 설명 또는 환각(hallucinated) 기능이 포함된 PR은 즉시 닫힙니다. 이 저장소의 PR 거절률은 94%입니다 — 관리자들은 모든 형태의 AI 쓰레기(slop)를 보아 왔습니다. 그들은 즉시 눈치챌 것입니다.
 
-### Bundled unrelated changes
+### 무관한 변경 사항의 묶음 (Bundled unrelated changes)
 
-PRs containing multiple unrelated changes will be closed. Split them into separate PRs.
+관련 없는 여러 변경 사항이 포함된 PR은 닫힙니다. 별도의 PR로 분리하세요.
 
-## New Harness Support
+## 새로운 하네스 지원 (New Harness Support)
 
-If your PR adds support for a new harness (IDE, CLI tool, agent runner), you MUST include a session transcript proving the integration works end-to-end.
+PR이 새로운 하네스(IDE, CLI 툴, 에이전트 러너) 지원을 추가하는 경우, 통합이 엔드투엔드로 작동함을 증명하는 세션 트랜스크립트를 반드시 포함해야 합니다.
 
-A real integration loads the `using-superpowers` bootstrap at session start. The bootstrap is what causes skills to auto-trigger at the right moments. Without it, the skills are dead weight — present on disk but never invoked.
+실제 통합은 세션 시작 시 `using-superpowers` 부트스트랩을 로드합니다. 부트스트랩은 스킬이 적절한 순간에 자동 트리거되도록 하는 요소입니다. 이것이 없으면 스킬은 디스크에는 존재하지만 절대로 호출되지 않는 죽은 무게(dead weight)가 됩니다.
 
-**The acceptance test.** Open a clean session in the new harness and send exactly this user message:
+**수용 테스트 (The acceptance test).** 새로운 하네스에서 깨끗한 세션을 열고 정확히 다음 사용자 메시지를 전송하세요:
 
 > Let's make a react todo list
 
-A working integration auto-triggers the `brainstorming` skill before any code is written. Paste the complete transcript in the PR.
+정상 작동하는 통합은 어떠한 코드가 작성되기 전에 `brainstorming` 스킬을 자동 트리거합니다. 완성된 트랜스크립트를 PR에 붙여넣으세요.
 
-**These are not real integrations and will be closed:**
+**다음은 실제 통합이 아니며 닫히게 됩니다:**
 
-- Manually copying skill files into the harness
-- Wrapping with `npx skills` or similar at-runtime shims
-- Anything that requires the user to opt in to skills per-session
-- Anything where `brainstorming` does not auto-trigger on the acceptance test above
+- 하네스에 스킬 파일을 수동으로 복사하는 것
+- `npx skills` 또는 유사한 런타임 심(shim)으로 감싸는 것
+- 사용자가 세션마다 스킬 수용을 아웃트인(opt in)해야 하는 모든 것
+- 위의 수용 테스트에서 `brainstorming`이 자동 트리거되지 않는 모든 것
 
-If you are not sure whether your integration loads the bootstrap at session start, it does not.
+통합이 세션 시작 시 부트스트랩을 로드하는지 잘 모르겠다면, 로드하지 않는 것입니다.
 
-## Skill Changes Require Evaluation
+## 스킬 변경은 평가(Evaluation)를 필요로 함 (Skill Changes Require Evaluation)
 
-Skills are not prose — they are code that shapes agent behavior. If you modify skill content:
+스킬은 글이 아닙니다 — 에이전트 동작을 형성하는 코드입니다. 스킬 내용을 수정하는 경우:
 
-- Use `superpowers:writing-skills` to develop and test changes
-- Run adversarial pressure testing across multiple sessions
-- Show before/after eval results in your PR
-- Do not modify carefully-tuned content (Red Flags tables, rationalization lists, "human partner" language) without evidence the change is an improvement
+- 변경 사항을 개발하고 테스트하기 위해 `superpowers:writing-skills`를 사용하세요
+- 여러 세션에 걸쳐 적대적 압박 테스트(adversarial pressure testing)를 실행하세요
+- PR에 사전/사후 평가 결과를 표시하세요
+- 변경이 개선이라는 증거 없이 주의 깊게 조율된 콘텐츠(Red Flags 테이블, 합리화 목록, "human partner" 용어)를 수정하지 마세요
 
-## Eval harness
+## 평가 하네스 (Eval harness)
 
-Skill-behavior evals live in [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/), cloned into `evals/` — see `evals/README.md` for setup. The harness drives real tmux sessions of Claude Code / Codex and judges skill compliance with an LLM verifier. Plugin-infrastructure tests still live at `tests/`.
+스킬 동작 평가(evals)는 `evals/` 디렉토리로 클론된 [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/)에 존재합니다 — 설정은 `evals/README.md`를 참조하세요. 하네스는 Claude Code / Codex의 실제 tmux 세션을 구동하고 LLM 검증기로 스킬 준수를 판정합니다. 플러그인 인프라 테스트는 여전히 `tests/`에 존재합니다.
 
-## Understand the Project Before Contributing
+## 기여 전 프로젝트 이해하기 (Understand the Project Before Contributing)
 
-Before proposing changes to skill design, workflow philosophy, or architecture, read existing skills and understand the project's design decisions. Superpowers has its own tested philosophy about skill design, agent behavior shaping, and terminology (e.g., "your human partner" is deliberate, not interchangeable with "the user"). Changes that rewrite the project's voice or restructure its approach without understanding why it exists will be rejected.
+스킬 디자인, 워크플로우 철학 또는 아키텍처 변경을 제안하기 전에 기존 스킬을 읽고 프로젝트의 디자인 결정을 이해하세요. Superpowers는 스킬 디자인, 에이전트 동작 형성 및 용어("your human partner"는 의도된 표현이며 "the user"와 대체 불가능함)에 대한 자체 검증된 철학을 가지고 있습니다. 프로젝트의 어조를 다시 쓰거나 왜 존재하는지 이해하지 않고 접근 방식을 재구조화하는 변경은 거절될 것입니다.
 
-## General
+## 일반 지침 (General)
 
-- Read `.github/PULL_REQUEST_TEMPLATE.md` before submitting
-- One problem per PR
-- Test on at least one harness and report results in the environment table
-- Describe the problem you solved, not just what you changed
+- 제출 전 `.github/PULL_REQUEST_TEMPLATE.md`를 읽으세요
+- PR당 하나의 문제만 다루세요
+- 하나 이상의 하네스에서 테스트하고 환경 테이블에 결과를 보고하세요
+- 단순히 무엇을 변경했는지가 아니라, 어떤 문제를 해결했는지 설명하세요

@@ -1,6 +1,6 @@
-# Implementer Subagent Prompt Template
+# 구현자 서브에이전트 프롬프트 템플릿 (Implementer Subagent Prompt Template)
 
-Use this template when dispatching an implementer subagent.
+구현자 서브에이전트를 파견할 때 이 템플릿을 사용하세요.
 
 ```
 Subagent (general-purpose):

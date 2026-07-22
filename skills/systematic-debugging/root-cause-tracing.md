@@ -1,12 +1,12 @@
-# Root Cause Tracing
+# 근본 원인 추적 (Root Cause Tracing)
 
-## Overview
+## 개요
 
-Bugs often manifest deep in the call stack (git init in wrong directory, file created in wrong location, database opened with wrong path). Your instinct is to fix where the error appears, but that's treating a symptom.
+버그는 호출 스택 깊은 곳에서 표출되는 경우가 많습니다 (엉뚱한 디렉터리에서의 git init, 잘못된 위치에 생성된 파일, 잘못된 경로로 열린 데이터베이스). 직관적으로는 에러가 나타난 위치를 고치고 싶어지지만, 그것은 증상만을 다루는 것입니다.
 
-**Core principle:** Trace backward through the call chain until you find the original trigger, then fix at the source.
+**핵심 원칙:** 최초의 발생 계기(trigger)를 찾을 때까지 호출 체인을 따라 역방향으로 추적하고, 소스 지점에서 수정하세요.
 
-## When to Use
+## 언제 사용해야 하는가
 
 ```dot
 digraph when_to_use {
@@ -23,26 +23,26 @@ digraph when_to_use {
 }
 ```
 
-**Use when:**
-- Error happens deep in execution (not at entry point)
-- Stack trace shows long call chain
-- Unclear where invalid data originated
-- Need to find which test/code triggers the problem
+**사용해야 하는 경우:**
+- 에러가 진입점이 아니라 실행 깊은 곳에서 발생하는 경우
+- 스택 트레이스가 긴 호출 체인을 보여주는 경우
+- 유효하지 않은 데이터가 어디서 시작되었는지 불분명한 경우
+- 어떤 테스트/코드가 문제를 일으키는지 찾아내야 하는 경우
 
-## The Tracing Process
+## 역방향 추적 절차
 
-### 1. Observe the Symptom
+### 1. 증상 관찰
 ```
 Error: git init failed in ~/project/packages/core
 ```
 
-### 2. Find Immediate Cause
-**What code directly causes this?**
+### 2. 직접적인 원인 찾기
+**어떤 코드가 이 현상을 직접적으로 유발하는가?**
 ```typescript
 await execFileAsync('git', ['init'], { cwd: projectDir });
 ```
 
-### 3. Ask: What Called This?
+### 3. 질문하기: 이것을 호출한 것은 무엇인가?
 ```typescript
 WorktreeManager.createSessionWorktree(projectDir, sessionId)
   → called by Session.initializeWorkspace()
@@ -50,25 +50,25 @@ WorktreeManager.createSessionWorktree(projectDir, sessionId)
   → called by test at Project.create()
 ```
 
-### 4. Keep Tracing Up
-**What value was passed?**
-- `projectDir = ''` (empty string!)
-- Empty string as `cwd` resolves to `process.cwd()`
-- That's the source code directory!
+### 4. 상위로 계속 추적하기
+**어떤 값이 전달되었는가?**
+- `projectDir = ''` (빈 문자열!)
+- `cwd`에 빈 문자열이 전달되면 `process.cwd()`로 해석됨
+- 그것이 바로 소스 코드 디렉터리!
 
-### 5. Find Original Trigger
-**Where did empty string come from?**
+### 5. 최초 발생 지점 찾기
+**빈 문자열은 어디서 왔는가?**
 ```typescript
-const context = setupCoreTest(); // Returns { tempDir: '' }
-Project.create('name', context.tempDir); // Accessed before beforeEach!
+const context = setupCoreTest(); // { tempDir: '' } 반환
+Project.create('name', context.tempDir); // beforeEach 이전에 접근함!
 ```
 
-## Adding Stack Traces
+## 스택 트레이스 추가하기
 
-When you can't trace manually, add instrumentation:
+수동으로 추적할 수 없는 경우, 진단 도구를 추가하세요:
 
 ```typescript
-// Before the problematic operation
+// 문제가 발생하는 연산 직전에 추가
 async function gitInit(directory: string) {
   const stack = new Error().stack;
   console.error('DEBUG git init:', {
@@ -82,52 +82,52 @@ async function gitInit(directory: string) {
 }
 ```
 
-**Critical:** Use `console.error()` in tests (not logger - may not show)
+**중요:** 테스트 내에서는 로거가 아닌 `console.error()`를 사용하세요 (로거는 출력이 가려질 수 있음).
 
-**Run and capture:**
+**실행 및 수집:**
 ```bash
 npm test 2>&1 | grep 'DEBUG git init'
 ```
 
-**Analyze stack traces:**
-- Look for test file names
-- Find the line number triggering the call
-- Identify the pattern (same test? same parameter?)
+**스택 트레이스 분석:**
+- 테스트 파일 이름 찾기
+- 호출을 유발하는 줄 번호 찾기
+- 패턴 식별 (동일한 테스트인가? 동일한 파라미터인가?)
 
-## Finding Which Test Causes Pollution
+## 문제 유발 테스트(Polluter Test) 찾기
 
-If something appears during tests but you don't know which test:
+테스트 도중 현상이 나타나지만 어떤 테스트가 원인인지 알 수 없는 경우:
 
-Use the bisection script `find-polluter.sh` in this directory:
+이 디렉터리에 있는 분할 탐색(bisection) 스크립트 `find-polluter.sh`를 사용하세요:
 
 ```bash
 ./find-polluter.sh '.git' 'src/**/*.test.ts'
 ```
 
-Runs tests one-by-one, stops at first polluter. See script for usage.
+테스트를 하나씩 실행하여 첫 번째 원인 유발 테스트에서 멈춥니다. 사용법은 스크립트를 참조하세요.
 
-## Real Example: Empty projectDir
+## 실제 사례: 빈 projectDir
 
-**Symptom:** `.git` created in `packages/core/` (source code)
+**증상:** `packages/core/` (소스 코드) 내에 `.git`이 생성됨
 
-**Trace chain:**
-1. `git init` runs in `process.cwd()` ← empty cwd parameter
-2. WorktreeManager called with empty projectDir
-3. Session.create() passed empty string
-4. Test accessed `context.tempDir` before beforeEach
-5. setupCoreTest() returns `{ tempDir: '' }` initially
+**추적 체인:**
+1. `process.cwd()`에서 `git init` 실행 ← 빈 cwd 파라미터
+2. 빈 projectDir로 WorktreeManager 호출
+3. `Session.create()`에 빈 문자열 전달됨
+4. 테스트가 beforeEach 이전에 `context.tempDir`에 접근함
+5. `setupCoreTest()`가 초기에 `{ tempDir: '' }`를 반환함
 
-**Root cause:** Top-level variable initialization accessing empty value
+**근본 원인:** 최상위 변수 초기화 시 빈 값에 접근함
 
-**Fix:** Made tempDir a getter that throws if accessed before beforeEach
+**해결책:** tempDir을 beforeEach 이전에 접근하면 예외를 던지는 게터(getter)로 변경함
 
-**Also added defense-in-depth:**
-- Layer 1: Project.create() validates directory
-- Layer 2: WorkspaceManager validates not empty
-- Layer 3: NODE_ENV guard refuses git init outside tmpdir
-- Layer 4: Stack trace logging before git init
+**추가로 적용된 심층 방어:**
+- Layer 1: Project.create()에서 디렉터리 검증
+- Layer 2: WorkspaceManager에서 비어있지 않음 검증
+- Layer 3: NODE_ENV 가드가 tmpdir 외부 git init을 거부
+- Layer 4: git init 이전 스택 트레이스 로깅
 
-## Key Principle
+## 핵심 원칙
 
 ```dot
 digraph principle {
@@ -151,19 +151,19 @@ digraph principle {
 }
 ```
 
-**NEVER fix just where the error appears.** Trace back to find the original trigger.
+**에러가 나타난 위치만 고치는 행위는 절대 금물입니다.** 최초의 발생 지점을 찾을 때까지 역방향으로 추적하세요.
 
-## Stack Trace Tips
+## 스택 트레이스 팁
 
-**In tests:** Use `console.error()` not logger - logger may be suppressed
-**Before operation:** Log before the dangerous operation, not after it fails
-**Include context:** Directory, cwd, environment variables, timestamps
-**Capture stack:** `new Error().stack` shows complete call chain
+**테스트 내부:** 로거 대신 `console.error()` 사용 - 로거는 출력이 억제될 수 있음
+**연산 이전:** 에러 실패 후가 아니라 위험한 연산이 실행되기 **전**에 로그 기록
+**컨텍스트 포함:** 디렉터리, cwd, 환경 변수, 타임스탬프
+**스택 캡처:** `new Error().stack`으로 전체 호출 체인 확인
 
-## Real-World Impact
+## 실무 적용 효과
 
-From debugging session (2025-10-03):
-- Found root cause through 5-level trace
-- Fixed at source (getter validation)
-- Added 4 layers of defense
-- 1847 tests passed, zero pollution
+디버깅 세션 결과 (2025-10-03):
+- 5단계 추적을 통해 근본 원인 발견
+- 소스 지점 수정 (게터 검증)
+- 4개 레이어 심층 방어 추가
+- 1847개 테스트 통과, 오염 제로

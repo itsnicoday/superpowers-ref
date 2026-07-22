@@ -1,119 +1,119 @@
-# Creation Log: Systematic Debugging Skill
+# 작성 로그: 체계적 디버깅(Systematic Debugging) 스킬
 
-Reference example of extracting, structuring, and bulletproofing a critical skill.
+핵심 스킬을 추출, 구조화 및 강화(bulletproofing)하는 과정을 보여주는 참고 예시입니다.
 
-## Source Material
+## 원본 자료
 
-Extracted debugging framework from `~/.claude/CLAUDE.md`:
-- 4-phase systematic process (Investigation → Pattern Analysis → Hypothesis → Implementation)
-- Core mandate: ALWAYS find root cause, NEVER fix symptoms
-- Rules designed to resist time pressure and rationalization
+`~/.claude/CLAUDE.md`에서 추출한 디버깅 프레임워크:
+- 4단계 체계적 프로세스 (조사 → 패턴 분석 → 가설 → 구현)
+- 핵심 지침: ALWAYS 근본 원인을 찾고, NEVER 증상만 고치지 말 것
+- 시간 압박과 자기합리화에 저항하도록 설계된 규칙들
 
-## Extraction Decisions
+## 추출 결정 사항
 
-**What to include:**
-- Complete 4-phase framework with all rules
-- Anti-shortcuts ("NEVER fix symptom", "STOP and re-analyze")
-- Pressure-resistant language ("even if faster", "even if I seem in a hurry")
-- Concrete steps for each phase
+**포함할 내용:**
+- 모든 규칙을 포함한 완전한 4단계 프레임워크
+- 편법/지름길 방지 지침 ("NEVER fix symptom", "STOP and re-analyze")
+- 압박 방어용 언어 ("even if faster", "even if I seem in a hurry")
+- 각 단계별 구체적인 실행 절차
 
-**What to leave out:**
-- Project-specific context
-- Repetitive variations of same rule
-- Narrative explanations (condensed to principles)
+**제외할 내용:**
+- 프로젝트 전용 컨텍스트
+- 동일 규칙의 반복적인 변형
+- 서술형 설명 (원칙 위주로 압축)
 
-## Structure Following skill-creation/SKILL.md
+## skill-creation/SKILL.md 구조 준수
 
-1. **Rich when_to_use** - Included symptoms and anti-patterns
-2. **Type: technique** - Concrete process with steps
+1. **풍부한 when_to_use** - 증상 및 안티 패턴 포함
+2. **Type: technique** - 단계를 포함한 구체적 프로세스
 3. **Keywords** - "root cause", "symptom", "workaround", "debugging", "investigation"
-4. **Flowchart** - Decision point for "fix failed" → re-analyze vs add more fixes
-5. **Phase-by-phase breakdown** - Scannable checklist format
-6. **Anti-patterns section** - What NOT to do (critical for this skill)
+4. **플로우차트** - "수정 실패 시" 분기점 → 재분석 vs 임시 조치 추가
+5. **단계별 세부 분석** - 한눈에 파악할 수 있는 체크리스트 형식
+6. **안티 패턴 섹션** - 하지 말아야 할 것 (이 스킬에 매우 핵심적임)
 
-## Bulletproofing Elements
+## 방어적 강화(Bulletproofing) 요소
 
-Framework designed to resist rationalization under pressure:
+압박 속에서도 자기합리화에 저항하도록 설계된 프레임워크:
 
-### Language Choices
-- "ALWAYS" / "NEVER" (not "should" / "try to")
+### 단어 선택
+- "ALWAYS" / "NEVER" ("should" / "try to" 지양)
 - "even if faster" / "even if I seem in a hurry"
-- "STOP and re-analyze" (explicit pause)
-- "Don't skip past" (catches the actual behavior)
+- "STOP and re-analyze" (명시적 일시정지)
+- "Don't skip past" (실제 자주 일어나는 행동 포착)
 
-### Structural Defenses
-- **Phase 1 required** - Can't skip to implementation
-- **Single hypothesis rule** - Forces thinking, prevents shotgun fixes
-- **Explicit failure mode** - "IF your first fix doesn't work" with mandatory action
-- **Anti-patterns section** - Shows exactly what shortcuts look like
+### 구조적 방어 장치
+- **Phase 1 필수 수행** - 바로 구현 단계로 건너뛸 수 없음
+- **단일 가설 규칙** - 깊은 사고 유도, 무작위 시도 방지
+- **명시적 실패 대응 방식** - mandatory 조치가 포함된 "IF your first fix doesn't work"
+- **안티 패턴 섹션** - 지름길이나 편법이 어떤 모습인지 명확히 표시
 
-### Redundancy
-- Root cause mandate in overview + when_to_use + Phase 1 + implementation rules
-- "NEVER fix symptom" appears 4 times in different contexts
-- Each phase has explicit "don't skip" guidance
+### 중복 배치 (Redundancy)
+- 근본 원인 파악 지침이 개요 + when_to_use + Phase 1 + 구현 규칙에 반복 등장
+- "NEVER fix symptom" 문구가 서로 다른 컨텍스트에서 4회 등장
+- 각 단계마다 명시적인 "건너뛰지 말 것" 지침 포함
 
-## Testing Approach
+## 검증(Testing) 접근법
 
-Created 4 validation tests following skills/meta/testing-skills-with-subagents:
+skills/meta/testing-skills-with-subagents 가이드라인에 따라 4가지 검증 테스트 생성:
 
-### Test 1: Academic Context (No Pressure)
-- Simple bug, no time pressure
-- **Result:** Perfect compliance, complete investigation
+### Test 1: 학술적 컨텍스트 (압박 없음)
+- 단순한 버그, 시간 압박 없음
+- **결과:** 완벽한 지침 준수, 완전한 조사 수행
 
-### Test 2: Time Pressure + Obvious Quick Fix
-- User "in a hurry", symptom fix looks easy
-- **Result:** Resisted shortcut, followed full process, found real root cause
+### Test 2: 시간 압박 + 눈에 띄는 빠른 임시 조치
+- 사용자가 "서두름", 증상 수정이 쉬워 보임
+- **결과:** 편법 유혹을 이겨내고 전체 프로세스를 준수하여 실제 근본 원인을 발견함
 
-### Test 3: Complex System + Uncertainty
-- Multi-layer failure, unclear if can find root cause
-- **Result:** Systematic investigation, traced through all layers, found source
+### Test 3: 복잡한 시스템 + 불확실성
+- 다층 레이어 실패, 근본 원인 발견 여부가 불투명함
+- **결과:** 체계적 조사 수행, 모든 레이어를 추적하여 원인 지점 발견
 
-### Test 4: Failed First Fix
-- Hypothesis doesn't work, temptation to add more fixes
-- **Result:** Stopped, re-analyzed, formed new hypothesis (no shotgun)
+### Test 4: 첫 번째 수정 실패
+- 가설이 작동하지 않음, 무작위 임시 수정을 추가하고 싶은 유혹
+- **결과:** 작업 중단, 재분석 수행, 새로운 가설 수립 (무작위 시도 없음)
 
-**All tests passed.** No rationalizations found.
+**모든 테스트 통과.** 자기합리화 현상 발견되지 않음.
 
-## Iterations
+## 개선 과정 (Iterations)
 
-### Initial Version
-- Complete 4-phase framework
-- Anti-patterns section
-- Flowchart for "fix failed" decision
+### 초기 버전
+- 완전한 4단계 프레임워크
+- 안티 패턴 섹션
+- "수정 실패 시" 의사결정을 위한 플로우차트
 
-### Enhancement 1: TDD Reference
-- Added link to skills/testing/test-driven-development
-- Note explaining TDD's "simplest code" ≠ debugging's "root cause"
-- Prevents confusion between methodologies
+### Enhancements 1: TDD 참조 추가
+- skills/testing/test-driven-development 링크 추가
+- TDD의 "가장 간단한 코드" ≠ 디버깅의 "근본 원인" 차이점 설명 노트 추가
+- 방법론 간의 혼선 방지
 
-## Final Outcome
+## 최종 성과
 
-Bulletproof skill that:
-- ✅ Clearly mandates root cause investigation
-- ✅ Resists time pressure rationalization
-- ✅ Provides concrete steps for each phase
-- ✅ Shows anti-patterns explicitly
-- ✅ Tested under multiple pressure scenarios
-- ✅ Clarifies relationship to TDD
-- ✅ Ready for use
+다음을 만족하는 강력한 스킬 완성:
+- ✅ 근본 원인 조사를 명확히 의무화함
+- ✅ 시간 압박에 따른 자기합리화에 저항함
+- ✅ 각 단계별 구체적 실행 절차를 제공함
+- ✅ 안티 패턴을 명시적으로 제시함
+- ✅ 다양한 압박 시나리오 하에서 검증됨
+- ✅ TDD와의 관계를 명확히 정의함
+- ✅ 즉시 사용 가능
 
-## Key Insight
+## 핵심 인사이트 (Key Insight)
 
-**Most important bulletproofing:** Anti-patterns section showing exact shortcuts that feel justified in the moment. When Claude thinks "I'll just add this one quick fix", seeing that exact pattern listed as wrong creates cognitive friction.
+**가장 중요한 강화 요소:** 순간적으로 합리적이라고 느끼는 지름길 편법을 정확히 지적해 주는 안티 패턴 섹션입니다. Claude가 "빠른 임시 조치 하나만 추가하자"라고 생각할 때, 해당 패턴이 잘못된 것으로 명시되어 있는 것을 보면 인지적 마찰이 발생하게 됩니다.
 
-## Usage Example
+## 사용 예시
 
-When encountering a bug:
-1. Load skill: skills/debugging/systematic-debugging
-2. Read overview (10 sec) - reminded of mandate
-3. Follow Phase 1 checklist - forced investigation
-4. If tempted to skip - see anti-pattern, stop
-5. Complete all phases - root cause found
+버그를 마주했을 때:
+1. 스킬 로드: skills/debugging/systematic-debugging
+2. 개요 읽기 (10초) - 의무 사항 상기
+3. Phase 1 체크리스트 이행 - 강제 조사 수행
+4. 건너뛰고 싶은 유혹이 들 때 - 안티 패턴을 확인하고 멈춤
+5. 모든 단계 완료 - 근본 원인 파악 완료
 
-**Time investment:** 5-10 minutes
-**Time saved:** Hours of symptom-whack-a-mole
+**시간 투자:** 5~10분
+**절약된 시간:** 증상 땜빵식 작업(whack-a-mole)에 허비할 수많은 시간
 
 ---
 
-*Created: 2025-10-03*
-*Purpose: Reference example for skill extraction and bulletproofing*
+*작성일: 2025-10-03*
+*목적: 스킬 추출 및 강화를 위한 참고 예시*

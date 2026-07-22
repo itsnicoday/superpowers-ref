@@ -1,61 +1,61 @@
-# Lift drill into superpowers as `evals/` — implementation plan
+# drill을 `evals/`로 superpowers에 이전(lift)하기 — 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **에이전트 작업자 참고:** 필수 하위 스킬: 이 계획을 작업별로 구현하려면 superpowers:subagent-driven-development (권장) 또는 superpowers:executing-plans를 사용하세요. 각 단계는 추적을 위해 체크박스 (`- [ ]`) 구문을 사용합니다.
 
-**Goal:** Move the standalone `obra/drill` skill-compliance benchmark into superpowers as a top-level `evals/` directory, delete redundant bash tests under `superpowers/tests/` after per-file subagent verification of drill scenario coverage, and update top-level docs so contributors land on the new structure.
+**목표:** 독립형 `obra/drill` 스킬 준수 벤치마크를 최상위 `evals/` 디렉터리로 superpowers에 이전하고, 드릴 시나리오 커버리지에 대한 파일별 하위 에이전트 검증 후 `superpowers/tests/` 아래의 중복 bash 테스트를 삭제하며, 기여자가 새로운 구조에 쉽게 적응할 수 있도록 최상위 문서를 업데이트합니다.
 
-**Architecture:** Single PR against `dev` on a new branch `f/evals-lift`. Drill source is copied verbatim with explicit rsync excludes to keep `.git/`, `.venv/`, etc. out of the new dir. A small helper in `drill/cli.py` defaults `SUPERPOWERS_ROOT` to the parent of the `evals/` directory, so contributors don't have to set the env var. Each bash-test deletion is gated by a subagent that compares the bash test's assertions to its claimed drill scenario's verify block. Historical references in plan docs and release notes are annotated, not rewritten.
+**아키텍처:** 새 브랜치 `f/evals-lift`에서 `dev`를 타겟으로 하는 단일 PR. 새 디렉터리에서 `.git/`, `.venv/` 등을 제외하기 위해 명시적인 rsync exclude 옵션을 사용하여 드릴 소스를 그대로 복사합니다. `drill/cli.py`의 작은 헬퍼가 `SUPERPOWERS_ROOT`의 기본값을 `evals/` 디렉터리의 상위 폴더로 설정하므로 기여자가 환경 변수를 별도로 설정할 필요가 없습니다. 각 bash 테스트 삭제는 bash 테스트의 단정문(assertion)과 주장하는 드릴 시나리오의 verify 블록을 비교하는 하위 에이전트에 의해 게이트(gate) 처리됩니다. 계획 문서 및 릴리스 노트의 과거 참조는 재작성하지 않고 주석(annotation)을 답니다.
 
-**Tech Stack:** Python 3.11 + uv (drill's existing toolchain, unchanged); rsync; bash; git.
+**기술 스택:** Python 3.11 + uv (드릴의 기존 툴체인, 변경 없음); rsync; bash; git.
 
-**Spec:** `docs/superpowers/specs/2026-05-06-lift-drill-into-evals-design.md` — read this first.
+**스펙:** `docs/superpowers/specs/2026-05-06-lift-drill-into-evals-design.md` — 이것부터 읽어보세요.
 
-**Drill source location:** `/Users/jesse/Documents/GitHub/superpowers/drill/` (sibling to `superpowers/`).
+**Drill 소스 위치:** `/Users/jesse/Documents/GitHub/superpowers/drill/` (`superpowers/`와 형제 디렉터리).
 
 ---
 
-## Task 1: Branch off dev
+## 작업 1: dev에서 브랜치 생성
 
-**Files:** none (git operation only)
+**파일:** 없음 (git 작업만 수행)
 
-- [ ] **Step 1: Verify clean working tree**
+- [ ] **1단계: 깨끗한 작업 트리 확인**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
 git status --short
 ```
 
-Expected: empty output (or only untracked `.opencode/package-lock.json`, which is fine).
+예상: 빈 출력 (또는 추적되지 않는 `.opencode/package-lock.json`만 출력되면 괜찮음).
 
-- [ ] **Step 2: Fetch latest dev**
+- [ ] **2단계: 최신 dev 가져오기**
 
 ```bash
 git fetch origin dev:dev
 ```
 
-- [ ] **Step 3: Create the branch**
+- [ ] **3단계: 브랜치 생성**
 
 ```bash
 git checkout -b f/evals-lift dev
 ```
 
-Expected: `Switched to a new branch 'f/evals-lift'`.
+예상: `Switched to a new branch 'f/evals-lift'`.
 
-- [ ] **Step 4: Sanity check**
+- [ ] **4단계: 정상 동작 확인(Sanity check)**
 
 ```bash
 git log --oneline -1
 ```
 
-Expected output begins with whatever commit `origin/dev` points to (currently `b4363df docs: turned the dash in "- Jesse" into an escape sequence (#1474)`).
+예상: 출력이 `origin/dev`가 가리키는 커밋으로 시작함 (현재 `b4363df docs: turned the dash in "- Jesse" into an escape sequence (#1474)`).
 
 ---
 
-## Task 2: Capture drill SHA at copy time
+## 작업 2: 복사 시점의 drill SHA 캡처
 
-**Files:** none (records the value for the lift commit message)
+**파일:** 없음 (이전 커밋 메시지에 사용할 값을 기록)
 
-- [ ] **Step 1: Get the current drill HEAD SHA**
+- [ ] **1단계: 현재 drill HEAD SHA 가져오기**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/drill
@@ -63,29 +63,29 @@ DRILL_SHA=$(git rev-parse HEAD)
 echo "$DRILL_SHA"
 ```
 
-- [ ] **Step 2: Verify drill has no uncommitted work**
+- [ ] **2단계: drill에 커밋되지 않은 작업이 없는지 확인**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/drill
 git status --short
 ```
 
-Expected: empty (no untracked or modified files). If output is non-empty, stop and report — drill working tree must be clean before lift, otherwise the SHA-pin is meaningless.
+예상: 비어 있음 (추적되지 않거나 수정된 파일 없음). 출력이 비어 있지 않으면 중단하고 보고하세요 — 이전 전 drill 작업 트리는 깨끗해야 합니다. 그렇지 않으면 SHA 고정이 의미가 없습니다.
 
-- [ ] **Step 3: Save the SHA in shell env for next task**
+- [ ] **3단계: 다음 작업을 위해 셸 환경 변수에 SHA 저장**
 
 ```bash
-echo "DRILL_SHA=$DRILL_SHA"  # write this down for use in Task 3
+echo "DRILL_SHA=$DRILL_SHA"  # 작업 3에서 사용할 수 있도록 기록해 둡니다
 ```
 
 ---
 
-## Task 3: rsync drill into evals/
+## 작업 3: drill을 evals/로 rsync 복사
 
-**Files:**
-- Create: `evals/` (entire directory tree from drill, minus excludes)
+**파일:**
+- 생성: `evals/` (제외 항목을 뺀 drill의 전체 디렉터리 트리)
 
-- [ ] **Step 1: Verify source and destination paths**
+- [ ] **1단계: 소스 및 대상 경로 확인**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -93,9 +93,9 @@ test -d /Users/jesse/Documents/GitHub/superpowers/drill && echo "drill source: O
 test ! -d evals && echo "evals/ does not yet exist: OK"
 ```
 
-Expected: both echoes print.
+예상: 두 echo 명령어 모두 출력됨.
 
-- [ ] **Step 2: rsync drill to evals/ with explicit excludes**
+- [ ] **2단계: 명시적 exclude 옵션과 함께 drill을 evals/로 rsync 복사**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -112,7 +112,7 @@ rsync -a \
   evals/
 ```
 
-- [ ] **Step 3: Verify excludes worked**
+- [ ] **3단계: exclude 옵션이 올바르게 작동했는지 확인**
 
 ```bash
 find evals -name '.git' -type d
@@ -123,9 +123,9 @@ find evals -name '__pycache__' -type d
 find evals -name '*.egg-info' -type d
 ```
 
-Expected: every command returns no output. If any returns a path, manually `rm -rf` it before continuing.
+예상: 모든 명령어가 아무것도 출력하지 않음. 경로가 출력되는 경우 계속 진행하기 전에 수동으로 `rm -rf` 하세요.
 
-- [ ] **Step 4: Confirm the source SHA for the commit message**
+- [ ] **4단계: 커밋 메시지에 사용할 소스 SHA 확인**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/drill
@@ -133,18 +133,18 @@ DRILL_SHA=$(git rev-parse HEAD)
 echo "$DRILL_SHA"
 ```
 
-Expected: the SHA from Task 2 step 1.
+예상: 작업 2의 1단계에서 얻은 SHA.
 
-- [ ] **Step 5: Stage everything**
+- [ ] **5단계: 모두 스테이징**
 
 ```bash
 git add evals/
 git status --short | head -20
 ```
 
-Expected output starts with `A  evals/...` lines listing many added files. Many of these are in scenarios/, drill/, backends/, setup_helpers/, etc.
+예상: 추가된 수많은 파일을 나열하는 `A  evals/...` 줄로 출력이 시작됨. 대부분은 scenarios/, drill/, backends/, setup_helpers/ 등에 있음.
 
-- [ ] **Step 6: Commit**
+- [ ] **6단계: 커밋**
 
 ```bash
 : "${DRILL_SHA:?Set DRILL_SHA from Task 2 before committing}"
@@ -165,11 +165,11 @@ EOF
 
 ---
 
-## Task 4: Verify the copy with checksums
+## 작업 4: 체크섬으로 복사본 검증
 
-**Files:** none (verification only)
+**파일:** 없음 (검증 전용)
 
-- [ ] **Step 1: Get list of files that exist in drill but should NOT be in evals (the excludes)**
+- [ ] **1단계: drill에 존재하지만 evals에 없어야 하는 파일 목록(제외 대상) 가져오기**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/drill
@@ -186,7 +186,7 @@ find . \
 wc -l /tmp/drill-files.txt
 ```
 
-- [ ] **Step 2: Get list of files in evals/**
+- [ ] **2단계: evals/ 내부의 파일 목록 가져오기**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -194,17 +194,17 @@ find evals -type f | sed 's|^evals/|./|' | sort > /tmp/evals-files.txt
 wc -l /tmp/evals-files.txt
 ```
 
-- [ ] **Step 3: Diff the two lists**
+- [ ] **3단계: 두 목록의 diff 확인**
 
-The file lists should match exactly after excluded paths are removed.
+제외된 경로가 제거된 후 두 파일 목록은 정확히 일치해야 합니다.
 
 ```bash
 diff /tmp/drill-files.txt /tmp/evals-files.txt
 ```
 
-Expected: no output.
+예상: 출력 없음.
 
-- [ ] **Step 4: Per-file checksum verification**
+- [ ] **4단계: 파일별 체크섬 검증**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/drill
@@ -217,29 +217,29 @@ while read -r f; do
 done < /tmp/drill-files.txt | head -20
 ```
 
-Expected: no output (every file's checksum matches between drill and evals).
+예상: 출력 없음 (drill과 evals 간의 모든 파일 체크섬 일치).
 
-- [ ] **Step 5: Smoke check - install dependencies**
+- [ ] **5단계: 스모크 체크 - 의존성 설치**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
 uv sync
 ```
 
-Expected: `Installed N packages` or similar. No errors.
+예상: `Installed N packages` 또는 이와 유사한 출력. 오류 없음.
 
-- [ ] **Step 6: Smoke check - drill list**
+- [ ] **6단계: 스모크 체크 - drill 목록**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
 uv run drill list 2>&1 | head -5
 ```
 
-Expected: starts with scenario names. (Will likely error or warn about missing SUPERPOWERS_ROOT — that's fine, fixed in next task.)
+예상: 시나리오 이름으로 시작함. (누락된 SUPERPOWERS_ROOT에 대한 경고나 오류가 발생할 수 있습니다 — 괜찮습니다, 다음 작업에서 수정됨.)
 
-- [ ] **Step 7: Dispatch verification subagent**
+- [ ] **7단계: 검증 하위 에이전트 디스패치**
 
-Dispatch a `general-purpose` subagent with this prompt:
+다음 프롬프트로 `general-purpose` 하위 에이전트를 디스패치합니다:
 
 ```
 You are verifying a verbatim copy of the drill repo at
@@ -265,22 +265,22 @@ Report each check with PASS/FAIL. If any FAIL, dump enough detail
 that the parent can fix.
 ```
 
-If the subagent reports any FAIL, fix the underlying issue (delete the leaked file, re-rsync, etc.) before continuing.
+하위 에이전트가 FAIL을 보고하는 경우 계속 진행하기 전에 근본적인 문제(유출된 파일 삭제, 재rsync 등)를 해결하세요.
 
 ---
 
-## Task 5: Add `SUPERPOWERS_ROOT` default helper
+## 작업 5: `SUPERPOWERS_ROOT` 기본값 헬퍼 추가
 
-**Files:**
-- Modify: `evals/drill/cli.py:11-14`
+**파일:**
+- 수정: `evals/drill/cli.py:11-14`
 
-- [ ] **Step 1: Read the current cli.py header**
+- [ ] **1단계: 현재 cli.py 헤더 읽기**
 
 ```bash
 sed -n '1,20p' /Users/jesse/Documents/GitHub/superpowers/superpowers/evals/drill/cli.py
 ```
 
-Expected output:
+예상 출력:
 
 ```python
 """Drill CLI: run, compare, list."""
@@ -298,9 +298,9 @@ PROJECT_ROOT: Path = Path(__file__).parent.parent
 load_dotenv(PROJECT_ROOT / ".env")
 ```
 
-- [ ] **Step 2: Write a failing test for the helper**
+- [ ] **2단계: 헬퍼에 대한 실패하는 테스트 작성**
 
-Open `evals/tests/test_cli.py` and add this test at the end:
+`evals/tests/test_cli.py` 파일을 열고 끝에 다음 테스트를 추가합니다:
 
 ```python
 def test_set_superpowers_root_default_when_unset(monkeypatch, tmp_path):
@@ -325,18 +325,18 @@ def test_set_superpowers_root_default_respects_existing(monkeypatch):
     assert os.environ["SUPERPOWERS_ROOT"] == "/custom/path"
 ```
 
-- [ ] **Step 3: Run the test and watch it fail**
+- [ ] **3단계: 테스트 실행 및 실패 확인**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
 uv run pytest tests/test_cli.py -k set_superpowers_root_default -v
 ```
 
-Expected: 2 tests fail with `AttributeError: module 'drill.cli' has no attribute '_set_superpowers_root_default'`.
+예상: 2개 테스트가 `AttributeError: module 'drill.cli' has no attribute '_set_superpowers_root_default'` 오류로 실패함.
 
-- [ ] **Step 4: Add the helper to cli.py**
+- [ ] **4단계: cli.py에 헬퍼 추가**
 
-Edit `/Users/jesse/Documents/GitHub/superpowers/superpowers/evals/drill/cli.py`. Replace lines 1–14 with:
+`/Users/jesse/Documents/GitHub/superpowers/superpowers/evals/drill/cli.py` 파일을 수정합니다. 1~14행을 다음 내용으로 교체합니다:
 
 ```python
 """Drill CLI: run, compare, list."""
@@ -371,18 +371,18 @@ def _set_superpowers_root_default() -> None:
 _set_superpowers_root_default()
 ```
 
-The bottom-of-module call to `_set_superpowers_root_default()` runs at import time, immediately after `load_dotenv()`. This ensures both `engine.py` and `setup.py` (which read `os.environ["SUPERPOWERS_ROOT"]` directly) and the YAML interpolation (which reads `os.environ` when the backend YAML is loaded) all see the value.
+모듈 하단의 `_set_superpowers_root_default()` 호출은 `load_dotenv()` 직후 임포트 시점에 실행됩니다. 이렇게 하면 `engine.py`와 `setup.py`(`os.environ["SUPERPOWERS_ROOT"]`를 직접 읽음) 및 YAML 보간(백엔드 YAML이 로드될 때 `os.environ`을 읽음) 모두 이 값을 볼 수 있습니다.
 
-- [ ] **Step 5: Run the test and watch it pass**
+- [ ] **5단계: 테스트를 실행하여 통과 확인**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
 uv run pytest tests/test_cli.py -k set_superpowers_root_default -v
 ```
 
-Expected: 2 tests pass.
+예상: 2개 테스트 통과.
 
-- [ ] **Step 6: Commit**
+- [ ] **6단계: 커밋**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -403,32 +403,32 @@ Tests:
 
 ---
 
-## Task 6: Update backend YAMLs to reflect the new env contract
+## 작업 6: 새 환경 계약을 반영하도록 백엔드 YAML 업데이트
 
-**Files:**
-- Modify: `evals/backends/codex.yaml` (drop `SUPERPOWERS_ROOT` from `required_env`)
-- Modify: `evals/backends/gemini.yaml` (drop `SUPERPOWERS_ROOT` from `required_env`)
+**파일:**
+- 수정: `evals/backends/codex.yaml` (`required_env`에서 `SUPERPOWERS_ROOT` 제거)
+- 수정: `evals/backends/gemini.yaml` (`required_env`에서 `SUPERPOWERS_ROOT` 제거)
 
-The five `claude*.yaml` backend configs interpolate `${SUPERPOWERS_ROOT}` into `args` for the `--plugin-dir` flag — they keep `SUPERPOWERS_ROOT` in `required_env` because the interpolation needs it. The codex/gemini configs only listed it for engine.py/setup.py's `os.environ` reads, which the helper now satisfies.
+5개의 `claude*.yaml` 백엔드 설정은 `--plugin-dir` 플래그의 `args`로 `${SUPERPOWERS_ROOT}`를 보간하므로 — 보간에 필수적이므로 `required_env`에 `SUPERPOWERS_ROOT`를 유지합니다. codex/gemini 설정은 헬퍼가 충족하는 engine.py/setup.py의 `os.environ` 읽기를 위해서만 이를 나열했습니다.
 
-- [ ] **Step 1: Confirm current state**
+- [ ] **1단계: 현재 상태 확인**
 
 ```bash
 grep -A3 'required_env:' /Users/jesse/Documents/GitHub/superpowers/superpowers/evals/backends/codex.yaml
 grep -A2 'required_env:' /Users/jesse/Documents/GitHub/superpowers/superpowers/evals/backends/gemini.yaml
 ```
 
-Expected outputs include `- SUPERPOWERS_ROOT` lines.
+예상: 출력에 `- SUPERPOWERS_ROOT` 줄 포함.
 
-- [ ] **Step 2: Read codex.yaml fully**
+- [ ] **2단계: codex.yaml 전체 읽기**
 
 ```bash
 cat /Users/jesse/Documents/GitHub/superpowers/superpowers/evals/backends/codex.yaml
 ```
 
-- [ ] **Step 3: Edit codex.yaml — drop the `- SUPERPOWERS_ROOT` line under `required_env`**
+- [ ] **3단계: codex.yaml 수정 — `required_env` 아래의 `- SUPERPOWERS_ROOT` 줄 삭제**
 
-Open `evals/backends/codex.yaml` and find:
+`evals/backends/codex.yaml`을 열고 다음을 찾습니다:
 
 ```yaml
 required_env:
@@ -436,40 +436,40 @@ required_env:
   - SUPERPOWERS_ROOT
 ```
 
-Replace with:
+다음으로 교체:
 
 ```yaml
 required_env:
   - OPENAI_API_KEY
 ```
 
-- [ ] **Step 4: Edit gemini.yaml — drop the `- SUPERPOWERS_ROOT` line under `required_env`**
+- [ ] **4단계: gemini.yaml 수정 — `required_env` 아래의 `- SUPERPOWERS_ROOT` 줄 삭제**
 
-Open `evals/backends/gemini.yaml` and find:
+`evals/backends/gemini.yaml`을 열고 다음을 찾습니다:
 
 ```yaml
 required_env:
   - SUPERPOWERS_ROOT
 ```
 
-Replace with:
+다음으로 교체:
 
 ```yaml
 required_env: []
 ```
 
-(Empty list rather than dropping the field, so YAML schema validation doesn't trip.)
+(필드를 삭제하는 대신 빈 리스트를 사용하여 YAML 스키마 검증이 실패하지 않도록 합니다.)
 
-- [ ] **Step 5: Run drill's pytest suite to ensure nothing broke**
+- [ ] **5단계: 문제가 없는지 확인하기 위해 drill의 pytest 스위트 실행**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
 uv run pytest -x 2>&1 | tail -20
 ```
 
-Expected: all tests pass. If `tests/test_backend.py` complains about `required_env` membership for codex/gemini, see Task 7.
+예상: 모든 테스트 통과. `tests/test_backend.py`가 codex/gemini의 `required_env` 멤버십에 대해 에러를 발생하는 경우 작업 7을 참조하세요.
 
-- [ ] **Step 6: Commit**
+- [ ] **6단계: 커밋**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -484,35 +484,35 @@ because they interpolate \${SUPERPOWERS_ROOT} into --plugin-dir args."
 
 ---
 
-## Task 7: Update drill's pytest suite for the new contract
+## 작업 7: 새 계약에 맞게 drill의 pytest 스위트 업데이트
 
-**Files:**
-- Modify: `evals/tests/test_backend.py` (per-test updates if Task 6 step 5 surfaced failures)
+**파일:**
+- 수정: `evals/tests/test_backend.py` (작업 6의 5단계에서 실패가 발생한 경우 테스트별 업데이트 진행)
 
-- [ ] **Step 1: Run the test suite**
+- [ ] **1단계: 테스트 스위트 실행**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
 uv run pytest tests/test_backend.py -v 2>&1 | tail -30
 ```
 
-If all tests pass, skip to step 5 (commit nothing, move to Task 8). Otherwise:
+모든 테스트가 통과하면 5단계로 건너뜁니다(아무것도 커밋하지 않고 작업 8로 이동). 그렇지 않으면:
 
-- [ ] **Step 2: Read failing tests**
+- [ ] **2단계: 실패한 테스트 읽기**
 
-For each failure, open the test in `evals/tests/test_backend.py` and read the assertion.
+실패할 때마다 `evals/tests/test_backend.py`에서 테스트를 열고 단정문(assertion)을 읽습니다.
 
-- [ ] **Step 3: Update assertions**
+- [ ] **3단계: 단정문 업데이트**
 
-For tests that assert `SUPERPOWERS_ROOT` membership in `codex.yaml`'s or `gemini.yaml`'s `required_env`: invert the assertion to confirm absence. Example:
+`codex.yaml` 또는 `gemini.yaml`의 `required_env`에서 `SUPERPOWERS_ROOT` 멤버십을 단정하는 테스트의 경우: 단정문을 반전하여 부재를 확인합니다. 예:
 
 ```python
-# Before:
+# 기존:
 def test_codex_requires_superpowers_root():
     backend = load_backend("codex")
     assert "SUPERPOWERS_ROOT" in backend.required_env
 
-# After:
+# 변경 후:
 def test_codex_does_not_require_superpowers_root():
     """codex.yaml dropped SUPERPOWERS_ROOT from required_env;
     the cli.py helper supplies the default."""
@@ -520,16 +520,16 @@ def test_codex_does_not_require_superpowers_root():
     assert "SUPERPOWERS_ROOT" not in backend.required_env
 ```
 
-- [ ] **Step 4: Re-run the test suite**
+- [ ] **4단계: 테스트 스위트 재실행**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
 uv run pytest -x 2>&1 | tail -10
 ```
 
-Expected: all tests pass.
+예상: 모든 테스트 통과.
 
-- [ ] **Step 5: Commit (only if step 1 had failures)**
+- [ ] **5단계: 커밋 (1단계에서 실패가 있었던 경우에만)**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -539,15 +539,15 @@ git commit -m "evals: update test_backend.py for relaxed required_env contract"
 
 ---
 
-## Task 8: Update evals/README.md and evals/CLAUDE.md
+## 작업 8: evals/README.md 및 evals/CLAUDE.md 업데이트
 
-**Files:**
-- Modify: `evals/README.md` (drop SUPERPOWERS_ROOT setup step)
-- Modify: `evals/CLAUDE.md` (drop SUPERPOWERS_ROOT setup step)
+**파일:**
+- 수정: `evals/README.md` (SUPERPOWERS_ROOT 설정 단계 제거)
+- 수정: `evals/CLAUDE.md` (SUPERPOWERS_ROOT 설정 단계 제거)
 
-- [ ] **Step 1: Edit evals/README.md**
+- [ ] **1단계: evals/README.md 수정**
 
-Find the section that looks like:
+다음과 같이 생긴 섹션을 찾습니다:
 
 ```markdown
 Required environment:
@@ -557,7 +557,7 @@ export ANTHROPIC_API_KEY=sk-...
 ```
 ```
 
-Replace with:
+다음으로 교체:
 
 ```markdown
 Required environment:
@@ -568,9 +568,9 @@ export ANTHROPIC_API_KEY=sk-...
 `SUPERPOWERS_ROOT` defaults to the parent of `evals/` (the superpowers repo root) and only needs to be set if you're running drill against a different superpowers checkout.
 ```
 
-- [ ] **Step 2: Edit evals/CLAUDE.md**
+- [ ] **2단계: evals/CLAUDE.md 수정**
 
-Find the section:
+섹션을 찾습니다:
 
 ```markdown
 ## Required env
@@ -581,7 +581,7 @@ ANTHROPIC_API_KEY=sk-...
 ```
 ```
 
-Replace with:
+다음으로 교체:
 
 ```markdown
 ## Required env
@@ -593,7 +593,7 @@ ANTHROPIC_API_KEY=sk-...
 `SUPERPOWERS_ROOT` defaults to the parent of `evals/` (the superpowers repo root). Override only if running drill against a different superpowers checkout.
 ```
 
-- [ ] **Step 3: Commit**
+- [ ] **3단계: 커밋**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -605,11 +605,11 @@ The cli.py helper now defaults the env var. Mention as override only."
 
 ---
 
-## Task 9: Validate from new location
+## 작업 9: 새 위치에서 검증
 
-**Files:** none (validation only — no commit unless something needs fixing)
+**파일:** 없음 (검증 전용 — 수정을 요하는 항목이 없으면 커밋하지 않음)
 
-- [ ] **Step 1: Run drill's full pytest suite**
+- [ ] **1단계: drill 전체 pytest 스위트 실행**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
@@ -617,9 +617,9 @@ unset SUPERPOWERS_ROOT
 uv run pytest 2>&1 | tail -5
 ```
 
-Expected: all tests pass. The `unset` ensures we're testing the helper, not an inherited env var.
+예상: 모든 테스트 통과. `unset`을 통해 상속된 환경 변수가 아닌 헬퍼를 테스트하도록 합니다.
 
-- [ ] **Step 2: Run drill list**
+- [ ] **2단계: drill list 실행**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
@@ -627,9 +627,9 @@ unset SUPERPOWERS_ROOT
 uv run drill list 2>&1 | head -10
 ```
 
-Expected: scenario list, no error about missing SUPERPOWERS_ROOT.
+예상: 누락된 SUPERPOWERS_ROOT에 대한 오류 없이 시나리오 목록 출력.
 
-- [ ] **Step 3: Source the env file**
+- [ ] **3단계: env 파일 로드**
 
 ```bash
 set -a
@@ -638,9 +638,9 @@ set +a
 echo "ANTHROPIC_API_KEY set: ${ANTHROPIC_API_KEY:+yes}"
 ```
 
-Expected: `ANTHROPIC_API_KEY set: yes`.
+예상: `ANTHROPIC_API_KEY set: yes`.
 
-- [ ] **Step 4: Run a cheap drill scenario**
+- [ ] **4단계: 비용이 적은 drill 시나리오 실행**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
@@ -648,24 +648,24 @@ unset SUPERPOWERS_ROOT
 uv run drill run triggering-test-driven-development -b claude 2>&1 | tail -3
 ```
 
-Expected: `claude: 1 passed, 0 failed, 0 errors`.
+예상: `claude: 1 passed, 0 failed, 0 errors`.
 
-If FAIL, debug before continuing. The path-defaults change is the most likely culprit; check that the helper actually fired by adding a `print(os.environ["SUPERPOWERS_ROOT"])` after the helper call temporarily.
+FAIL인 경우 계속 진행하기 전에 디버깅하세요. 경로 기본값 변경이 가장 유력한 원인입니다. 헬퍼가 실제 실행되었는지 임시로 헬퍼 호출 뒤에 `print(os.environ["SUPERPOWERS_ROOT"])`를 추가하여 확인해 보세요.
 
 ---
 
-## Task 10: Bash test deletion phase — per-file with subagent gate
+## 작업 10: Bash 테스트 삭제 단계 — 하위 에이전트 게이트가 포함된 파일별 진행
 
-This task has many sub-steps because each candidate-deletion file gets its own subagent verification + commit. The candidate list comes from the spec's coverage map. For each entry below:
+각 후보 삭제 파일은 자체 하위 에이전트 검증 + 커밋을 거치게 됩니다. 후보 목록은 스펙의 커버리지 맵에서 가져옵니다. 아래 각 항목에 대해:
 
-1. Read the bash test file.
-2. Read the candidate drill scenario YAML.
-3. Dispatch a subagent with both contents and the comparison prompt.
-4. Subagent reports per-assertion match table.
-5. If every bash assertion has a match: delete the bash test, commit.
-6. If any unmatched: stop, escalate, do not delete.
+1. bash 테스트 파일 읽기.
+2. 후보 drill 시나리오 YAML 읽기.
+3. 두 내용과 비교 프롬프트를 사용하여 하위 에이전트 디스패치.
+4. 하위 에이전트가 단정문 일치 표 보고.
+5. 모든 bash 단정문이 일치하는 경우: bash 테스트 삭제 및 커밋.
+6. 일치하지 않는 것이 있는 경우: 중단, 이관(escalate), 삭제하지 않음.
 
-**Subagent prompt template (use for every deletion):**
+**하위 에이전트 프롬프트 템플릿 (모든 삭제 작업 시 사용):**
 
 ```
 You are gating a bash test deletion. The bash test is allegedly
@@ -687,18 +687,18 @@ assertions". Be conservative: if you are uncertain about a match,
 mark as UNMATCHED.
 ```
 
-### Task 10a: Skill-triggering prompts (6 files)
+### 작업 10a: 스킬 트리거링 프롬프트 (6개 파일)
 
-**Files:**
-- Delete: `tests/skill-triggering/prompts/dispatching-parallel-agents.txt`
-- Delete: `tests/skill-triggering/prompts/executing-plans.txt`
-- Delete: `tests/skill-triggering/prompts/requesting-code-review.txt`
-- Delete: `tests/skill-triggering/prompts/systematic-debugging.txt`
-- Delete: `tests/skill-triggering/prompts/test-driven-development.txt`
-- Delete: `tests/skill-triggering/prompts/writing-plans.txt`
-- Keep: `tests/skill-triggering/run-test.sh`, `run-all.sh`
+**파일:**
+- 삭제: `tests/skill-triggering/prompts/dispatching-parallel-agents.txt`
+- 삭제: `tests/skill-triggering/prompts/executing-plans.txt`
+- 삭제: `tests/skill-triggering/prompts/requesting-code-review.txt`
+- 삭제: `tests/skill-triggering/prompts/systematic-debugging.txt`
+- 삭제: `tests/skill-triggering/prompts/test-driven-development.txt`
+- 삭제: `tests/skill-triggering/prompts/writing-plans.txt`
+- 유지: `tests/skill-triggering/run-test.sh`, `run-all.sh`
 
-These prompt files are inputs to the bash runner — they don't have their own assertions. The runner script does the assertion. Map each prompt to its drill scenario:
+이 프롬프트 파일들은 bash 러너의 입력 파일입니다 — 자체 단정문이 없습니다. 러너 스크립트가 단정문을 처리합니다. 각 프롬프트를 해당 drill 시나리오에 매핑합니다:
 
 | Prompt | Drill scenario |
 |--------|----------------|
@@ -709,21 +709,21 @@ These prompt files are inputs to the bash runner — they don't have their own a
 | test-driven-development.txt | triggering-test-driven-development.yaml |
 | writing-plans.txt | triggering-writing-plans.yaml |
 
-- [ ] **Step 1: For each prompt file, dispatch the subagent**
+- [ ] **1단계: 각 프롬프트 파일에 대해 하위 에이전트 디스패치**
 
-For prompt `tests/skill-triggering/prompts/<name>.txt` and scenario `evals/scenarios/triggering-<name>.yaml`, run the subagent prompt template with both contents pasted in. The subagent's job is to verify the prompt content matches what the drill scenario's `turns[].intent` describes.
+프롬프트 `tests/skill-triggering/prompts/<name>.txt` 및 시나리오 `evals/scenarios/triggering-<name>.yaml`에 대해 두 내용을 붙여넣고 하위 에이전트 프롬프트 템플릿을 실행합니다. 하위 에이전트의 역할은 프롬프트 내용이 drill 시나리오의 `turns[].intent`에 기술된 바와 일치하는지 확인하는 것입니다.
 
-If all 6 verify SAFE TO DELETE, proceed to step 2. If any verifies KEEP, that one stays and the rest may still proceed.
+6개 모두 SAFE TO DELETE로 검증되면 2단계로 진행합니다. 하나라도 KEEP으로 검증되면 해당 항목은 유지되고 나머지는 여전히 진행할 수 있습니다.
 
-- [ ] **Step 2: Verify the runner is still useful for unrelated cases**
+- [ ] **2단계: 러너가 관련 없는 케이스에 대해 여전히 유용한지 확인**
 
 ```bash
 ls /Users/jesse/Documents/GitHub/superpowers/superpowers/tests/skill-triggering/prompts/
 ```
 
-If the prompts/ directory is empty after the planned deletions, also delete `tests/skill-triggering/run-test.sh` and `run-all.sh` (they have nothing to run). Otherwise keep the runner.
+계획된 삭제 후 prompts/ 디렉터리가 비어 있으면 `tests/skill-triggering/run-test.sh` 및 `run-all.sh`도 삭제하세요 (실행할 대상이 없음). 그렇지 않은 경우 러너를 유지합니다.
 
-- [ ] **Step 3: Delete and commit**
+- [ ] **3단계: 삭제 및 커밋**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -733,7 +733,7 @@ git rm tests/skill-triggering/prompts/requesting-code-review.txt
 git rm tests/skill-triggering/prompts/systematic-debugging.txt
 git rm tests/skill-triggering/prompts/test-driven-development.txt
 git rm tests/skill-triggering/prompts/writing-plans.txt
-# If runner is now orphaned:
+# 러너가 고립된 경우:
 git rm tests/skill-triggering/run-test.sh tests/skill-triggering/run-all.sh
 rmdir tests/skill-triggering/prompts/ 2>/dev/null || true
 rmdir tests/skill-triggering/ 2>/dev/null || true
@@ -744,14 +744,14 @@ corresponding drill scenario's turns[].intent. Drill scenarios are
 canonical; bash runner has no remaining prompts to drive."
 ```
 
-### Task 10b: explicit-skill-requests (selective deletion)
+### 작업 10b: 명시적 스킬 요청 (선택적 삭제)
 
-**Files:**
-- Inspect: 6 files in `tests/explicit-skill-requests/`
-- Delete: only those verified to be 100% covered by drill scenarios
-- Keep: the rest
+**파일:**
+- 검사: `tests/explicit-skill-requests/` 내 6개 파일
+- 삭제: drill 시나리오에 의해 100% 커버된다고 검증된 파일만 삭제
+- 유지: 나머지 유지
 
-Per the spec's updated coverage map, most of these have no drill counterpart. The likely-deletable ones:
+스펙의 업데이트된 커버리지 맵에 따르면 이들 중 대부분은 대응하는 drill 시나리오가 없습니다. 삭제 가능한 후보:
 
 | Bash test | Candidate drill scenario | Likely outcome |
 |-----------|--------------------------|----------------|
@@ -762,7 +762,7 @@ Per the spec's updated coverage map, most of these have no drill counterpart. Th
 | `run-multiturn-test.sh`, `run-extended-multiturn-test.sh` | none | KEEP |
 | `prompts/please-use-brainstorming.txt`, `prompts/use-systematic-debugging.txt` | none | KEEP |
 
-- [ ] **Step 1: Read each .sh file and prompt to confirm**
+- [ ] **1단계: 각 .sh 파일 및 프롬프트를 읽어서 확인**
 
 ```bash
 for f in /Users/jesse/Documents/GitHub/superpowers/superpowers/tests/explicit-skill-requests/*.sh /Users/jesse/Documents/GitHub/superpowers/superpowers/tests/explicit-skill-requests/prompts/*.txt; do
@@ -771,15 +771,15 @@ for f in /Users/jesse/Documents/GitHub/superpowers/superpowers/tests/explicit-sk
 done
 ```
 
-- [ ] **Step 2: Dispatch subagent for `run-claude-describes-sdd.sh` only**
+- [ ] **2단계: `run-claude-describes-sdd.sh`에 대해서만 하위 에이전트 디스패치**
 
-Use the subagent prompt template above with:
-- Bash test content: `tests/explicit-skill-requests/run-claude-describes-sdd.sh`
-- Drill scenario: `evals/scenarios/mid-conversation-skill-invocation.yaml`
+다음과 같이 위 하위 에이전트 프롬프트 템플릿을 사용하세요:
+- Bash 테스트 내용: `tests/explicit-skill-requests/run-claude-describes-sdd.sh`
+- Drill 시나리오: `evals/scenarios/mid-conversation-skill-invocation.yaml`
 
-- [ ] **Step 3: Act on subagent verdict**
+- [ ] **3단계: 하위 에이전트 판정에 따라 작업**
 
-If SAFE TO DELETE:
+SAFE TO DELETE인 경우:
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -792,55 +792,55 @@ Other tests in tests/explicit-skill-requests/ are preserved
 and use-systematic-debugging prompts have no drill coverage)."
 ```
 
-If KEEP: skip the deletion, document the gap as a future drill-scenario authoring task.
+KEEP인 경우: 삭제를 취소하고, 이 격차를 향후 drill 시나리오 작성 작업으로 기록해 둡니다.
 
-### Task 10c: subagent-driven-dev real-project tests
+### 작업 10c: subagent-driven-dev 실제 프로젝트 테스트
 
-**Files:**
-- Inspect: `tests/subagent-driven-dev/go-fractals/`, `tests/subagent-driven-dev/svelte-todo/`
-- Candidate scenarios: `evals/scenarios/sdd-go-fractals.yaml`, `evals/scenarios/sdd-svelte-todo.yaml`
+**파일:**
+- 검사: `tests/subagent-driven-dev/go-fractals/`, `tests/subagent-driven-dev/svelte-todo/`
+- 후보 시나리오: `evals/scenarios/sdd-go-fractals.yaml`, `evals/scenarios/sdd-svelte-todo.yaml`
 
-These are entire fixture directories with `design.md`, `plan.md`, `scaffold.sh`. Each fixture directory was lifted into drill as a fixture under `evals/fixtures/`.
+이 파일들은 `design.md`, `plan.md`, `scaffold.sh`가 포함된 전체 픽스처 디렉터리입니다. 각 픽스처 디렉터리는 `evals/fixtures/` 아래의 픽스처로서 drill 내부로 이전되었습니다.
 
-- [ ] **Step 1: Confirm drill has fixture parity**
+- [ ] **1단계: drill에 픽스처 패리티(동일성)가 있는지 확인**
 
 ```bash
 ls /Users/jesse/Documents/GitHub/superpowers/superpowers/evals/fixtures/sdd-go-fractals/
 ls /Users/jesse/Documents/GitHub/superpowers/superpowers/evals/fixtures/sdd-svelte-todo/
 ```
 
-Expected: each contains `design.md`, `plan.md`, `scaffold.sh` (or equivalent) matching the source under `tests/subagent-driven-dev/`.
+예상: 각각 `tests/subagent-driven-dev/` 아래의 소스와 일치하는 `design.md`, `plan.md`, `scaffold.sh`(또는 동등한 항목)를 포함함.
 
-- [ ] **Step 2: Dispatch subagent for each pair**
+- [ ] **2단계: 각 쌍에 대해 하위 에이전트 디스패치**
 
-Subagent prompt: same template, with bash "test" being the directory's `scaffold.sh` and (if present) any `*.sh` runner. Drill scenario being the corresponding `sdd-*.yaml`.
+하위 에이전트 프롬프트: 동일한 템플릿 사용. bash "test"는 디렉터리의 `scaffold.sh` 및 (존재하는 경우) 임의의 `*.sh` 러너가 됩니다. Drill 시나리오는 대응하는 `sdd-*.yaml`이 됩니다.
 
-- [ ] **Step 3: Act on verdicts**
+- [ ] **3단계: 판정에 따른 작업**
 
-For each that returns SAFE TO DELETE:
+SAFE TO DELETE를 반환하는 각 항목에 대해:
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
-git rm -r tests/subagent-driven-dev/go-fractals/   # or svelte-todo
+git rm -r tests/subagent-driven-dev/go-fractals/   # 또는 svelte-todo
 git commit -m "tests: remove subagent-driven-dev/<fixture> (covered by drill sdd-<fixture>)
 
 Subagent verification: drill scenario asserts test suite passes
 post-execution. Fixture content lives at evals/fixtures/sdd-<fixture>/."
 ```
 
-If both directories are removed, also `git rm -r tests/subagent-driven-dev/` if it becomes empty.
+두 디렉터리가 모두 제거된 후 비어 있게 되면 `git rm -r tests/subagent-driven-dev/`도 실행합니다.
 
-### Task 10d: tests/claude-code/test-document-review-system.sh
+### 작업 10d: tests/claude-code/test-document-review-system.sh
 
-**Candidate scenario:** `evals/scenarios/spec-reviewer-catches-planted-flaws.yaml`
+**후보 시나리오:** `evals/scenarios/spec-reviewer-catches-planted-flaws.yaml`
 
-- [ ] **Step 1: Dispatch subagent**
+- [ ] **1단계: 하위 에이전트 디스패치**
 
-Subagent prompt template with the bash test content and the drill scenario YAML.
+bash 테스트 내용과 drill 시나리오 YAML이 포함된 하위 에이전트 프롬프트 템플릿 사용.
 
-- [ ] **Step 2: Act on verdict**
+- [ ] **2단계: 판정에 따른 작업**
 
-If SAFE TO DELETE:
+SAFE TO DELETE인 경우:
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -850,17 +850,17 @@ git commit -m "tests: remove test-document-review-system.sh (covered by drill sp
 Subagent verification: every assertion matches a drill check."
 ```
 
-### Task 10e: tests/claude-code/test-requesting-code-review.sh
+### 작업 10e: tests/claude-code/test-requesting-code-review.sh
 
-**Candidate scenario:** `evals/scenarios/code-review-catches-planted-bugs.yaml`
+**후보 시나리오:** `evals/scenarios/code-review-catches-planted-bugs.yaml`
 
-- [ ] **Step 1: Dispatch subagent**
+- [ ] **1단계: 하위 에이전트 디스패치**
 
-Subagent prompt template with both contents.
+두 내용이 모두 포함된 하위 에이전트 프롬프트 템플릿 사용.
 
-- [ ] **Step 2: Act on verdict**
+- [ ] **2단계: 판정에 따른 작업**
 
-If SAFE TO DELETE:
+SAFE TO DELETE인 경우:
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -870,17 +870,17 @@ git commit -m "tests: remove test-requesting-code-review.sh (covered by drill co
 Subagent verification: every assertion matches a drill check."
 ```
 
-### Task 10f: tests/claude-code/test-worktree-native-preference.sh
+### 작업 10f: tests/claude-code/test-worktree-native-preference.sh
 
-**Candidate scenario:** `evals/scenarios/worktree-creation-under-pressure.yaml`
+**후보 시나리오:** `evals/scenarios/worktree-creation-under-pressure.yaml`
 
-- [ ] **Step 1: Dispatch subagent**
+- [ ] **1단계: 하위 에이전트 디스패치**
 
-Subagent prompt template with both contents.
+두 내용이 모두 포함된 하위 에이전트 프롬프트 템플릿 사용.
 
-- [ ] **Step 2: Act on verdict**
+- [ ] **2단계: 판정에 따른 작업**
 
-If SAFE TO DELETE:
+SAFE TO DELETE인 경우:
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -890,23 +890,23 @@ git commit -m "tests: remove test-worktree-native-preference.sh (covered by dril
 Subagent verification: every assertion matches a drill check."
 ```
 
-### Task 10g: tests/claude-code/test-subagent-driven-development-integration.sh
+### 작업 10g: tests/claude-code/test-subagent-driven-development-integration.sh
 
-**Candidate scenario:** `evals/scenarios/sdd-rejects-extra-features.yaml` (partial)
+**후보 시나리오:** `evals/scenarios/sdd-rejects-extra-features.yaml` (부분적)
 
-The spec marks this as "almost certainly keep + extend drill scenario". Don't delete. Instead:
+스펙에서는 이를 "거의 확실하게 유지 + drill 시나리오 확장"으로 표시합니다. 삭제하지 마세요. 대신:
 
-- [ ] **Step 1: Dispatch subagent for the comparison anyway**
+- [ ] **1단계: 일단 비교를 위해 하위 에이전트 디스패치**
 
-This documents the gap explicitly.
+이로써 격차가 명시적으로 기록됩니다.
 
-- [ ] **Step 2: Decide based on subagent output**
+- [ ] **2단계: 하위 에이전트 출력에 따른 결정**
 
-Likely outcome: KEEP with documented gap. The bash test asserts: `commit_count >= 3`, `npm test` passes, runs `analyze-token-usage.py`. The drill scenario asserts forbidden-exports + reviewer-as-gate. These are mostly disjoint.
+가능성 높은 결과: 기록된 격차와 함께 KEEP. bash 테스트는 `commit_count >= 3`, `npm test` 통과, `analyze-token-usage.py` 실행을 단정합니다. Drill 시나리오는 금지된 export + 게이트로서의 리뷰어를 단정합니다. 이들은 거의 분리되어 있습니다.
 
-- [ ] **Step 3: Document the gap** (if KEEP)
+- [ ] **3단계: 격차 기록** (KEEP인 경우)
 
-Add a comment at the top of `tests/claude-code/test-subagent-driven-development-integration.sh`:
+`tests/claude-code/test-subagent-driven-development-integration.sh` 상단에 주석을 추가합니다:
 
 ```bash
 # Drill coverage: sdd-rejects-extra-features.yaml covers the YAGNI
@@ -926,21 +926,21 @@ This bash test adds: ≥3 commits, npm test, token analysis. Kept
 until drill scenario covers those or they're retired."
 ```
 
-### Task 10h: tests/claude-code/test-subagent-driven-development.sh
+### 작업 10h: tests/claude-code/test-subagent-driven-development.sh
 
-This is a meta/describe-skill test (per spec). No drill scenario covers describe-skill behavior.
+이 파일은 메타/스킬 설명 테스트입니다(스펙 참조). 스킬 설명 동작을 커버하는 drill 시나리오는 없습니다.
 
-- [ ] **Step 1: Confirm by reading the file**
+- [ ] **1단계: 파일을 읽어서 확인**
 
 ```bash
 cat /Users/jesse/Documents/GitHub/superpowers/superpowers/tests/claude-code/test-subagent-driven-development.sh
 ```
 
-Expected: tests asking the agent to describe SDD skills, not exercise them.
+예상: SDD 스킬 실행이 아니라 작성을 요청하는 테스트.
 
-- [ ] **Step 2: KEEP and annotate**
+- [ ] **2단계: 유지(KEEP) 및 주석 달기**
 
-Add at the top:
+상단에 다음을 추가합니다:
 
 ```bash
 # No drill coverage: this test asks the agent to *describe* SDD
@@ -959,13 +959,13 @@ test behavior, not description. No drill coverage; kept by design."
 
 ---
 
-## Task 11: Stale-reference scrub
+## 작업 11: 오래된 참조 정돈
 
-**Files:**
-- Possibly modify: `docs/testing.md`, `README.md`, `CLAUDE.md`, `lefthook.yml`, `.opencode/INSTALL.md`, `.codex-plugin/INSTALL.md`, `.github/*`, `scripts/*`
-- Annotate (do not rewrite): `RELEASE-NOTES.md`, `docs/superpowers/plans/*.md`
+**파일:**
+- 수정 가능성 높음: `docs/testing.md`, `README.md`, `CLAUDE.md`, `lefthook.yml`, `.opencode/INSTALL.md`, `.codex-plugin/INSTALL.md`, `.github/*`, `scripts/*`
+- 주석 처리 (재작성 안 함): `RELEASE-NOTES.md`, `docs/superpowers/plans/*.md`
 
-- [ ] **Step 1: Build list of deleted-file paths**
+- [ ] **1단계: 삭제된 파일 경로 목록 생성**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -973,7 +973,7 @@ git diff --name-only --diff-filter=D dev..HEAD | sort > /tmp/deleted-paths.txt
 cat /tmp/deleted-paths.txt
 ```
 
-- [ ] **Step 2: Search for active references**
+- [ ] **2단계: 활성 참조 검색**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -993,7 +993,7 @@ while read -r path; do
 done < /tmp/deleted-paths.txt
 ```
 
-This finds every reference to a deleted file. Categorize each hit:
+이 명령어는 삭제된 파일에 대한 모든 참조를 찾습니다. 각 결과를 분류하세요:
 
 | Hit location | Treatment |
 |--------------|-----------|
@@ -1007,15 +1007,15 @@ This finds every reference to a deleted file. Categorize each hit:
 | `RELEASE-NOTES.md` | Annotate, don't rewrite (dated artifact) |
 | `docs/superpowers/plans/*.md` | Annotate, don't rewrite (dated artifact) |
 
-- [ ] **Step 3: Update active references**
+- [ ] **3단계: 활성 참조 업데이트**
 
-For each "Update" hit, edit the file to either:
-- Remove the reference if the deleted test was the only reason it was named.
-- Replace with a pointer to the drill scenario (e.g., "see `evals/scenarios/triggering-test-driven-development.yaml`").
+각 "업데이트" 결과에 대해 파일 편집:
+- 삭제된 테스트가 언급된 유일한 이유인 경우 참조를 제거합니다.
+- drill 시나리오를 가리키는 포인터(예: "`evals/scenarios/triggering-test-driven-development.yaml` 참조")로 교체합니다.
 
-- [ ] **Step 4: Annotate dated artifacts**
+- [ ] **4단계: 작성 일자가 있는 아티팩트 주석 처리**
 
-For each `RELEASE-NOTES.md` or `docs/superpowers/plans/*.md` hit, add an inline annotation at the *first* hit per file:
+각 `RELEASE-NOTES.md` 또는 `docs/superpowers/plans/*.md` 결과에 대해 파일당 *첫 번째* 결과 위치에 인라인 주석을 추가합니다:
 
 ```markdown
 > Note: this section references `tests/skill-triggering/run-all.sh` and
@@ -1024,11 +1024,11 @@ For each `RELEASE-NOTES.md` or `docs/superpowers/plans/*.md` hit, add an inline 
 > preserved as dated artifacts of the work this doc describes.
 ```
 
-Don't modify the actual references — they're historical.
+실제 참조는 수정하지 마세요 — 이들은 역사적 기록입니다.
 
-- [ ] **Step 5: Dispatch subagent for second-pass scrub**
+- [ ] **5단계: 2차 스크럽 검사를 위한 하위 에이전트 디스패치**
 
-Dispatch a `general-purpose` subagent:
+`general-purpose` 하위 에이전트 디스패치:
 
 ```
 Working directory: /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -1044,13 +1044,13 @@ every hit with file:line and one-sentence judgment of whether it
 needs an update or is fine as-is. Do not modify files; just report.
 ```
 
-Address every reported hit before continuing.
+보고된 모든 항목을 해결하고 계속 진행하세요.
 
-- [ ] **Step 6: Commit the active updates**
+- [ ] **6단계: 활성 업데이트 사항 커밋**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
-git add -u  # picks up edits to existing files
+git add -u  # 기존 파일 수정 사항을 취합함
 git commit -m "docs: update references to lifted-and-deleted bash tests
 
 Active references in docs/testing.md, README.md, CI workflows, etc.
@@ -1061,19 +1061,19 @@ not rewritten."
 
 ---
 
-## Task 12: Top-level docs
+## 작업 12: 최상위 문서
 
-**Files:**
-- Modify: `docs/testing.md` — split into "Plugin tests" + "Skill behavior evals"
-- Modify: `CLAUDE.md` — add evals pointer
-- Modify: `README.md` — add Contributing-section pointer
-- Modify: `.gitignore` — add `evals/results/`, `evals/.venv/`, `evals/.env`
+**파일:**
+- 수정: `docs/testing.md` — "Plugin tests" + "Skill behavior evals"로 분할
+- 수정: `CLAUDE.md` — evals 포인터 추가
+- 수정: `README.md` — Contributing 섹션 포인터 추가
+- 수정: `.gitignore` — `evals/results/`, `evals/.venv/`, `evals/.env` 추가
 
-- [ ] **Step 1: Split docs/testing.md**
+- [ ] **1단계: docs/testing.md 분할**
 
-The file is currently Claude-Code-centric. Split into two top-level sections.
+현재 파일은 Claude Code 중심으로 작성되어 있습니다. 두 개의 최상위 섹션으로 분할합니다.
 
-Open `/Users/jesse/Documents/GitHub/superpowers/superpowers/docs/testing.md` and replace the file content with this structure (preserve the existing Plugin-test details where applicable):
+`/Users/jesse/Documents/GitHub/superpowers/superpowers/docs/testing.md`를 열고 파일 내용을 이 구조로 교체합니다 (적절한 경우 기존 플러그인 테스트 상세 정보를 유지):
 
 ```markdown
 # Testing Superpowers
@@ -1111,9 +1111,9 @@ uv run drill run triggering-test-driven-development -b claude
 Drill scenarios are slow (3-30+ minutes each) and run real LLM sessions. They are not part of CI today; the natural follow-up is a tiered model (fast subset on PR, full sweep nightly + on-demand).
 ```
 
-- [ ] **Step 2: Update CLAUDE.md**
+- [ ] **2단계: CLAUDE.md 업데이트**
 
-Read the current CLAUDE.md, find a spot near the project structure section, and add:
+현재 CLAUDE.md를 읽고 프로젝트 구조 섹션 근처의 적절한 위치를 찾아 다음을 추가합니다:
 
 ```markdown
 ## Eval harness
@@ -1121,17 +1121,17 @@ Read the current CLAUDE.md, find a spot near the project structure section, and 
 Skill-behavior evals live at `evals/` — see `evals/README.md`. Drill (the harness) drives real tmux sessions of Claude Code / Codex / Gemini CLI / Copilot CLI and judges skill compliance with an LLM verifier. Plugin-infrastructure tests still live at `tests/`.
 ```
 
-- [ ] **Step 3: Update README.md**
+- [ ] **3단계: README.md 업데이트**
 
-Find the Contributing section. Add a line:
+Contributing 섹션을 찾고 다음 줄을 추가합니다:
 
 ```markdown
 - Skill-behavior tests use the eval harness at `evals/`. See `evals/README.md` for setup. Plugin-infrastructure tests live at `tests/` and run via the relevant `run-*.sh` or `npm test`.
 ```
 
-- [ ] **Step 4: Update top-level .gitignore**
+- [ ] **4단계: 최상위 .gitignore 업데이트**
 
-Open `/Users/jesse/Documents/GitHub/superpowers/superpowers/.gitignore` and add at the bottom:
+`/Users/jesse/Documents/GitHub/superpowers/superpowers/.gitignore`를 열고 하단에 다음을 추가합니다:
 
 ```
 # Eval harness — drill ships its own gitignore at evals/.gitignore;
@@ -1141,7 +1141,7 @@ evals/.venv/
 evals/.env
 ```
 
-- [ ] **Step 5: Commit**
+- [ ] **5단계: 커밋**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -1158,11 +1158,11 @@ git commit -m "docs: introduce evals/ as the canonical skill-behavior eval harne
 
 ---
 
-## Task 13: Re-run smoke checks (regression gate)
+## 작업 13: 스모크 체크 재실행 (회귀 게이트)
 
-**Files:** none (validation only)
+**파일:** 없음 (검증 전용)
 
-- [ ] **Step 1: Run drill's pytest**
+- [ ] **1단계: drill의 pytest 실행**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/evals
@@ -1170,9 +1170,9 @@ unset SUPERPOWERS_ROOT
 uv run pytest 2>&1 | tail -5
 ```
 
-Expected: all tests pass.
+예상: 모든 테스트 통과.
 
-- [ ] **Step 2: Run cheap drill scenario**
+- [ ] **2단계: 비용이 적은 drill 시나리오 실행**
 
 ```bash
 set -a
@@ -1183,24 +1183,24 @@ unset SUPERPOWERS_ROOT
 uv run drill run triggering-test-driven-development -b claude 2>&1 | tail -3
 ```
 
-Expected: `claude: 1 passed, 0 failed, 0 errors`. If FAIL, the docs / scrub / deletion phases broke something — bisect over the recent commits.
+예상: `claude: 1 passed, 0 failed, 0 errors`. FAIL인 경우 문서/정돈/삭제 단계에서 문제가 발생한 것이므로 최근 커밋을 이분 탐색(bisect)하세요.
 
-- [ ] **Step 3: Run remaining plugin tests that survived**
+- [ ] **3단계: 살아남은 나머지 플러그인 테스트 실행**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers/tests/brainstorm-server
 node server.test.js 2>&1 | tail -3
 ```
 
-Expected: `Results: 25 passed, 0 failed`.
+예상: `Results: 25 passed, 0 failed`.
 
 ---
 
-## Task 14: Final adversarial review
+## 작업 14: 최종 적대적 리뷰
 
-**Files:** none (review only; subagent dispatches)
+**파일:** 없음 (리뷰 전용; 하위 에이전트 디스패치)
 
-- [ ] **Step 1: Build the diff for reviewers**
+- [ ] **1단계: 리뷰어를 위한 diff 생성**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
@@ -1208,11 +1208,11 @@ git log --oneline dev..HEAD
 git diff dev..HEAD --stat
 ```
 
-Capture both outputs to share with reviewers.
+리뷰어와 공유할 두 출력을 캡처합니다.
 
-- [ ] **Step 2: Dispatch two parallel subagents**
+- [ ] **2단계: 2개의 병렬 하위 에이전트 디스패치**
 
-Use the `Agent` tool with two parallel calls. Same prompt to both, with adversarial framing:
+`Agent` 도구를 사용하여 2개의 병렬 호출을 수행합니다. 적대적 프레이밍으로 둘 다에게 동일한 프롬프트 전달:
 
 ```
 Adversarial review competition: 5 points to whoever finds the most
@@ -1255,28 +1255,28 @@ minor/nitpick) and one-sentence explanation with file:line. Lead with
 most serious. Cap at ~600 words.
 ```
 
-- [ ] **Step 3: Address findings**
+- [ ] **3단계: 결과 해결**
 
-For each legitimate finding from either reviewer, fix in a separate commit. Re-run smoke checks (Task 13) after fixes.
+어느 리뷰어로부터든 타당한 결과가 나오는 경우 별도의 커밋으로 해결합니다. 해결 후 스모크 체크(작업 13)를 재실행합니다.
 
-- [ ] **Step 4: Declare a winner**
+- [ ] **4단계: 우승자 선언**
 
-Per the cross-platform PR pattern, count legitimate findings (false positives count negatively). Acknowledge the winner in your reply summary.
+크로스 플랫폼 PR 패턴에 따라 타당한 결과의 개수를 세어봅니다(잘못된 양성 결과는 감점 처리). 답변 요약에 우승자를 언급해 주세요.
 
 ---
 
-## Task 15: Push and open PR
+## 작업 15: 푸시 및 PR 생성
 
-**Files:** none
+**파일:** 없음
 
-- [ ] **Step 1: Push the branch**
+- [ ] **1단계: 브랜치 푸시**
 
 ```bash
 cd /Users/jesse/Documents/GitHub/superpowers/superpowers
 git push -u origin f/evals-lift
 ```
 
-- [ ] **Step 2: Open PR against dev with full description**
+- [ ] **2단계: 전체 설명과 함께 dev를 상대로 PR 생성**
 
 ```bash
 gh pr create \
@@ -1350,25 +1350,25 @@ EOF
 )"
 ```
 
-- [ ] **Step 3: Confirm PR opened**
+- [ ] **3단계: PR 생성을 확인**
 
 ```bash
 gh pr view --web
 ```
 
-Expected: browser opens to the new PR. Take a screenshot or note the URL for follow-up.
+예상: 브라우저가 새 PR 페이지로 열림. 추후 확인을 위해 스크린샷을 찍거나 URL을 기록하세요.
 
 ---
 
-## Verification checklist (run after Task 15)
+## 검증 체크리스트 (작업 15 이후 실행)
 
-- [ ] `git log --oneline dev..HEAD` shows the expected commits in order
-- [ ] The lift commit message records the source SHA
-- [ ] `find evals -name '.git' -type d` returns no output
-- [ ] `cd evals && unset SUPERPOWERS_ROOT && uv run pytest` passes
-- [ ] `cd evals && unset SUPERPOWERS_ROOT && uv run drill list` returns scenarios
-- [ ] `cd evals && unset SUPERPOWERS_ROOT && uv run drill run triggering-test-driven-development -b claude` passes
-- [ ] `tests/brainstorm-server/server.test.js` still passes (regression gate for non-LLM tests)
-- [ ] `git diff dev..HEAD docs/superpowers/plans/2026-04-06-worktree-rototill.md docs/superpowers/plans/2026-03-23-codex-app-compatibility.md RELEASE-NOTES.md` shows annotations only, no path rewrites
-- [ ] `cd ../drill && git log --oneline -1` shows obra/drill is unchanged from the source SHA recorded in the lift commit
-- [ ] PR body lists the post-merge archival action item
+- [ ] `git log --oneline dev..HEAD`가 예상되는 순서대로 커밋을 표시함
+- [ ] 이전 커밋 메시지에 소스 SHA 기록
+- [ ] `find evals -name '.git' -type d` 명령이 아무것도 반환하지 않음
+- [ ] `cd evals && unset SUPERPOWERS_ROOT && uv run pytest` 통과
+- [ ] `cd evals && unset SUPERPOWERS_ROOT && uv run drill list`가 시나리오를 반환함
+- [ ] `cd evals && unset SUPERPOWERS_ROOT && uv run drill run triggering-test-driven-development -b claude` 통과
+- [ ] `tests/brainstorm-server/server.test.js`가 계속 통과함 (LLM 외 테스트용 회귀 게이트)
+- [ ] `git diff dev..HEAD docs/superpowers/plans/2026-04-06-worktree-rototill.md docs/superpowers/plans/2026-03-23-codex-app-compatibility.md RELEASE-NOTES.md`가 경로 재작성 없이 주석만 표시함
+- [ ] `cd ../drill && git log --oneline -1`을 실행하면 obra/drill이 이전 커밋에 기록된 소스 SHA에서 변경되지 않았음을 보여줌
+- [ ] PR 본문이 병합 후 보관 조치 항목을 나열함

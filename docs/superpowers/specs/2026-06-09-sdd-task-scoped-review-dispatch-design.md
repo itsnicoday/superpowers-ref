@@ -1,160 +1,100 @@
-# SDD Task-Scoped Review Dispatch
+# SDD 작업 범위 한정 리뷰 디스패치 (SDD Task-Scoped Review Dispatch)
 
-Make subagent-driven-development's per-task reviews cheaper and faster without weakening them, by scoping per-task review prompts to the task and stopping redundant work — while final branch review stays broad.
+최종 브랜치 리뷰는 넓은 범위를 유지하면서, 디스패치 프롬프트의 범위를 작업 단위로 한정하고 중복 작업을 중단함으로써 SDD의 작업별 리뷰를 약화시키지 않고 더 저렴하고 빠르게 만듭니다.
 
-## Problem
+## 문제점
 
-Per-task code quality reviewers in SDD routinely do branch-review-scale work on single-task diffs. Evidence from two real local SDD sessions: `a1a6719a-6109-453a-9933-34ae396f5bae` (sen-core-v2) and `0cc1a12d-9984-4c35-8615-9d42dadb2c47` (serf), both under `~/.claude/projects/`:
+SDD의 작업별 코드 품질 리뷰어는 단일 작업 diff에 대해 정기적으로 브랜치 리뷰 수준의 작업을 수행합니다. 실제 로컬 SDD 세션 2건의 증거: `~/.claude/projects/` 아래의 `a1a6719a-6109-453a-9933-34ae396f5bae` (sen-core-v2) 및 `0cc1a12d-9984-4c35-8615-9d42dadb2c47` (serf):
 
-- In the sen-core-v2 session, 7/8 quality reviewers ran repo-wide greps; the most expensive ran 50+ Bash commands over ~200 seconds. Across both sessions, quality reviewers cost 4-8× what spec reviewers cost on the same tasks.
-- Spec reviewers, whose prompt contains "Only read files in this diff. Do not crawl the broader codebase," stayed tight: 6-16 tool calls, 14-65 seconds.
-- No reviewer ran heavy tests autonomously. Every package-wide or repeated test run observed was explicitly requested by a controller-written prompt ("check all uses," "run tests if useful, especially race-focused ones," "does anything else read `Meta()`?").
+- sen-core-v2 세션에서 품질 리뷰어 8명 중 7명이 저장소 전체 grep을 실행했습니다; 가장 비용이 많이 든 리뷰어는 ~200초 동안 50개 이상의 Bash 명령어를 실행했습니다. 두 세션 모두에서 품질 리뷰어는 동일한 작업에 대해 스펙 리뷰어보다 4-8배의 비용을 소모했습니다.
+- 프롬프트에 "Only read files in this diff. Do not crawl the broader codebase"가 포함된 스펙 리뷰어는 6-16회의 도구 호출, 14-65초로 엄격하게 범위를 유지했습니다.
+- 자율적으로 무거운 테스트를 실행한 리뷰어는 없었습니다. 관찰된 모든 패키지 범위 또는 반복된 테스트 실행은 컨트롤러가 작성한 프롬프트("check all uses," "run tests if useful, especially race-focused ones," "does anything else read `Meta()`?")에서 명시적으로 요청한 것이었습니다.
 
-Root causes, in order of impact:
+영향력 순에 따른 근본 원인:
 
-1. **The per-task quality prompt inherits a merge-readiness review.** `code-quality-reviewer-prompt.md` delegates to `requesting-code-review/code-reviewer.md`, which asks about architecture, scalability, security, production readiness, and ends with "Ready to merge?" That frame licenses branch-level breadth on a one-task diff. The spec prompt's diff-scope guard was never carried over.
-2. **The controller gets no guidance on writing reviewer prompts**, so it invents open-ended directives ("check all uses") that reviewers interpret literally.
-3. **Duplicated work across the pipeline.** The quality template's "Plan alignment" dimension re-checks what the spec reviewer just verified. Reviewers re-run test suites the implementer already ran (and reported, with TDD evidence) on identical code.
-4. **Per-task and final review share one template**, so there is no representation of "per-task narrow, final broad" anywhere.
+1. **작업별 품질 프롬프트가 병합 준비성(merge-readiness) 리뷰를 상속함.** `code-quality-reviewer-prompt.md`는 아키텍처, 확장성, 보안, 프로덕션 준비성을 묻고 "Ready to merge?"로 끝나는 `requesting-code-review/code-reviewer.md`에 위임합니다. 이 프레임은 단일 작업 diff에 대해 브랜치 수준의 광범위한 접근 권한을 부여합니다. 스펙 프롬프트의 diff 범주 가드는 결코 이관되지 않았습니다.
+2. **컨트롤러가 리뷰어 프롬프트 작성에 대한 지침을 받지 못함.** 이로 인해 컨트롤러는 리뷰어가 문자 그대로 해석하는 개방형 지시사항("check all uses")을 자의적으로 만들어냅니다.
+3. **파이프라인 전반에 걸친 작업 중복.** 품질 템플릿의 "Plan alignment" 차원은 스펙 리뷰어가 방금 검증한 내용을 다시 확인합니다. 리뷰어는 구현자가 동일한 코드에 대해 이미 실행하고 (TDD 증거와 함께 보고한) 테스트 수트를 재실행합니다.
+4. **작업별 및 최종 리뷰가 하나의 템플릿을 공유함.** 따라서 어디에도 "작업별은 좁게, 최종은 넓게"라는 개념이 표현되어 있지 않습니다.
 
-A field report (`~/2026-06-09-code-quality-reviewer-scope-budget-issue.md`) first flagged this. Its cited session and headline numbers could not be verified, but its qualitative diagnosis was confirmed against two real local sessions. One correction to it: cross-cutting audits (lock ordering, changed contracts) are sometimes the *correct* review method — the fix must gate breadth behind a stated concrete risk, not forbid it.
+현장 보고서(`~/2026-06-09-code-quality-reviewer-scope-budget-issue.md`)가 이를 처음 지적했습니다. 인용된 세션 및 대표 수치는 검증할 수 없었으나, 본질적인 진단 내용은 실제 로컬 세션 2건을 통해 확인되었습니다. 해당 보고서에 대한 한 가지 수정 사항: 교차 영역 감사(락 순서 지정, 변경된 계약)는 때로 *올바른* 리뷰 방법입니다 — 수정 조치는 광범위한 조사를 금지하는 것이 아니라 명시된 구체적 위험 뒤로 범위를 게이트 조치해야 합니다.
 
-## Goals
+## 목표
 
-- Per-task reviews scoped to the task: diff-first reading, justified broadening, no redundant test runs.
-- Final whole-branch review keeps its current breadth.
-- No reduction in what reviews catch.
+- 작업 단위로 범위가 한정된 작업별 리뷰: diff 우선 읽기, 타당한 범위 확장, 중복 테스트 실행 없음.
+- 최종 전체 브랜치 리뷰는 현재의 광범위한 범위를 유지.
+- 리뷰가 포착하는 대상의 감소 없음.
 
-## Non-goals / explicitly preserved
+## 비목표 / 명시적으로 보존됨 (Non-goals / explicitly preserved)
 
-- **Full re-reviews stay.** When a reviewer re-reviews after a fix, it still reviews the whole task at full reading breadth. (It does not re-run tests the implementer just ran on the amended code.) This deliberately rejects the field report's "re-review budget" remedy: the cost of its worst cited example (a re-review running `-race` and `-count=100` loops) is curbed by the test budget below, not by narrowing what re-reviewers read.
-- ~~**The two review stages stay separate.** Spec compliance and code quality remain independent subagents, serially gated. No merging.~~ **Superseded by the cost iterations below**: live eval economics showed per-dispatch overhead dominating cost, and the maintainer put everything on the table. The per-task stages are now one task reviewer with two verdicts; the independent broad final review remains.
-- **The coordinator keeps model judgment.** No forced model tier for reviews, in either direction.
-- **`requesting-code-review/` is untouched.** It remains the broad template for final branch review and ad-hoc review.
-- Verdict ordering (spec compliance reported before quality), the fix-and-re-review loops, and the requirement to fix Critical/Important findings are unchanged.
+- **전체 재리뷰(Re-reviews) 유지.** 수정 후 리뷰어가 재리뷰할 때, 여전히 전체 읽기 범위로 전체 작업을 리뷰합니다. (수정된 코드에 대해 구현자가 방금 실행한 테스트를 재실행하지는 않습니다.) 이는 현장 보고서의 "재리뷰 예산" 구제책을 의도적으로 거부합니다: 인용된 가장 악의적인 예시(재리뷰어가 `-race` 및 `-count=100` 루프를 실행함)의 비용은 재리뷰어가 읽는 범위를 좁히는 것이 아니라 아래의 테스트 예산을 통해 억제됩니다.
+- ~~**두 개의 리뷰 단계는 분리된 상태 유지.** 스펙 준수 및 코드 품질은 독립적인 서브에이전트로 유지되며, 순차적으로 게이트 조치됩니다. 병합 없음.~~ **아래의 비용 반복 개선 작업을 통해 대체됨**: 라이브 이발 경제성 분석 결과 디스패치당 오버헤드가 비용을 지배하는 것으로 나타났으며, 유지관리자가 모든 가능성을 열어두었습니다. 작업별 단계는 이제 두 개의 평결을 가진 하나의 작업 리뷰어로 통합되었습니다; 독립적이고 광범위한 최종 리뷰는 유지됩니다.
+- **코디네이터는 모델 판단력을 유지함.** 어느 방향으로든 리뷰에 강제된 모델 티어는 없습니다.
+- **`requesting-code-review/`는 건드리지 않음.** 최종 브랜치 리뷰 및 임시 리뷰를 위한 광범위한 템플릿으로 남아 있습니다.
+- 평결 순서(품질보다 스펙 준수가 먼저 보고됨), 수정 및 재리뷰 루프, Critical/Important 지적 사항 수정 요구사항은 변경되지 않습니다.
 
-## Cost iterations (post-launch eval economics)
+## 비용 반복 개선 작업 (출시 후 이발 경제성)
 
-Live before/after runs surfaced a cost regression once the quality-hardening
-prose (evidence rule, constraint carrying, pristine output) landed: go-fractals
-went from 42.8 min / 14.5M tokens (first task-scoped version) to 69.9 min /
-32.2M (hardened version) while reaching baseline-parity quality (blind-judged
-8.5 vs 8.5). Per-subagent turn profiling attributed cost to, in order: cheap
-models taking 2-3× the turns on multi-step work (678 of 1197 subagent turns
-were haiku), per-dispatch overhead (3 subagent spin-ups per task, each
-re-deriving the diff; controller coordination was half the dollars), and
-evidence-rule narration.
+품질 강화 산문(증거 규칙, 제약 조건 전달, 정돈된 출력)이 도입된 후 라이브 전/후 실행에서 비용 퇴보가 표출되었습니다: go-fractals가 베이스라인 동등 품질(블라인드 평가 8.5 대 8.5)에 도달하는 동안 42.8분 / 14.5M 토큰(첫 작업 범위 한정 버전)에서 69.9분 / 32.2M(강화 버전)으로 증가했습니다. 서브에이전트별 turn 프로파일링 결과 비용의 원인은 순서대로: 다중 단계 작업에서 저렴한 모델이 2-3배의 turn을 소모함 (1197개 서브에이전트 turn 중 678개가 haiku였음), 디스패치당 오버헤드 (작업당 3개의 서브에이전트 스핀업, 각각 diff를 다시 도출함; 컨트롤러 코디네이션이 비용의 절반을 차지함), 그리고 증거 규칙 서술이었습니다.
 
-- **Iteration 1:** turn-count-beats-token-price model guidance (mid-tier floor
-  for multi-step work), optional inline diffs, cite-don't-narrate evidence,
-  Important = cannot-trust-until-fixed, fixes dispatched only for
-  Critical/Important. Result: 68.2 min / 22.9M — tokens down 29%, wall-clock
-  flat; controllers pasted the diff in only 2 of 22 review dispatches when
-  phrasing was optional.
-- **Iteration 2:** per-task spec and quality reviews merged into one
-  `task-reviewer-prompt.md` (one reviewer, one reading of the diff, two
-  verdicts; one fix dispatch addresses both kinds of findings); implementers
-  run the focused test while iterating, full suite once before commit.
-  Result (go-fractals): 47.5 min / 15.7M / $13.55 — beat baseline on every
-  axis, blind-judged 9/10 vs baseline 7/10.
-- **Iteration 3:** Calibration names merge-blocking maintainability damage
-  (verbatim duplication, swallowed errors, assertion-free tests) as
-  Important and Minor findings must be pasted into the final review for
-  triage; reviewer skepticism extended to the implementer's design
-  rationales ("left it per YAGNI" is a claim, not a verdict); diff handed
-  to reviewers as a file (`git diff > /tmp/sdd-task-N.diff`, redirected so
-  it never enters the controller's context; one Read call for the
-  reviewer) after paste-into-prompt guidance went unadopted (0-6 of 11-17
-  dispatches) for locally-rational context-economics reasons.
-- **Final frozen config (e355795), all five scenarios pass:** go-fractals
-  44.4 min / 13.4M / $11.67 (-32% time, -37% tokens, -27% dollars vs
-  baseline); svelte-todo 62.8 / 19.7M / $15.76 (-21% / -28% / -25%);
-  rejects-extra-features $1.31 (vs $1.88); spec-reviewer-flaws flat; the
-  planted-defect scenario (v3: open-flag transparency bar for judgment
-  calls, must-fix bar for a test whose name promises verification it
-  never performs) passes with the defect caught and fixed.
+- **Iteration 1:** 토큰 가격보다 turn 수가 우선하는 모델 지침 (다중 단계 작업을 위한 중간 티어 하한선), 선택적 인라인 diff, 서술이 아닌 인용 기반 증거, Important = 수정할 때까지 신뢰할 수 없음, Critical/Important에 대해서만 디스패치 수정. 결과: 68.2분 / 22.9M — 토큰 29% 감소, 실행 시간 동일; 표현 방식이 선택사항일 때 컨트롤러는 22개 리뷰 디스패치 중 2개에서만 diff를 붙여넣었습니다.
+- **Iteration 2:** 작업별 스펙 및 품질 리뷰가 하나의 `task-reviewer-prompt.md`로 병합됨 (리뷰어 1명, diff 읽기 1회, 평결 2개; 하나의 수정 디스패치가 두 종류의 지적 사항을 모두 다룸); 구현자는 반복 시 집중 테스트를 실행하고 커밋 전 전체 수트를 1회 실행함. 결과 (go-fractals): 47.5분 / 15.7M / $13.55 — 모든 축에서 베이스라인을 능가함, 블라인드 평가 9/10 대 베이스라인 7/10.
+- **Iteration 3:** 보정 작업을 통해 병합을 차단하는 유지보수성 손상(글자 그대로의 중복, 삼켜진 에러, 어설션 없는 테스트)을 Important로 지정하고 Minor 지적 사항은 선별을 위해 최종 리뷰에 붙여넣어야 함; 구현자의 설계 근거에 대한 리뷰어의 회의론 확장 ("YAGNI에 따라 남겨둠"은 주장일 뿐 평결이 아님); 붙여넣기 지침이 로컬에 합리적인 컨텍스트 경제성 이유로 채택되지 않은 후 (11-17개 디스패치 중 0-6개) diff가 리뷰어에게 파일(`git diff > /tmp/sdd-task-N.diff`, 컨트롤러의 컨텍스트에 들어가지 않도록 리다이렉트됨; 리뷰어의 1회 Read 호출)로 전달됨.
+- **최종 고정 설정 (e355795), 5개 시나리오 모두 통과:** go-fractals 44.4분 / 13.4M / $11.67 (베이스라인 대비 -32% 시간, -37% 토큰, -27% 달러); svelte-todo 62.8 / 19.7M / $15.76 (-21% / -28% / -25%); rejects-extra-features $1.31 (대 $1.88); spec-reviewer-flaws 동일; 심어진 결함 시나리오(v3: 판단 호출을 위한 오픈 플래그 투명성 기준, 수행하지 않는 검증을 약속하는 이름의 테스트에 대한 필수 수정 기준)가 결함을 포착하여 수정한 상태로 통과함.
 
-### Iterations 4-5 (2026-06-10): variance honesty, structural fixes, positive recipes
+### Iterations 4-5 (2026-06-10): 변동성 솔직성, 구조적 수정, 긍정적 레시피
 
-A same-config re-run exposed run-to-run variance (44.4→57.1 min on
-identical prompts; reviewer escape-hatch appetite swung 1.0→6.3 tool
-calls/review), so all subsequent claims use ranges. Five parallel
-experiment variants on go-fractals plus transcript mining of real local
-sessions (full log with negative results:
-`evals/docs/experiments/2026-06-10-sdd-cost-experiments.md`) produced the
-final config:
+동일 설정 재실행을 통해 실행 간 변동성(동일 프롬프트에서 44.4→57.1분; 리뷰어 이스케이프 해치 욕구가 리뷰당 1.0→6.3 도구 호출로 변동함)이 노출되었으므로, 모든 후속 주장에는 범위를 사용합니다. go-fractals에 대한 5개의 병렬 실험 변형과 실제 로컬 세션의 트랜스크립트 마이닝(부정적 결과가 포함된 전체 로그: `evals/docs/experiments/2026-06-10-sdd-cost-experiments.md`)을 통해 최종 설정이 도출되었습니다:
 
-- **Adopted:** final-review package (final reviewer 33→6 turns at
-  controller-model prices); REQUIRED `model:` line in both templates
-  (prose guidance decayed mid-session once, inheriting opus for 17
-  dispatches, +$5); task-brief + report files (`scripts/task-brief`;
-  fidelity anchor, modest context savings); progress ledger in
-  `<git-dir>/sdd/progress.md` (real sessions re-dispatched entire
-  completed task sequences after compaction — 269 dispatches for ~22
-  tasks); omnibus final fixer (a real session's per-finding fix wave cost
-  more than all its tasks); scoped fix tests; unique SHA-range collateral
-  names (worktree/submodule-safe); dispatch-composition recipe and
-  reviewer named-risk budget (micro-tested: positive recipe 3.0
-  transcribed values vs prohibition 4.4 vs control 3.6 — prohibitions can
-  backfire; see `2026-06-10-positive-instruction-redesign-design.md`).
-- **Tested and declined:** controller turn batching and parallel-call
-  pipelining (controller emits exactly one tool call per message — 0
-  multi-tool messages in every run; 46% of its turns are
-  thinking/narration, a prompt-immune floor); background-dispatch
-  pipelining (mechanism adopted 7/28 but benefit below the ±6 min noise
-  floor on these scenarios).
-- **Final validated config (b81f35b family), all gates pass:** go-fractals
-  54.1-54.7 min / 14.4-16.6M / $12.81-14.31 (baseline 64.9 / 21.2M /
-  $16.07); svelte-todo 55.0 min / 19.3M / $14.99 (baseline 79.7 / 27.3M /
-  $20.98); planted-defect pass / $2.77. Across all 8 same-design fractals
-  runs: 44.4-57.1 min / 13.4-20.0M / $11.67-14.84 — the worst draw beats
-  baseline on every axis; typical mid-band savings ~20-25%.
+- **채택됨:** 최종 리뷰 패키지 (컨트롤러 모델 가격에서 최종 리뷰어 33→6 turns); 두 템플릿의 필수 `model:` 줄 (산문 지침이 세션 중간에 한 번 부식되어 17개 디스패치 동안 opus를 상속받음, +$5); 작업 브리프 + 리포트 파일 (`scripts/task-brief`; 정확도 앵커, 수수한 컨텍스트 절약); `<git-dir>/sdd/progress.md`의 진행 상태 원장 (실제 세션이 압축 후 완료된 전체 작업 시퀀스를 재디스패치함 — ~22개 작업에 대해 269개 디스패치); 옴니버스 최종 수정자 (실제 세션의 지적 사항별 수정 웨이브 비용이 모든 작업의 비용보다 많이 듦); 범위를 한정한 수정 테스트; 고유한 SHA 범위 담보 이름 (워크트리/서브모듈에 안전함); 디스패치 구상 레시피 및 리뷰어 지정 위험 예산 (마이크로 테스트 완료: 긍정적 레시피 3.0 인용된 값 대 금지형 4.4 대 대조군 3.6 — 금지형은 역효과를 낼 수 있음; `2026-06-10-positive-instruction-redesign-design.md` 참조).
+- **테스트되었으나 거부됨:** 컨트롤러 turn 배치 처리 및 병렬 호출 파이프라인 구축 (컨트롤러는 메시지당 정확히 하나의 도구 호출을 출력함 — 모든 실행에서 다중 도구 메시지 0개; turn의 46%가 사고/서술임, 프롬프트로 줄일 수 없는 하한선); 백그라운드 디스패치 파이프라인 구축 (메커니즘은 7/28 채택되었으나 이 시나리오들에서 혜택이 ±6분 노이즈 하한선 이하였음).
+- **최종 검증된 설정 (b81f35b 계열), 모든 게이트 통과:** go-fractals 54.1-54.7분 / 14.4-16.6M / $12.81-14.31 (베이스라인 64.9 / 21.2M / $16.07); svelte-todo 55.0분 / 19.3M / $14.99 (베이스라인 79.7 / 27.3M / $20.98); 심어진 결함 통과 / $2.77. 동일 설계 fractals 8회 실행 전체: 44.4-57.1분 / 13.4-20.0M / $11.67-14.84 — 가장 나쁜 결과도 모든 축에서 베이스라인을 능가함; 일반적인 중간 밴드 절감액 ~20-25%.
 
-## Design
+## 설계
 
-### Shared principle: don't re-run tests on code that hasn't changed
+### 공유 원칙: 변경되지 않은 코드에 대해 테스트를 재실행하지 마십시오
 
-The implementer's report includes test results and TDD RED/GREEN evidence for exactly the code under review. Reviewers verify by reading. A reviewer runs a test only when reading raises a specific doubt that no existing run answers — and then a focused test, not a suite. On harnesses where reviewer subagents are read-only (e.g., Antigravity maps reviewer templates to the `research` type, which has no command access), the reviewer instead names the test it would run in its report.
+구현자의 리포트에는 리뷰 대상 코드에 대한 테스트 결과와 TDD RED/GREEN 증거가 정확히 포함되어 있습니다. 리뷰어는 읽기를 통해 검증합니다. 리뷰어는 읽기를 통해 기존 실행 결과가 답변하지 못하는 특정 의문이 제기될 때만 테스트를 실행합니다 — 이 경우에도 수트 전체가 아닌 집중 테스트를 실행합니다. 리뷰어 서브에이전트가 읽기 전용인 하네스(예: Antigravity는 리뷰어 템플릿을 명령어 접근 권한이 없는 `research` 유형에 매핑함)에서 리뷰어는 대신 리포트에 실행할 테스트의 이름을 지정합니다.
 
-After a fix, the implementer re-runs the tests covering the amended code; the re-reviewer does not repeat that run. Today nothing enforces that premise: `implementer-prompt.md` describes the initial implement-test-commit flow only, with no fix-iteration instruction. This spec therefore also adds to `implementer-prompt.md`: after fixing a review finding, re-run the tests that cover the amended code and include the results in the fix report.
+수정 후 구현자는 수정된 코드를 포함하는 테스트를 재실행합니다; 재리뷰어는 해당 실행을 반복하지 않습니다. 현재 이를 강제하는 전제가 없습니다: `implementer-prompt.md`는 초기 구현-테스트-커밋 흐름만 설명하며, 수정 반복 지침은 없습니다. 따라서 이 스펙은 `implementer-prompt.md`에도 다음을 추가합니다: 리뷰 지적 사항을 수정한 후 수정된 코드를 처리하는 테스트를 재실행하고 결과를 수정 리포트에 포함시킵니다.
 
-This principle appears in both reviewer prompts, the implementer prompt, and the controller guidance.
+이 원칙은 두 리뷰어 프롬프트, 구현자 프롬프트, 컨트롤러 지침에 모두 등장합니다.
 
-### 1. New file: `skills/subagent-driven-development/code-quality-reviewer-prompt.md` becomes self-contained
+### 1. 새 파일: `skills/subagent-driven-development/code-quality-reviewer-prompt.md`가 독립적으로 변경됨
 
-Stop delegating to `requesting-code-review/code-reviewer.md`. The per-task quality reviewer gets its own scoped prompt template:
+`requesting-code-review/code-reviewer.md`로의 위임을 중단합니다. 작업별 품질 리뷰어는 자체 범위 프롬프트 템플릿을 갖습니다:
 
-- **Framing:** "You are reviewing one task's implementation for code quality." A task-scoped gate, not a merge review.
-- **Spec compliance is settled:** spec review already passed; do not re-litigate requirements or plan alignment.
-- **Review dimensions kept:** code quality (clarity, duplication, error handling), test quality (real behavior, not mocks), maintainability, and the existing SDD-specific checks (single responsibility, independent testability, file structure from plan, file growth contributed by this change). Dropped: plan alignment, security/scalability/production-readiness dimensions, merge verdict.
-- **Scope budget:** start from `git diff BASE..HEAD`; read changed files first; inspect adjacent code only to evaluate a concrete risk you can name. Cross-cutting changes — lock ordering, changed function/API contracts, shared mutable state — are legitimate named risks that justify checking call sites. Do not crawl the codebase by default.
-- **Test budget:** the shared principle above, plus: no package-wide suites, race detectors, or repeated/high-count runs unless you have first named a specific suspected flake or race. Otherwise, recommend heavy validation in the report instead of running it. Warnings or noise in the implementer's reported test output are findings — output should be pristine (the implementer's self-review checks this too).
-- **Evidence rule:** reviewers answer each What-to-Check item with file:line evidence, not bare yes/no. (Added after live eval runs showed reviewers passing defects the prompt had pointed them at — an accessible-name check and a temp-dir-cleanup check both got unsupported "yes" answers while the defect sat in the reviewed diff.)
-- **Read-only rule** kept in trimmed form: no mutating the working tree, index, HEAD, or branch state. The `git worktree add` how-to sentence from the current templates is NOT carried into this file — a diff-scoped review never needs a checkout of another revision (same rationale as the spec-prompt cleanup below).
-- **Verdict:** Strengths / Issues (Critical/Important/Minor) / "Task quality: Approved | Needs fixes."
+- **프레이밍:** "You are reviewing one task's implementation for code quality." 병합 리뷰가 아닌 작업 범위 한정 게이트.
+- **스펙 준수 해결됨:** 스펙 리뷰가 이미 통과했습니다; 요구사항이나 플랜 일치 여부를 다시 논의하지 마십시오.
+- **리뷰 차원 유지:** 코드 품질 (명확성, 중복, 에러 처리), 테스트 품질 (목이 아닌 실제 동작), 유지보수성, 기존 SDD 전용 검사 (단일 책임, 독립적 테스트 가능성, 플랜에 따른 파일 구조, 이 변경으로 인한 파일 성장). 제거됨: 플랜 일치, 보안/확장성/프로덕션 준비성 차원, 병합 평결.
+- **범위 예산:** `git diff BASE..HEAD`에서 시작; 변경된 파일을 먼저 읽기; 구체적으로 명시할 수 있는 위험을 평가하기 위해서만 인접 코드 점검. 교차 영역 변경사항 — 락 순서 지정, 변경된 함수/API 계약, 공유 가변 상태 — 은 호출 지점 점검을 정당화하는 타당하고 구체적인 위험입니다. 기본적으로 코드베이스를 기어 다니지 마십시오.
+- **테스트 예산:** 위의 공유 원칙과 추가 사항: 의심되는 특정 플레이크나 레이스 상태를 먼저 지정하지 않았다면 패키지 범주의 수트, 레이스 감지기, 반복/고횟수 실행을 하지 마십시오. 그렇지 않은 경우 직접 실행하는 대신 리포트에 무거운 검증을 권장하십시오. 구현자의 보고된 테스트 출력의 경고나 노이즈는 지적 사항입니다 — 출력은 정돈되어야 합니다 (구현자의 셀프 리뷰에서도 이를 검사함).
+- **증거 규칙:** 리뷰어는 단순 예/아니오가 아니라 file:line 증거를 바탕으로 각 What-to-Check 항목에 답변합니다. (리뷰 대상 diff에 결함이 있음에도 프롬프트가 지적한 결함을 리뷰어가 통과시키는 현상이 라이브 이발 실행에서 나타난 후 추가됨 — 접근 가능한 이름 검사와 임시 디렉토리 정리 검사 모두 미증빙 "예" 답변을 받음.)
+- **읽기 전용 규칙**이 정돈된 형태로 유지됨: 작업 트리, 인덱스, HEAD, 브랜치 상태를 변경하지 않음. 현재 템플릿의 `git worktree add` 안내 문장은 이 파일에 이관되지 **않습니다** — diff 범위 리뷰에는 다른 리비전의 체크아웃이 필요하지 않습니다 (아래 스펙 프롬프트 정리와 동일한 근거).
+- **평결:** Strengths / Issues (Critical/Important/Minor) / "Task quality: Approved | Needs fixes."
 
-### 2. `skills/subagent-driven-development/spec-reviewer-prompt.md` cleanups
+### 2. `skills/subagent-driven-development/spec-reviewer-prompt.md` 정리
 
-- Remove the `git worktree add` how-to sentence. The read-only rule stays; a diff-scoped spec review never needs a checkout of another revision.
-- Resolve the tension between the diff-only guard and "verify everything independently": spec compliance is judged by reading the diff against the requirements. The implementer's TDD evidence covers "it runs" — apply the shared test principle.
-- New third verdict channel: requirements that cannot be verified from the diff (live in unchanged code, span tasks) are reported as explicit "⚠️ Cannot verify from diff — controller should check X" items, instead of either crawling or silently passing. The flowchart's binary pass/fail diamond cannot route this, so the controller guidance (§3) defines the handling: ⚠️ items do not block dispatching the quality reviewer, but the controller must resolve each one itself (it holds the plan and cross-task context) before marking the task complete; an item the controller confirms is a real gap is treated as a failed spec review and goes back to the implementer.
-- Replace the fabricated premise "The implementer finished suspiciously quickly" with grounded skepticism: treat the implementer's report as unverified claims about the code. Same distrust, no invented fact.
+- `git worktree add` 안내 문장 제거. 읽기 전용 규칙은 유지됩니다; diff 범위 스펙 리뷰에는 다른 리비전의 체크아웃이 필요하지 않습니다.
+- diff 전용 가드와 "모든 것을 독립적으로 검증하라" 사이의 긴장 해결: 스펙 준수는 요구사항에 대비해 diff를 읽음으로써 판단됩니다. 구현자의 TDD 증거가 "실행됨"을 보장합니다 — 공유 테스트 원칙을 적용하십시오.
+- 새로운 세 번째 평결 채널: diff에서 검증할 수 없는 요구사항(변경되지 않은 코드에 존재, 여러 작업에 걸쳐 있음)은 크롤링하거나 암묵적으로 통과시키는 대신 명시적인 "⚠️ Cannot verify from diff — controller should check X" 항목으로 보고됩니다. 순서도의 이진 합격/불합격 다이아몬드는 이를 라우팅할 수 없으므로, 컨트롤러 지침(§3)에서 처리를 정의합니다: ⚠️ 항목은 품질 리뷰어 디스패치를 블로킹하지 않지만, 컨트롤러는 작업을 완료로 표시하기 전에 직접 각 항목을 해결해야 합니다 (플랜과 교차 작업 컨텍스트를 가짐); 컨트롤러가 실제 갭으로 확인한 항목은 실패한 스펙 리뷰로 취급되어 구현자에게 돌려보내집니다.
+- 꾸며낸 전제인 "구현자가 수상할 정도로 빠르게 완료했음"을 근거 있는 회의론으로 교체: 구현자의 리포트를 코드에 대한 검증되지 않은 주장으로 취급합니다. 동일한 불신, 꾸며낸 사실 없음.
 
-### 3. `skills/subagent-driven-development/SKILL.md` controller changes
+### 3. `skills/subagent-driven-development/SKILL.md` 컨트롤러 변경사항
 
-- **Model Selection:** replace "Architecture, design, and review tasks: use the most capable available model" with judgment guidance — pick reviewer models the way implementer models are picked, scaled to the diff's size, complexity, and risk. The "Task complexity signals" list is rescoped to make clear its bullets describe implementation tasks; reviewer model choice follows the same judgment, so a narrow diff review does not automatically map to "broad codebase understanding → most capable model."
-- **Reviewer prompt construction** (new guidance near Red Flags): when dispatching reviewers, do not write open-ended directives ("check all uses," "run race tests if useful") without a concrete task-specific reason; do not ask reviewers to re-run tests the implementer already ran on the same code; do not pre-judge findings for the reviewer (never instruct a reviewer to ignore or not flag a specific issue — adjudicate suspected false positives in the review loop instead); per-task reviews are task-scoped gates — the broad review happens once, at the final whole-branch review. (The pre-judging rule was added after a live eval run caught the controller fabricating a "the plan forbids a shared helper" claim and instructing the quality reviewer not to flag a planted DRY violation.) Controllers must also include the spec/design's global constraints that bind the task — version floors, naming and copy rules, platform requirements — in the requirements they paste: a live run shipped a `go 1.26.1` module floor against a "Go 1.21+" design because no reviewer ever saw the constraint. And controllers must specify a model explicitly on every dispatch — an omitted model inherits the session's (usually most expensive) model, which silently defeats model selection.
-- **Handling spec-reviewer ⚠️ items** (new guidance, alongside Handling Implementer Status): the controller resolves each "cannot verify from diff" item itself before marking the task complete; confirmed gaps go back to the implementer as failed spec review.
-- **Final review stays broad, explicitly:** the final whole-branch reviewer dispatch node gains an explicit pointer to `../requesting-code-review/code-reviewer.md`. (Today that template is reachable only through the per-task quality prompt's delegation; once that delegation is removed, an unreferenced final-review template would be orphaned.) The Integration section's note that `superpowers:requesting-code-review` provides "the code review template for reviewer subagents" is corrected to apply to the final review only.
-- **Example workflow:** the quality-reviewer lines in the example are updated to the new verdict vocabulary ("Task quality: Approved"); the final reviewer's "ready to merge" line stays.
-- Flowchart topology is unchanged; the ⚠️ channel is handled by controller guidance, not a new graph branch.
+- **모델 선택:** "Architecture, design, and review tasks: use the most capable available model"을 판단 지침으로 교체 — 구현자 모델을 선택하는 방식과 동일하게, diff의 크기, 복잡성, 위험도에 맞춰 리뷰어 모델을 선택합니다. "Task complexity signals" 목록은 해당 불릿들이 구현 작업을 설명함을 명확히 하도록 범위를 다시 지정합니다; 리뷰어 모델 선택도 동일한 판단을 따르므로, 좁은 diff 리뷰가 자동으로 "광범위한 코드베이스 이해 → 가장 유능한 모델"로 매핑되지 않습니다.
+- **리뷰어 프롬프트 구성** (Red Flags 근처의 새 지침): 리뷰어를 디스패치할 때, 구체적인 작업 전용 이유 없이 개방형 지시사항("check all uses," "run race tests if useful")을 작성하지 마십시오; 동일한 코드에 대해 구현자가 이미 실행한 테스트를 리뷰어에게 재실행하도록 요청하지 마십시오; 리뷰어를 위해 지적 사항을 지레 판단하지 마십시오 (특정 이슈를 무시하거나 플래그를 지정하지 말라고 리뷰어에게 지시하지 마십시오 — 리뷰 루프에서 오탐 의심 항목을 판정하십시오); 작업별 리뷰는 작업 범위 한정 게이트입니다 — 광범위한 리뷰는 최종 전체 브랜치 리뷰에서 한 번 일어납니다. (지레 판단 금지 규칙은 플랜이 공유 헬퍼를 금지한다는 주장을 컨트롤러가 꾸며내고 심어진 DRY 위반을 플래그 지정하지 말라고 품질 리뷰어에게 지시한 라이브 이발 실행 후 추가되었습니다.) 또한 컨트롤러는 작업과 관련된 스펙/설계의 전역 제약 조건(버전 하한선, 네이밍 및 카피 규칙, 플랫폼 요구사항)을 붙여넣는 요구사항에 포함시켜야 합니다: "Go 1.21+" 설계에 대해 `go 1.26.1` 모듈 하한선 위반이 발생한 라이브 실행이 있었는데, 이는 어떤 리뷰어도 해당 제약 조건을 보지 못했기 때문입니다. 그리고 컨트롤러는 모든 디스패치에서 모델을 명시적으로 지정해야 합니다 — 생략된 모델은 세션의 (보통 가장 비싼) 모델을 상속받아 모델 선택을 암묵적으로 무력화합니다.
+- **스펙 리뷰어 ⚠️ 항목 처리** (새 지침, Handling Implementer Status 항목 옆): 컨트롤러는 작업을 완료로 표시하기 전에 각 "cannot verify from diff" 항목을 스스로 해결합니다; 확인된 갭은 실패한 스펙 리뷰로서 구현자에게 돌려보내집니다.
+- **최종 리뷰는 명시적으로 광범위하게 유지됨:** 최종 전체 브랜치 리뷰어 디스패치 노드는 `../requesting-code-review/code-reviewer.md`에 대한 명시적 포인터를 얻습니다. (현재 해당 템플릿은 작업별 품질 프롬프트의 위임을 통해서만 도달할 수 있습니다; 해당 위임이 제거되면 참조되지 않는 최종 리뷰 템플릿은 고아가 됩니다.) `superpowers:requesting-code-review`가 "리뷰어 서브에이전트를 위한 코드 리뷰 템플릿"을 제공한다는 Integration 섹션의 노트는 최종 리뷰에만 적용되도록 수정됩니다.
+- **예시 워크플로우:** 예시의 품질 리뷰어 줄이 새로운 평결 어휘("Task quality: Approved")로 업데이트됩니다; 최종 리뷰어의 "ready to merge" 줄은 유지됩니다.
+- 순서도 토폴로지는 변경되지 않습니다; ⚠️ 채널은 새로운 그래프 브랜치가 아닌 컨트롤러 지침에 의해 처리됩니다.
 
-## What this does not fix (known, deferred)
+## 이것이 수정하지 않는 사항 (알려짐, 연기됨)
 
-The spec reviewer judges against task text the controller pasted; it cannot catch requirements dropped during the controller's extraction from the plan. That is an architectural property of "controller provides full text," not a prompt problem, and is out of scope here.
+스펙 리뷰어는 컨트롤러가 붙여넣은 작업 텍스트를 기준으로 판단합니다; 컨트롤러가 플랜에서 추출하는 동안 누락한 요구사항은 포착할 수 없습니다. 이는 프롬프트 문제가 아닌 "컨트롤러가 전체 텍스트를 제공함"이라는 아키텍처적 특성이며, 본 범위 밖입니다.
 
-## Verification
+## 검증 (Verification)
 
-- Plugin infrastructure tests (`tests/`) still pass.
-- Run the SDD skill-behavior evals (`git submodule update --init evals`, then per `evals/README.md`) before and after the change. Specifically: `sdd-go-fractals`, `sdd-svelte-todo`, `sdd-rejects-extra-features` (end-to-end SDD including the spec reviewer's YAGNI gate), and `spec-reviewer-catches-planted-flaws`.
-- Known eval gaps this change exposes: no existing scenario plants a code-quality defect inside a single SDD task and asserts the per-task quality reviewer catches it, and no scenario measures per-reviewer exploration cost (tool-call/grep counts). Add one scenario covering the first gap (planted single-task quality defect → per-task reviewer must flag it before final review). For exploration cost, compare reviewer subagent tool-call counts manually across the before/after eval transcripts.
+- 플러그인 인프라 테스트(`tests/`)가 여전히 통과함.
+- 변경 전후에 SDD 스킬 동작 이발(`git submodule update --init evals` 실행 후 `evals/README.md` 참고)을 실행함. 구체적으로: `sdd-go-fractals`, `sdd-svelte-todo`, `sdd-rejects-extra-features` (스펙 리뷰어의 YAGNI 게이트를 포함한 엔드투엔드 SDD), 및 `spec-reviewer-catches-planted-flaws`.
+- 이 변경으로 드러난 알려진 이발 갭: 단일 SDD 작업 내에 코드 품질 결함을 심고 작업별 품질 리뷰어가 이를 포착하는지 확인하는 기존 시나리오가 없으며, 리뷰어별 탐색 비용(도구 호출/grep 횟수)을 측정하는 시나리오가 없음. 첫 번째 갭을 다루는 시나리오 1개 추가 (심어진 단일 작업 품질 결함 → 작업별 리뷰어가 최종 리뷰 전에 플래그를 지정해야 함). 탐색 비용의 경우, 변경 전후의 이발 트랜스크립트에 걸쳐 리뷰어 서브에이전트 도구 호출 횟수를 수동으로 비교함.

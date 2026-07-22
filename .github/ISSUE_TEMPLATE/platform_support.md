@@ -1,34 +1,30 @@
 ---
 name: IDE / Platform Support Request
-about: Request support for a new IDE, editor, or AI coding tool
+about: 새로운 IDE, 에디터 또는 AI 코딩 도구 지원 요청
 labels: platform-support
 ---
 
 <!--
-BEFORE FILING: Search existing issues — your IDE may already be
-requested or discussed.
+제출 전: 기존 이슈를 검색해 보세요 — 요청하신 IDE가 이미 등록되어 있거나 논의 중일 수 있습니다.
 -->
 
-- [ ] I searched existing issues for this IDE/platform
+- [ ] 이 IDE/플랫폼에 대한 기존 이슈를 검색했습니다
 
 ## Which IDE or platform?
-<!-- Name and link -->
+<!-- 이름 및 링크 -->
 
 ## Does this tool have a plugin or extension system?
-<!-- If yes, link to the docs. If no, explain how third-party
-     integrations typically work with this tool. -->
+<!-- 있다면 문서 링크를 남겨주세요. 없다면 이 도구에서 서드파티 통합이 일반적으로 어떻게 동작하는지 설명해주세요. -->
 
 ## Have you tried manual installation?
-<!-- Many tools work with Superpowers through manual setup even without
-     official support. Did you try? What happened? -->
+<!-- 많은 도구가 공식 지원 없이도 수동 설정을 통해 Superpowers와 함께 동작합니다. 시도해 보셨나요? 어떤 결과가 나타났나요? -->
 
 ## Environment (required)
-<!-- Required. We assume an agent wrote this request — tell us which one and
-     where it ran. -->
+<!-- 필수 입력 사항. 에이전트가 이 요청을 작성했다고 가정합니다 — 어떤 에이전트이고 어디서 실행되었는지 알려주세요. -->
 
 | Field | Value |
 |-------|-------|
-| Harness you currently use (Claude Code, Cursor, etc.) | |
-| Harness version | |
-| Your model + version | |
-| All plugins installed | |
+| 현재 사용 중인 Harness (Claude Code, Cursor 등) | |
+| Harness 버전 | |
+| 사용 중인 모델 + 버전 | |
+| 설치된 모든 플러그인 | |

@@ -1,24 +1,24 @@
-# OpenCode Support Implementation Plan
+# OpenCode 지원 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+> **에이전트 작업자 참고:** 필수 서브 스킬: 이 계획을 작업별로 구현하려면 `superpowers:executing-plans`를 사용하세요.
 
-**Goal:** Add full superpowers support for OpenCode.ai with a native JavaScript plugin that shares core functionality with the existing Codex implementation.
+**목표:** 기존 Codex 구현과 핵심 기능을 공유하는 네이티브 JavaScript 플러그인으로 OpenCode.ai에 대한 전체 superpowers 지원을 추가합니다.
 
-**Architecture:** Extract common skill discovery/parsing logic into `lib/skills-core.js`, refactor Codex to use it, then build OpenCode plugin using their native plugin API with custom tools and session hooks.
+**아키텍처:** 공통 스킬 검색/파싱 로직을 `lib/skills-core.js`로 추출하고, Codex가 이를 사용하도록 리팩터링한 다음, 커스텀 도구 및 세션 훅이 포함된 네이티브 플러그인 API를 사용하여 OpenCode 플러그인을 구축합니다.
 
-**Tech Stack:** Node.js, JavaScript, OpenCode Plugin API, Git worktrees
+**기술 스택:** Node.js, JavaScript, OpenCode Plugin API, Git worktrees
 
 ---
 
-## Phase 1: Create Shared Core Module
+## Phase 1: 공유 핵심 모듈 생성
 
-### Task 1: Extract Frontmatter Parsing
+### Task 1: Frontmatter 파싱 추출
 
-**Files:**
-- Create: `lib/skills-core.js`
-- Reference: `.codex/superpowers-codex` (lines 40-74)
+**파일:**
+- 생성: `lib/skills-core.js`
+- 참조: `.codex/superpowers-codex` (lines 40-74)
 
-**Step 1: Create lib/skills-core.js with extractFrontmatter function**
+**Step 1: extractFrontmatter 함수가 포함된 lib/skills-core.js 생성**
 
 ```javascript
 #!/usr/bin/env node
@@ -80,12 +80,12 @@ module.exports = {
 };
 ```
 
-**Step 2: Verify file was created**
+**Step 2: 파일 생성 확인**
 
-Run: `ls -l lib/skills-core.js`
-Expected: File exists
+실행: `ls -l lib/skills-core.js`
+예상 결과: 파일이 존재함
 
-**Step 3: Commit**
+**Step 3: 커밋**
 
 ```bash
 git add lib/skills-core.js
@@ -94,15 +94,15 @@ git commit -m "feat: create shared skills core module with frontmatter parser"
 
 ---
 
-### Task 2: Extract Skill Discovery Logic
+### Task 2: 스킬 검색 로직 추출
 
-**Files:**
-- Modify: `lib/skills-core.js`
-- Reference: `.codex/superpowers-codex` (lines 97-136)
+**파일:**
+- 수정: `lib/skills-core.js`
+- 참조: `.codex/superpowers-codex` (lines 97-136)
 
-**Step 1: Add findSkillsInDir function to skills-core.js**
+**Step 1: skills-core.js에 findSkillsInDir 함수 추가**
 
-Add before `module.exports`:
+`module.exports` 앞에 추가:
 
 ```javascript
 /**
@@ -151,9 +151,9 @@ function findSkillsInDir(dir, sourceType, maxDepth = 3) {
 }
 ```
 
-**Step 2: Update module.exports**
+**Step 2: module.exports 업데이트**
 
-Replace the exports line with:
+내보내기 줄을 다음으로 교체:
 
 ```javascript
 module.exports = {
@@ -162,12 +162,12 @@ module.exports = {
 };
 ```
 
-**Step 3: Verify syntax**
+**Step 3: 구문 검증**
 
-Run: `node -c lib/skills-core.js`
-Expected: No output (success)
+실행: `node -c lib/skills-core.js`
+예상 결과: 출력 없음 (성공)
 
-**Step 4: Commit**
+**Step 4: 커밋**
 
 ```bash
 git add lib/skills-core.js
@@ -176,15 +176,15 @@ git commit -m "feat: add skill discovery function to core module"
 
 ---
 
-### Task 3: Extract Skill Resolution Logic
+### Task 3: 스킬 확인 로직 추출
 
-**Files:**
-- Modify: `lib/skills-core.js`
-- Reference: `.codex/superpowers-codex` (lines 212-280)
+**파일:**
+- 수정: `lib/skills-core.js`
+- 참조: `.codex/superpowers-codex` (lines 212-280)
 
-**Step 1: Add resolveSkillPath function**
+**Step 1: resolveSkillPath 함수 추가**
 
-Add before `module.exports`:
+`module.exports` 앞에 추가:
 
 ```javascript
 /**
@@ -231,7 +231,7 @@ function resolveSkillPath(skillName, superpowersDir, personalDir) {
 }
 ```
 
-**Step 2: Update module.exports**
+**Step 2: module.exports 업데이트**
 
 ```javascript
 module.exports = {
@@ -241,12 +241,12 @@ module.exports = {
 };
 ```
 
-**Step 3: Verify syntax**
+**Step 3: 구문 검증**
 
-Run: `node -c lib/skills-core.js`
-Expected: No output
+실행: `node -c lib/skills-core.js`
+예상 결과: 출력 없음
 
-**Step 4: Commit**
+**Step 4: 커밋**
 
 ```bash
 git add lib/skills-core.js
@@ -255,21 +255,21 @@ git commit -m "feat: add skill path resolution with shadowing support"
 
 ---
 
-### Task 4: Extract Update Check Logic
+### Task 4: 업데이트 확인 로직 추출
 
-**Files:**
-- Modify: `lib/skills-core.js`
-- Reference: `.codex/superpowers-codex` (lines 16-38)
+**파일:**
+- 수정: `lib/skills-core.js`
+- 참조: `.codex/superpowers-codex` (lines 16-38)
 
-**Step 1: Add checkForUpdates function**
+**Step 1: checkForUpdates 함수 추가**
 
-Add at top after requires:
+상단 `require`문 뒤에 추가:
 
 ```javascript
 const { execSync } = require('child_process');
 ```
 
-Add before `module.exports`:
+`module.exports` 앞에 추가:
 
 ```javascript
 /**
@@ -303,7 +303,7 @@ function checkForUpdates(repoDir) {
 }
 ```
 
-**Step 2: Update module.exports**
+**Step 2: module.exports 업데이트**
 
 ```javascript
 module.exports = {
@@ -314,12 +314,12 @@ module.exports = {
 };
 ```
 
-**Step 3: Verify syntax**
+**Step 3: 구문 검증**
 
-Run: `node -c lib/skills-core.js`
-Expected: No output
+실행: `node -c lib/skills-core.js`
+예상 결과: 출력 없음
 
-**Step 4: Commit**
+**Step 4: 커밋**
 
 ```bash
 git add lib/skills-core.js
@@ -328,27 +328,27 @@ git commit -m "feat: add git update checking to core module"
 
 ---
 
-## Phase 2: Refactor Codex to Use Shared Core
+## Phase 2: 공유 Core를 사용하도록 Codex 리팩터링
 
-### Task 5: Update Codex to Import Shared Core
+### Task 5: 공유 Core를 가져오도록 Codex 업데이트
 
-**Files:**
-- Modify: `.codex/superpowers-codex` (add import at top)
+**파일:**
+- 수정: `.codex/superpowers-codex` (상단에 import 추가)
 
-**Step 1: Add import statement**
+**Step 1: import 문 추가**
 
-After the existing requires at top of file (around line 6), add:
+파일 상단에 기존 `require` 구문 뒤(약 6행)에 추가:
 
 ```javascript
 const skillsCore = require('../lib/skills-core');
 ```
 
-**Step 2: Verify syntax**
+**Step 2: 구문 검증**
 
-Run: `node -c .codex/superpowers-codex`
-Expected: No output
+실행: `node -c .codex/superpowers-codex`
+예상 결과: 출력 없음
 
-**Step 3: Commit**
+**Step 3: 커밋**
 
 ```bash
 git add .codex/superpowers-codex
@@ -357,27 +357,27 @@ git commit -m "refactor: import shared skills core in codex"
 
 ---
 
-### Task 6: Replace extractFrontmatter with Core Version
+### Task 6: extractFrontmatter를 Core 버전으로 교체
 
-**Files:**
-- Modify: `.codex/superpowers-codex` (lines 40-74)
+**파일:**
+- 수정: `.codex/superpowers-codex` (lines 40-74)
 
-**Step 1: Remove local extractFrontmatter function**
+**Step 1: 로컬 extractFrontmatter 함수 제거**
 
-Delete lines 40-74 (the entire extractFrontmatter function definition).
+40-74행(전체 extractFrontmatter 함수 정의)을 삭제합니다.
 
-**Step 2: Update all extractFrontmatter calls**
+**Step 2: 모든 extractFrontmatter 호출 업데이트**
 
-Find and replace all calls from `extractFrontmatter(` to `skillsCore.extractFrontmatter(`
+모든 `extractFrontmatter(` 호출을 `skillsCore.extractFrontmatter(`로 찾아 교체합니다.
 
-Affected lines approximately: 90, 310
+영향을 받는 줄 약: 90, 310
 
-**Step 3: Verify script still works**
+**Step 3: 스크립트 정상 동작 확인**
 
-Run: `.codex/superpowers-codex find-skills | head -20`
-Expected: Shows list of skills
+실행: `.codex/superpowers-codex find-skills | head -20`
+예상 결과: 스킬 목록을 보여줌
 
-**Step 4: Commit**
+**Step 4: 커밋**
 
 ```bash
 git add .codex/superpowers-codex
@@ -386,25 +386,25 @@ git commit -m "refactor: use shared extractFrontmatter in codex"
 
 ---
 
-### Task 7: Replace findSkillsInDir with Core Version
+### Task 7: findSkillsInDir를 Core 버전으로 교체
 
-**Files:**
-- Modify: `.codex/superpowers-codex` (lines 97-136, approximately)
+**파일:**
+- 수정: `.codex/superpowers-codex` (약 97-136행)
 
-**Step 1: Remove local findSkillsInDir function**
+**Step 1: 로컬 findSkillsInDir 함수 제거**
 
-Delete the entire `findSkillsInDir` function definition (approximately lines 97-136).
+전체 `findSkillsInDir` 함수 정의(약 97-136행)를 삭제합니다.
 
-**Step 2: Update all findSkillsInDir calls**
+**Step 2: 모든 findSkillsInDir 호출 업데이트**
 
-Replace calls from `findSkillsInDir(` to `skillsCore.findSkillsInDir(`
+`findSkillsInDir(` 호출을 `skillsCore.findSkillsInDir(`로 교체합니다.
 
-**Step 3: Verify script still works**
+**Step 3: 스크립트 정상 동작 확인**
 
-Run: `.codex/superpowers-codex find-skills | head -20`
-Expected: Shows list of skills
+실행: `.codex/superpowers-codex find-skills | head -20`
+예상 결과: 스킬 목록을 보여줌
 
-**Step 4: Commit**
+**Step 4: 커밋**
 
 ```bash
 git add .codex/superpowers-codex
@@ -413,25 +413,25 @@ git commit -m "refactor: use shared findSkillsInDir in codex"
 
 ---
 
-### Task 8: Replace checkForUpdates with Core Version
+### Task 8: checkForUpdates를 Core 버전으로 교체
 
-**Files:**
-- Modify: `.codex/superpowers-codex` (lines 16-38, approximately)
+**파일:**
+- 수정: `.codex/superpowers-codex` (약 16-38행)
 
-**Step 1: Remove local checkForUpdates function**
+**Step 1: 로컬 checkForUpdates 함수 제거**
 
-Delete the entire `checkForUpdates` function definition.
+전체 `checkForUpdates` 함수 정의를 삭제합니다.
 
-**Step 2: Update all checkForUpdates calls**
+**Step 2: 모든 checkForUpdates 호출 업데이트**
 
-Replace calls from `checkForUpdates(` to `skillsCore.checkForUpdates(`
+`checkForUpdates(` 호출을 `skillsCore.checkForUpdates(`로 교체합니다.
 
-**Step 3: Verify script still works**
+**Step 3: 스크립트 정상 동작 확인**
 
-Run: `.codex/superpowers-codex bootstrap | head -50`
-Expected: Shows bootstrap content
+실행: `.codex/superpowers-codex bootstrap | head -50`
+예상 결과: 부트스트랩 내용을 보여줌
 
-**Step 4: Commit**
+**Step 4: 커밋**
 
 ```bash
 git add .codex/superpowers-codex
@@ -440,18 +440,18 @@ git commit -m "refactor: use shared checkForUpdates in codex"
 
 ---
 
-## Phase 3: Build OpenCode Plugin
+## Phase 3: OpenCode 플러그인 구축
 
-### Task 9: Create OpenCode Plugin Directory Structure
+### Task 9: OpenCode 플러그인 디렉터리 구조 생성
 
-**Files:**
-- Create: `.opencode/plugin/superpowers.js`
+**파일:**
+- 생성: `.opencode/plugin/superpowers.js`
 
-**Step 1: Create directory**
+**Step 1: 디렉터리 생성**
 
-Run: `mkdir -p .opencode/plugin`
+실행: `mkdir -p .opencode/plugin`
 
-**Step 2: Create basic plugin file**
+**Step 2: 기본 플러그인 파일 생성**
 
 ```javascript
 #!/usr/bin/env node
@@ -482,12 +482,12 @@ export const SuperpowersPlugin = async ({ project, client, $, directory, worktre
 };
 ```
 
-**Step 3: Verify file was created**
+**Step 3: 파일 생성 확인**
 
-Run: `ls -l .opencode/plugin/superpowers.js`
-Expected: File exists
+실행: `ls -l .opencode/plugin/superpowers.js`
+예상 결과: 파일이 존재함
 
-**Step 4: Commit**
+**Step 4: 커밋**
 
 ```bash
 git add .opencode/plugin/superpowers.js
@@ -496,14 +496,14 @@ git commit -m "feat: create opencode plugin scaffold"
 
 ---
 
-### Task 10: Implement use_skill Tool
+### Task 10: use_skill 도구 구현
 
-**Files:**
-- Modify: `.opencode/plugin/superpowers.js`
+**파일:**
+- 수정: `.opencode/plugin/superpowers.js`
 
-**Step 1: Add use_skill tool implementation**
+**Step 1: use_skill 도구 구현 추가**
 
-Replace the plugin return statement with:
+플러그인 return 문을 다음으로 교체:
 
 ```javascript
 export const SuperpowersPlugin = async ({ project, client, $, directory, worktree }) => {
@@ -572,12 +572,12 @@ ${content}`;
 };
 ```
 
-**Step 2: Verify syntax**
+**Step 2: 구문 검증**
 
-Run: `node -c .opencode/plugin/superpowers.js`
-Expected: No output
+실행: `node -c .opencode/plugin/superpowers.js`
+예상 결과: 출력 없음
 
-**Step 3: Commit**
+**Step 3: 커밋**
 
 ```bash
 git add .opencode/plugin/superpowers.js
@@ -586,14 +586,14 @@ git commit -m "feat: implement use_skill tool for opencode"
 
 ---
 
-### Task 11: Implement find_skills Tool
+### Task 11: find_skills 도구 구현
 
-**Files:**
-- Modify: `.opencode/plugin/superpowers.js`
+**파일:**
+- 수정: `.opencode/plugin/superpowers.js`
 
-**Step 1: Add find_skills tool to tools array**
+**Step 1: tools 배열에 find_skills 도구 추가**
 
-Add after the use_skill tool definition, before closing the tools array:
+`use_skill` 도구 정의 뒤, `tools` 배열이 닫히기 전에 추가:
 
 ```javascript
       {
@@ -638,12 +638,12 @@ Add after the use_skill tool definition, before closing the tools array:
       }
 ```
 
-**Step 2: Verify syntax**
+**Step 2: 구문 검증**
 
-Run: `node -c .opencode/plugin/superpowers.js`
-Expected: No output
+실행: `node -c .opencode/plugin/superpowers.js`
+예상 결과: 출력 없음
 
-**Step 3: Commit**
+**Step 3: 커밋**
 
 ```bash
 git add .opencode/plugin/superpowers.js
@@ -652,14 +652,14 @@ git commit -m "feat: implement find_skills tool for opencode"
 
 ---
 
-### Task 12: Implement Session Start Hook
+### Task 12: 세션 시작 훅 구현
 
-**Files:**
-- Modify: `.opencode/plugin/superpowers.js`
+**파일:**
+- 수정: `.opencode/plugin/superpowers.js`
 
-**Step 1: Add session.started hook**
+**Step 1: session.started 훅 추가**
 
-After the tools array, add:
+`tools` 배열 다음에 추가:
 
 ```javascript
     'session.started': async () => {
@@ -741,12 +741,12 @@ ${toolMapping}${updateNotice}
     }
 ```
 
-**Step 2: Verify syntax**
+**Step 2: 구문 검증**
 
-Run: `node -c .opencode/plugin/superpowers.js`
-Expected: No output
+실행: `node -c .opencode/plugin/superpowers.js`
+예상 결과: 출력 없음
 
-**Step 3: Commit**
+**Step 3: 커밋**
 
 ```bash
 git add .opencode/plugin/superpowers.js
@@ -755,27 +755,27 @@ git commit -m "feat: implement session.started hook for opencode"
 
 ---
 
-## Phase 4: Documentation
+## Phase 4: 문서화
 
-### Task 13: Create OpenCode Installation Guide
+### Task 13: OpenCode 설치 가이드 작성
 
-**Files:**
-- Create: `.opencode/INSTALL.md`
+**파일:**
+- 생성: `.opencode/INSTALL.md`
 
-**Step 1: Create installation guide**
+**Step 1: 설치 가이드 생성**
 
 ```markdown
-# Installing Superpowers for OpenCode
+# OpenCode용 Superpowers 설치 가이드
 
-## Prerequisites
+## 사전 요구 사항
 
-- [OpenCode.ai](https://opencode.ai) installed
-- Node.js installed
-- Git installed
+- [OpenCode.ai](https://opencode.ai) 설치됨
+- Node.js 설치됨
+- Git 설치됨
 
-## Installation Steps
+## 설치 단계
 
-### 1. Install Superpowers Skills
+### 1. Superpowers Skills 설치
 
 ```bash
 # Clone superpowers skills to OpenCode config directory
@@ -783,14 +783,14 @@ mkdir -p ~/.config/opencode/superpowers
 git clone https://github.com/obra/superpowers.git ~/.config/opencode/superpowers
 ```
 
-### 2. Install the Plugin
+### 2. 플러그인 설치
 
-The plugin is included in the superpowers repository you just cloned.
+플러그인은 방금 클론한 superpowers 리포지토리에 포함되어 있습니다.
 
-OpenCode will automatically discover it from:
+OpenCode는 다음 위치에서 자동으로 발견합니다:
 - `~/.config/opencode/superpowers/.opencode/plugin/superpowers.js`
 
-Or you can link it to the project-local plugin directory:
+또는 프로젝트 로컬 플러그인 디렉터리에 심볼릭 링크를 걸 수 있습니다:
 
 ```bash
 # In your OpenCode project
@@ -798,41 +798,41 @@ mkdir -p .opencode/plugin
 ln -s ~/.config/opencode/superpowers/.opencode/plugin/superpowers.js .opencode/plugin/superpowers.js
 ```
 
-### 3. Restart OpenCode
+### 3. OpenCode 재시작
 
-Restart OpenCode to load the plugin. On the next session, you should see:
+플러그인을 로드하려면 OpenCode를 재시작하세요. 다음 세션에서 다음과 같이 표시되어야 합니다:
 
 ```
 You have superpowers.
 ```
 
-## Usage
+## 사용법
 
-### Finding Skills
+### 스킬 검색
 
-Use the `find_skills` tool to list all available skills:
+`find_skills` 도구를 사용하여 사용 가능한 모든 스킬을 나열합니다:
 
 ```
 use find_skills tool
 ```
 
-### Loading a Skill
+### 스킬 로드
 
-Use the `use_skill` tool to load a specific skill:
+`use_skill` 도구를 사용하여 특정 스킬을 로드합니다:
 
 ```
 use use_skill tool with skill_name: "superpowers:brainstorming"
 ```
 
-### Personal Skills
+### 개인 스킬
 
-Create your own skills in `~/.config/opencode/skills/`:
+`~/.config/opencode/skills/`에 나만의 스킬을 만드세요:
 
 ```bash
 mkdir -p ~/.config/opencode/skills/my-skill
 ```
 
-Create `~/.config/opencode/skills/my-skill/SKILL.md`:
+`~/.config/opencode/skills/my-skill/SKILL.md` 생성:
 
 ```markdown
 ---
@@ -845,49 +845,49 @@ description: Use when [condition] - [what it does]
 [Your skill content here]
 ```
 
-Personal skills override superpowers skills with the same name.
+개인 스킬은 이름이 같은 경우 superpowers 스킬보다 우선 적용됩니다.
 
-## Updating
+## 업데이트
 
 ```bash
 cd ~/.config/opencode/superpowers
 git pull
 ```
 
-## Troubleshooting
+## 문제 해결
 
-### Plugin not loading
+### 플러그인이 로드되지 않음
 
-1. Check plugin file exists: `ls ~/.config/opencode/superpowers/.opencode/plugin/superpowers.js`
-2. Check OpenCode logs for errors
-3. Verify Node.js is installed: `node --version`
+1. 플러그인 파일 존재 여부 확인: `ls ~/.config/opencode/superpowers/.opencode/plugin/superpowers.js`
+2. 오류에 대해 OpenCode 로그 확인
+3. Node.js 설치 여부 확인: `node --version`
 
-### Skills not found
+### 스킬을 찾을 수 없음
 
-1. Verify skills directory exists: `ls ~/.config/opencode/superpowers/skills`
-2. Use `find_skills` tool to see what's discovered
-3. Check file structure: each skill should have a `SKILL.md` file
+1. 스킬 디렉터리 존재 여부 확인: `ls ~/.config/opencode/superpowers/skills`
+2. `find_skills` 도구를 사용하여 발견된 내용 확인
+3. 파일 구조 확인: 각 스킬에는 `SKILL.md` 파일이 있어야 합니다.
 
-### Tool mapping issues
+### 도구 매핑 이슈
 
-When a skill references a Claude Code tool you don't have:
-- `TodoWrite` → use `update_plan`
-- `Task` with subagents → use `@mention` syntax to invoke OpenCode subagents
-- `Skill` → use `use_skill` tool
-- File operations → use your native tools
+스킬이 가지고 있지 않은 Claude Code 도구를 참조하는 경우:
+- `TodoWrite` → `update_plan` 사용
+- 서브에이전트가 포함된 `Task` → `@mention` 구문을 사용하여 OpenCode 서브에이전트 호출
+- `Skill` → `use_skill` 도구 사용
+- 파일 작업 → 네이티브 도구 사용
 
-## Getting Help
+## 도움받기
 
-- Report issues: https://github.com/obra/superpowers/issues
-- Documentation: https://github.com/obra/superpowers
+- 이슈 제보: https://github.com/obra/superpowers/issues
+- 문서: https://github.com/obra/superpowers
 ```
 
-**Step 2: Verify file created**
+**Step 2: 파일 생성 확인**
 
-Run: `ls -l .opencode/INSTALL.md`
-Expected: File exists
+실행: `ls -l .opencode/INSTALL.md`
+예상 결과: 파일이 존재함
 
-**Step 3: Commit**
+**Step 3: 커밋**
 
 ```bash
 git add .opencode/INSTALL.md
@@ -896,14 +896,14 @@ git commit -m "docs: add opencode installation guide"
 
 ---
 
-### Task 14: Update Main README
+### Task 14: 메인 README 업데이트
 
-**Files:**
-- Modify: `README.md`
+**파일:**
+- 수정: `README.md`
 
-**Step 1: Add OpenCode section**
+**Step 1: OpenCode 섹션 추가**
 
-Find the section about supported platforms (search for "Codex" in the file), and add after it:
+지원되는 플랫폼에 대한 섹션을 찾아서(파일에서 "Codex" 검색), 그 뒤에 추가합니다:
 
 ```markdown
 ### OpenCode
@@ -919,12 +919,12 @@ Superpowers works with [OpenCode.ai](https://opencode.ai) through a native JavaS
 - Supporting files and scripts access
 ```
 
-**Step 2: Verify formatting**
+**Step 2: 서식 검증**
 
-Run: `grep -A 10 "### OpenCode" README.md`
-Expected: Shows the section you added
+실행: `grep -A 10 "### OpenCode" README.md`
+예상 결과: 추가한 섹션을 보여줌
 
-**Step 3: Commit**
+**Step 3: 커밋**
 
 ```bash
 git add README.md
@@ -933,14 +933,14 @@ git commit -m "docs: add opencode support to readme"
 
 ---
 
-### Task 15: Update Release Notes
+### Task 15: Release Notes 업데이트
 
-**Files:**
-- Modify: `RELEASE-NOTES.md`
+**파일:**
+- 수정: `RELEASE-NOTES.md`
 
-**Step 1: Add entry for OpenCode support**
+**Step 1: OpenCode 지원 항목 추가**
 
-At the top of the file (after the header), add:
+파일 상단(헤더 바로 다음)에 추가합니다:
 
 ```markdown
 ## [Unreleased]
@@ -963,12 +963,12 @@ At the top of the file (after the header), add:
 
 ```
 
-**Step 2: Verify formatting**
+**Step 2: 서식 검증**
 
-Run: `head -30 RELEASE-NOTES.md`
-Expected: Shows your new section
+실행: `head -30 RELEASE-NOTES.md`
+예상 결과: 새 섹션을 보여줌
 
-**Step 3: Commit**
+**Step 3: 커밋**
 
 ```bash
 git add RELEASE-NOTES.md
@@ -977,54 +977,54 @@ git commit -m "docs: add opencode support to release notes"
 
 ---
 
-## Phase 5: Final Verification
+## Phase 5: 최종 검증
 
-### Task 16: Test Codex Still Works
+### Task 16: Codex 정상 동작 여부 테스트
 
-**Files:**
-- Test: `.codex/superpowers-codex`
+**파일:**
+- 테스트: `.codex/superpowers-codex`
 
-**Step 1: Test find-skills command**
+**Step 1: find-skills 명령어 테스트**
 
-Run: `.codex/superpowers-codex find-skills | head -20`
-Expected: Shows list of skills with names and descriptions
+실행: `.codex/superpowers-codex find-skills | head -20`
+예상 결과: 이름과 설명이 포함된 스킬 목록을 보여줌
 
-**Step 2: Test use-skill command**
+**Step 2: use-skill 명령어 테스트**
 
-Run: `.codex/superpowers-codex use-skill superpowers:brainstorming | head -20`
-Expected: Shows brainstorming skill content
+실행: `.codex/superpowers-codex use-skill superpowers:brainstorming | head -20`
+예상 결과: brainstorming 스킬 내용을 보여줌
 
-**Step 3: Test bootstrap command**
+**Step 3: bootstrap 명령어 테스트**
 
-Run: `.codex/superpowers-codex bootstrap | head -30`
-Expected: Shows bootstrap content with instructions
+실행: `.codex/superpowers-codex bootstrap | head -30`
+예상 결과: 지침이 포함된 부트스트랩 내용을 보여줌
 
-**Step 4: If all tests pass, record success**
+**Step 4: 모든 테스트 통과 시 성공 기록**
 
-No commit needed - this is verification only.
+커밋 불필요 - 검증 전용 단계입니다.
 
 ---
 
-### Task 17: Verify File Structure
+### Task 17: 파일 구조 검증
 
-**Files:**
-- Check: All new files exist
+**파일:**
+- 확인: 모든 새 파일이 존재하는지 확인
 
-**Step 1: Verify all files created**
+**Step 1: 모든 파일 생성 여부 확인**
 
-Run:
+실행:
 ```bash
 ls -l lib/skills-core.js
 ls -l .opencode/plugin/superpowers.js
 ls -l .opencode/INSTALL.md
 ```
 
-Expected: All files exist
+예상 결과: 모든 파일이 존재함
 
-**Step 2: Verify directory structure**
+**Step 2: 디렉터리 구조 확인**
 
-Run: `tree -L 2 .opencode/` (or `find .opencode -type f` if tree not available)
-Expected:
+실행: `tree -L 2 .opencode/` (또는 tree를 사용할 수 없는 경우 `find .opencode -type f`)
+예상 결과:
 ```
 .opencode/
 ├── INSTALL.md
@@ -1032,64 +1032,64 @@ Expected:
     └── superpowers.js
 ```
 
-**Step 3: If structure correct, proceed**
+**Step 3: 구조가 올바른 경우 계속 진행**
 
-No commit needed - this is verification only.
-
----
-
-### Task 18: Final Commit and Summary
-
-**Files:**
-- Check: `git status`
-
-**Step 1: Check git status**
-
-Run: `git status`
-Expected: Working tree clean, all changes committed
-
-**Step 2: Review commit log**
-
-Run: `git log --oneline -20`
-Expected: Shows all commits from this implementation
-
-**Step 3: Create summary document**
-
-Create a completion summary showing:
-- Total commits made
-- Files created: `lib/skills-core.js`, `.opencode/plugin/superpowers.js`, `.opencode/INSTALL.md`
-- Files modified: `.codex/superpowers-codex`, `README.md`, `RELEASE-NOTES.md`
-- Testing performed: Codex commands verified
-- Ready for: Testing with actual OpenCode installation
-
-**Step 4: Report completion**
-
-Present summary to user and offer to:
-1. Push to remote
-2. Create pull request
-3. Test with real OpenCode installation (requires OpenCode installed)
+커밋 불필요 - 검증 전용 단계입니다.
 
 ---
 
-## Testing Guide (Manual - Requires OpenCode)
+### Task 18: 최종 커밋 및 요약
 
-These steps require OpenCode to be installed and are not part of the automated implementation:
+**파일:**
+- 확인: `git status`
 
-1. **Install skills**: Follow `.opencode/INSTALL.md`
-2. **Start OpenCode session**: Verify bootstrap appears
-3. **Test find_skills**: Should list all available skills
-4. **Test use_skill**: Load a skill and verify content appears
-5. **Test supporting files**: Verify skill directory paths are accessible
-6. **Test personal skills**: Create a personal skill and verify it shadows core
-7. **Test tool mapping**: Verify TodoWrite → update_plan mapping works
+**Step 1: git status 확인**
 
-## Success Criteria
+실행: `git status`
+예상 결과: 작업 트리 깨끗함, 모든 변경 사항이 커밋됨
 
-- [ ] `lib/skills-core.js` created with all core functions
-- [ ] `.codex/superpowers-codex` refactored to use shared core
-- [ ] Codex commands still work (find-skills, use-skill, bootstrap)
-- [ ] `.opencode/plugin/superpowers.js` created with tools and hooks
-- [ ] Installation guide created
-- [ ] README and RELEASE-NOTES updated
-- [ ] All changes committed
-- [ ] Working tree clean
+**Step 2: 커밋 로그 검토**
+
+실행: `git log --oneline -20`
+예상 결과: 이 구현으로 인한 모든 커밋을 보여줌
+
+**Step 3: 요약 문서 작성**
+
+다음 내용을 포함하는 완료 요약 작성:
+- 완료된 총 커밋 수
+- 생성된 파일: `lib/skills-core.js`, `.opencode/plugin/superpowers.js`, `.opencode/INSTALL.md`
+- 수정된 파일: `.codex/superpowers-codex`, `README.md`, `RELEASE-NOTES.md`
+- 수행된 테스트: Codex 명령어 검증 완료
+- 다음 단계 준비: 실제 OpenCode 설치 환경에서 테스트할 준비 완료
+
+**Step 4: 완료 보고**
+
+사용자에게 요약 보고서를 제시하고 다음 옵션 제안:
+1. 푸시하여 원격 저장소에 반영
+2. Pull Request 생성
+3. 실제 OpenCode 설치 환경에서 테스트 (OpenCode 설치 필요)
+
+---
+
+## 테스트 가이드 (수동 - OpenCode 필요)
+
+이 단계들은 OpenCode가 설치되어 있어야 하며 자동화된 구현의 일부가 아닙니다:
+
+1. **스킬 설치**: `.opencode/INSTALL.md` 지침을 따르세요.
+2. **OpenCode 세션 시작**: 부트스트랩 메시지가 나타나는지 확인합니다.
+3. **find_skills 테스트**: 사용 가능한 모든 스킬을 목록화해야 합니다.
+4. **use_skill 테스트**: 스킬을 로드하고 내용이 나타나는지 확인합니다.
+5. **지원 파일 테스트**: 스킬 디렉터리 경로에 접근 가능한지 확인합니다.
+6. **개인 스킬 테스트**: 개인 스킬을 생성하고 코어 스킬을 올바르게 오버라이드(shadowing)하는지 확인합니다.
+7. **도구 매핑 테스트**: TodoWrite → update_plan 매핑이 제대로 작동하는지 확인합니다.
+
+## 성공 기준
+
+- [ ] 모든 핵심 기능이 포함된 `lib/skills-core.js` 생성 완료
+- [ ] 공유 코어를 사용하도록 `.codex/superpowers-codex` 리팩터링 완료
+- [ ] Codex 명령어 정상 작동 확인 (find-skills, use-skill, bootstrap)
+- [ ] 도구 및 훅이 포함된 `.opencode/plugin/superpowers.js` 생성 완료
+- [ ] 설치 가이드 작성 완료
+- [ ] README 및 RELEASE-NOTES 업데이트 완료
+- [ ] 모든 변경 사항 커밋 완료
+- [ ] 작업 트리 상태 깨끗함

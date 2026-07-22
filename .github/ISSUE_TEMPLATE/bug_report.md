@@ -1,55 +1,54 @@
 ---
 name: Bug Report
-about: Something isn't working as expected
+about: 예상대로 작동하지 않는 문제가 있습니다
 labels: bug
 ---
 
 <!--
-BEFORE FILING: Search open AND closed issues. The Windows SessionStart
-hook alone has been reported 29 times. If your issue already exists,
-add a comment or reaction to the existing one instead.
+제출 전 필독: 열린 이슈 및 닫힌 이슈를 검색하십시오. Windows SessionStart
+훅 관련 보고만 29번 제기되었습니다. 이슈가 이미 존재하는 경우,
+기존 이슈에 댓글이나 반응을 추가해 주십시오.
 -->
 
-- [ ] I searched existing issues and this is not a duplicate
+- [ ] 기존 이슈를 검색했으며 중복되지 않음을 확인했습니다
 
-## Environment (required)
-<!-- Required. We assume an agent filed this report — tell us which one and
-     where it ran. We weigh reports by what produced them. -->
+## 환경 (필수)
+<!-- 필수. 당사는 에이전트가 이 보고서를 작성했다고 가정합니다 — 어떤 에이전트인지,
+     어디서 실행되었는지 알려주십시오. 당사는 보고서를 작성한 주체에 따라 가중치를 둡니다. -->
 
 | Field | Value |
 |-------|-------|
-| Superpowers version | |
-| Harness (Claude Code, Cursor, etc.) | |
-| Harness version | |
-| Your model + version | |
-| All plugins installed | |
-| OS + shell | |
+| Superpowers 버전 | |
+| 하네스 (Claude Code, Cursor 등) | |
+| 하네스 버전 | |
+| 사용한 모델 + 버전 | |
+| 설치된 모든 플러그인 | |
+| OS + 쉘 | |
 
-## Is this a Superpowers issue or a platform issue?
-<!-- Superpowers is a plugin. Some reported "bugs" are actually issues
-     in the underlying platform or model. If you're not sure, try
-     reproducing without Superpowers installed.
+## 이것이 Superpowers 이슈인가요, 아니면 플랫폼 이슈인가요?
+<!-- Superpowers는 플러그인입니다. 보고된 일부 "버그"는 실제로 기저 플랫폼이나
+     모델의 이슈입니다. 잘 모르겠다면 Superpowers가 설치되지 않은 상태에서
+     재현해 보십시오.
 
-     If the problem persists without Superpowers, file the issue with
-     your platform instead. -->
+     Superpowers 없이도 문제가 지속되는 경우, 해당 플랫폼에 이슈를 제출하십시오. -->
 
-- [ ] I confirmed this issue does not occur without Superpowers installed
+- [ ] Superpowers가 설치되지 않은 상태에서는 이 이슈가 발생하지 않음을 확인했습니다
 
-## What happened?
-<!-- Be specific. "It doesn't work" is not a bug report. -->
+## 무슨 일이 일어났나요?
+<!-- 구체적으로 설명해 주십시오. "작동하지 않습니다"는 버그 리포트가 아닙니다. -->
 
-## Steps to reproduce
+## 재현 절차
 1.
 2.
 3.
 
-## Expected behavior
-<!-- What should have happened? -->
+## 예상 동작
+<!-- 원래 어떤 일이 일어났어야 하나요? -->
 
-## Actual behavior
-<!-- What happened instead? -->
+## 실제 동작
+<!-- 대신 무슨 일이 일어났나요? -->
 
-## Debug log or conversation transcript
-<!-- A debug log or conversation transcript showing the issue is the
-     single most helpful thing you can include. Without one, we're
-     guessing. Screenshots of error output are also useful. -->
+## 디버그 로그 또는 대화 트랜스크립트
+<!-- 문제를 보여주는 디버그 로그 또는 대화 트랜스크립트는 제공할 수 있는 가장
+     유용한 단일 항목입니다. 그것이 없으면 당사는 추측할 수밖에 없습니다.
+     에러 출력 스크린샷도 유용합니다. -->

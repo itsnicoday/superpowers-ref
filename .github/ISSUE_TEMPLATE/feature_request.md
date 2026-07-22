@@ -1,47 +1,47 @@
 ---
 name: Feature Request
-about: Propose a change or addition to Superpowers
+about: Superpowers에 대한 변경이나 추가 제안
 labels: enhancement
 ---
 
 <!--
-BEFORE FILING: Search open AND closed issues. Many features have been
-requested before — some were implemented differently, some are in
-progress, and some were intentionally declined.
+제출 전 필독: 열린 이슈 및 닫힌 이슈를 검색하십시오. 많은 기능이 이미
+요청된 적이 있습니다 — 일부는 다르게 구현되었고, 일부는 진행 중이며,
+일부는 의도적으로 거부되었습니다.
 -->
 
-- [ ] I searched existing issues and this has not been proposed before
+- [ ] 기존 이슈를 검색했으며 이전에 제안된 적이 없음을 확인했습니다
 
-## What problem does this solve?
-<!-- Describe the problem from your own experience. What were you doing,
-     what went wrong or was missing, and why did it matter?
+## 어떤 문제를 해결하나요?
+<!-- 본인의 직접적인 경험에서 비롯된 문제를 설명하십시오. 무엇을 하고 있었나요,
+     무엇이 잘못되거나 누락되었나요, 그리고 그것이 왜 중요했나요?
 
-     "It would be cool if..." is not a problem statement. -->
+     "~하면 멋질 것 같습니다"는 문제 정의가 아닙니다. -->
 
-## Proposed solution
-<!-- What specifically do you want to happen? Be concrete. -->
+## 제안하는 해결책
+<!-- 구체적으로 어떤 일이 일어나기를 원합니까? 구체적으로 작성해 주십시오. -->
 
-## What alternatives did you consider?
-<!-- What other approaches could solve the same problem? Why is your
-     proposal better? -->
+## 어떤 대안을 고려했나요?
+<!-- 동일한 문제를 해결할 수 있는 다른 접근 방식은 무엇이었나요? 본인의
+     제안이 왜 더 나은가요? -->
 
-## Is this appropriate for core Superpowers?
-<!-- Would this benefit someone working on a completely different kind
-     of project? If this is specific to your domain, workflow, or a
-     third-party tool, it may belong as its own plugin instead. -->
+## 이것이 코어 Superpowers에 적합한가요?
+<!-- 이것이 완전히 다른 종류의 프로젝트 작업을 하는 사람에게도 이점을 줄까요?
+     이것이 특정 도메인, 워크플로우, 또는 서드파티 도구에 국한된 경우,
+     대신 자체 플러그인에 속할 수 있습니다. -->
 
-## Environment (required)
-<!-- Required. We assume an agent wrote this request — tell us which one and
-     where it ran. We weigh proposals reasoned from documentation differently
-     than ones grounded in a real session where the problem actually came up. -->
+## 환경 (필수)
+<!-- 필수. 당사는 에이전트가 이 요청을 작성했다고 가정합니다 — 어떤 에이전트인지,
+     어디서 실행되었는지 알려주십시오. 당사는 문서로부터 추론된 제안을 실제로 문제 발생이
+     이루어진 세션에 기반한 제안과 다른 가중치로 평가합니다. -->
 
 | Field | Value |
 |-------|-------|
-| Superpowers version | |
-| Harness (Claude Code, Cursor, etc.) | |
-| Harness version | |
-| Your model + version | |
-| All plugins installed | |
+| Superpowers 버전 | |
+| 하네스 (Claude Code, Cursor 등) | |
+| 하네스 버전 | |
+| 사용한 모델 + 버전 | |
+| 설치된 모든 플러그인 | |
 
-## Context
-<!-- Optional: the workflow where you hit this, links, transcripts. -->
+## 컨텍스트
+<!-- 선택 사항: 이 문제를 겪은 워크플로우, 링크, 트랜스크립트. -->

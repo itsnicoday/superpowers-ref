@@ -1,53 +1,53 @@
-# Superpowers for Kimi Code
+# Kimi Code용 Superpowers
 
-Complete guide for using Superpowers with [Kimi Code](https://github.com/MoonshotAI/kimi-code).
+[Kimi Code](https://github.com/MoonshotAI/kimi-code)에서 Superpowers를 사용하기 위한 전체 가이드입니다.
 
-## Installation
+## 설치
 
-Superpowers is available in Kimi Code's plugin marketplace.
+Superpowers는 Kimi Code의 플러그인 마켓플레이스에서 이용할 수 있습니다.
 
-Open the plugin manager:
+플러그인 관리자를 엽니다:
 
 ```text
 /plugins
 ```
 
-Go to `Marketplace` > `Superpowers` and install it.
+`Marketplace` > `Superpowers`로 이동하여 설치합니다.
 
-You can also install from this repository:
+다음과 같이 이 저장소에서 직접 설치할 수도 있습니다:
 
 ```text
 /plugins install https://github.com/obra/superpowers
 ```
 
-For unreleased validation against `dev`, pin the branch explicitly:
+`dev` 브랜치에 대한 미출시 검증의 경우, 브랜치를 명시적으로 지정하여 설치합니다:
 
 ```text
 /plugins install https://github.com/obra/superpowers/tree/dev
 ```
 
-Kimi Code applies plugin changes to new sessions. After installing, updating, enabling, disabling, or reloading a plugin, start a fresh session with `/new`.
+Kimi Code는 새로운 세션부터 플러그인 변경 사항을 적용합니다. 플러그인을 설치, 업데이트, 활성화, 비활성화 또는 다시 로드한 후에는 `/new` 명령어로 새 세션을 시작하십시오.
 
-## How It Works
+## 작동 방식
 
-The Kimi plugin manifest lives at `.kimi-plugin/plugin.json`.
+Kimi 플러그인 매니페스트는 `.kimi-plugin/plugin.json`에 위치합니다.
 
-The manifest does three things:
+매니페스트는 세 가지 역할을 합니다:
 
-1. Points Kimi Code at the existing `skills/` directory.
-2. Loads `using-superpowers` at session start through `sessionStart.skill`.
-3. Provides Kimi-specific tool mapping through `skillInstructions`.
+1. Kimi Code가 기존 `skills/` 디렉토리를 가리키도록 함.
+2. `sessionStart.skill`을 통해 세션 시작 시 `using-superpowers`를 로드함.
+3. `skillInstructions`를 통해 Kimi 전용 도구 매핑을 제공함.
 
-Kimi Code reads Superpowers skills from this repository. There are no copied skills, symlinks, hooks, or extra runtime dependencies.
+Kimi Code는 이 저장소에서 Superpowers 스킬을 읽어옵니다. 복사된 스킬, 심볼릭 링크, 훅, 또는 추가 런타임 의존성이 존재하지 않습니다.
 
-## Tool Mapping
+## 도구 매핑 (Tool Mapping)
 
-Skills describe actions instead of hard-coding one runtime's tool names. On Kimi Code these resolve to:
+스킬은 하나의 런타임에 해당하는 도구 이름을 하드코딩하는 대신 행위(action)를 설명합니다. Kimi Code에서 이들은 다음과 같이 해석됩니다:
 
 - "Ask the user" / "ask clarifying questions" -> `AskUserQuestion`
 - "Create a todo" / "mark complete in todo list" -> `TodoList`
 - "Dispatch a subagent" -> `Agent`
-- "Invoke a skill" -> Kimi Code's native `Skill` tool
+- "Invoke a skill" -> Kimi Code의 네이티브 `Skill` 도구
 - "Read a file" / "write a file" / "edit a file" -> `Read`, `Write`, `Edit`
 - "Run a shell command" -> `Bash`
 - "Search file contents" -> `Grep`
@@ -55,34 +55,34 @@ Skills describe actions instead of hard-coding one runtime's tool names. On Kimi
 - "Fetch a URL" -> `FetchURL`
 - "Search the web" -> `WebSearch`
 
-## Updating
+## 업데이트
 
-Use Kimi Code's plugin manager:
+Kimi Code의 플러그인 관리자를 사용하십시오:
 
 ```text
 /plugins
 ```
 
-Select Superpowers and update it from there. Start a fresh session with `/new` after updating.
+Superpowers를 선택하고 거기서 업데이트합니다. 업데이트 후에는 `/new` 명령어로 새 세션을 시작하십시오.
 
-## Troubleshooting
+## 문제 해결 (Troubleshooting)
 
-### Plugin not loading
+### 플러그인이 로드되지 않음
 
-1. Run `/plugins info superpowers` and check diagnostics.
-2. Make sure the plugin is enabled.
-3. Start a fresh session with `/new` after install or update.
+1. `/plugins info superpowers`를 실행하고 진단 항목을 확인합니다.
+2. 플러그인이 활성화되어 있는지 확인합니다.
+3. 설치 또는 업데이트 후 `/new` 명령어로 새 세션을 시작합니다.
 
-### Direct GitHub install used an old release
+### 직접 GitHub 설치 시 이전 릴리스가 사용됨
 
-Kimi Code installs the latest GitHub release for a bare repository URL when one exists. To test unreleased changes before the next Superpowers release, install the branch explicitly:
+Kimi Code는 베어 저장소 URL에 대해 최신 GitHub 릴리스가 존재하는 경우 이를 설치합니다. 다음 Superpowers 릴리스 전에 미출시 변경 사항을 테스트하려면 브랜치를 명시적으로 지정하여 설치하십시오:
 
 ```text
 /plugins install https://github.com/obra/superpowers/tree/dev
 ```
 
-### Skills not triggering
+### 스킬이 트리거되지 않음
 
-1. Confirm `/plugins info superpowers` shows the plugin enabled.
-2. Start a fresh session with `/new`.
-3. Try the acceptance prompt: `Let's make a react todo list`. A working install should load `brainstorming` before writing code.
+1. `/plugins info superpowers` 명령어가 플러그인이 활성화됨을 표시하는지 확인합니다.
+2. `/new` 명령어로 새 세션을 시작합니다.
+3. 수락 프롬프트를 시도합니다: `Let's make a react todo list`. 올바르게 설치되었다면 코드를 작성하기 전에 `brainstorming` 스킬을 로드해야 합니다.

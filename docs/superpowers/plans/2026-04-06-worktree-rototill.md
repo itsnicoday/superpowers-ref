@@ -1,32 +1,32 @@
-# Worktree Rototill Implementation Plan
+# 워크트리 재정비(Worktree Rototill) 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **에이전트 작업자 참고:** 필수 서브 스킬: 이 계획을 작업별로 구현하려면 superpowers:subagent-driven-development (권장) 또는 superpowers:executing-plans를 사용하세요. 추적을 위해 단계에 체크박스 (`- [ ]`) 구문을 사용합니다.
 
-**Goal:** Make superpowers defer to native harness worktree systems when available, fall back to manual git worktrees when not, and fix three known finishing bugs.
+**목표:** superpowers가 사용 가능한 경우 네이티브 하네스 워크트리 시스템에 위임하고, 사용 불가능한 경우 수동 git 워크트리로 폴백하도록 하며, 알려진 세 가지 마무리 버그를 수정합니다.
 
-**Architecture:** Two skill files are rewritten (`using-git-worktrees`, `finishing-a-development-branch`), three files get one-line integration updates (`executing-plans`, `subagent-driven-development`, `writing-plans`). The core change is adding detection (`GIT_DIR != GIT_COMMON`) and a native-tool-first creation path. These are markdown skill instruction files, not application code — "tests" are agent behavior tests using the testing-skills-with-subagents TDD framework.
+**아키텍처:** 두 개의 스킬 파일이 재작성되고(`using-git-worktrees`, `finishing-a-development-branch`), 세 개의 파일이 한 줄의 통합 업데이트를 받습니다(`executing-plans`, `subagent-driven-development`, `writing-plans`). 핵심 변경 사항은 감지 기능(`GIT_DIR != GIT_COMMON`) 및 네이티브 도구 우선 생성 경로를 추가하는 것입니다. 이 파일들은 애플리케이션 코드가 아닌 마크다운 스킬 지침 파일이며, "테스트"는 testing-skills-with-subagents TDD 프레임워크를 사용하는 에이전트 동작 테스트입니다.
 
-**Tech Stack:** Markdown (skill files), bash (test scripts), Claude Code CLI (`claude -p` for headless testing)
+**기술 스택:** 마크다운 (스킬 파일), bash (테스트 스크립트), Claude Code CLI (헤드리스 테스트용 `claude -p`)
 
-**Spec:** `docs/superpowers/specs/2026-04-06-worktree-rototill-design.md`
+**명세:** `docs/superpowers/specs/2026-04-06-worktree-rototill-design.md`
 
 ---
 
-### Task 1: GATE — TDD Validation of Step 1a (Native Tool Preference)
+### 작업 1: GATE — 단계 1a (네이티브 도구 선호) TDD 검증
 
-Step 1a is the load-bearing assumption of the entire design. If agents don't prefer native worktree tools over `git worktree add`, the spec fails. Validate this FIRST, before touching any skill files.
+단계 1a는 전체 설계의 핵심 전제입니다. 에이전트가 `git worktree add`보다 네이티브 워크트리 도구를 선호하지 않으면 명세는 실패합니다. 스킬 파일을 수정하기 전에 이 내용을 가장 먼저 검증하세요.
 
-**Files:**
-- Create: `tests/claude-code/test-worktree-native-preference.sh`
-- Read: `skills/using-git-worktrees/SKILL.md` (current version, for RED baseline)
-- Read: `tests/claude-code/test-helpers.sh` (for `run_claude`, `assert_contains`, etc.)
-- Read: `skills/writing-skills/testing-skills-with-subagents.md` (TDD framework)
+**파일:**
+- 생성: `tests/claude-code/test-worktree-native-preference.sh`
+- 읽기: `skills/using-git-worktrees/SKILL.md` (현재 버전, RED 베이스라인용)
+- 읽기: `tests/claude-code/test-helpers.sh` (`run_claude`, `assert_contains` 등용)
+- 읽기: `skills/writing-skills/testing-skills-with-subagents.md` (TDD 프레임워크)
 
-**This task is a gate.** If the GREEN phase fails after 2 REFACTOR iterations, STOP. Do not proceed to Task 2. Report back — the creation approach needs redesign.
+**이 작업은 게이트(gate)입니다.** 2회의 REFACTOR 반복 후에도 GREEN 단계가 실패하면 중단(STOP)하세요. 작업 2로 진행하지 마세요. 보고 후 생성 방식 재설계가 필요합니다.
 
-- [ ] **Step 1: Write the RED baseline test script**
+- [ ] **단계 1: RED 베이스라인 테스트 스크립트 작성**
 
-Create the test script that will run scenarios both WITHOUT and WITH the updated skill text. The RED phase runs against the current skill (which has no Step 1a).
+업데이트된 스킬 텍스트가 없는 경우와 있는 경우 모두에서 시나리오를 실행할 테스트 스크립트를 생성합니다. RED 단계는 현재 스킬(단계 1a가 없음)을 대상으로 실행됩니다.
 
 ```bash
 #!/usr/bin/env bash
@@ -141,17 +141,17 @@ echo ""
 echo "=== Test Complete ==="
 ```
 
-- [ ] **Step 2: Run RED phase — confirm agent uses git worktree add today**
+- [ ] **단계 2: RED 단계 실행 — 현재 에이전트가 git worktree add를 사용하는지 확인**
 
-Run: `cd tests/claude-code && bash test-worktree-native-preference.sh red`
+실행: `cd tests/claude-code && bash test-worktree-native-preference.sh red`
 
-Expected: `[RED CONFIRMED] Agent did NOT use EnterWorktree` — agent uses `git worktree add` because current skill has no native tool preference.
+예상 결과: `[RED CONFIRMED] Agent did NOT use EnterWorktree` — 현재 스킬에 네이티브 도구 선호가 없으므로 에이전트가 `git worktree add`를 사용함.
 
-Document the agent's exact output and any rationalizations verbatim. This is the baseline failure the skill must fix.
+에이전트의 정확한 출력과 합리화 문구를 그대로 기록하세요. 이것이 스킬이 수정해야 하는 베이스라인 실패입니다.
 
-- [ ] **Step 3: If RED confirmed, proceed. Write the Step 1a skill text.**
+- [ ] **단계 3: RED가 확인되면 진행. 단계 1a 스킬 텍스트 작성.**
 
-Create a temporary test version of the skill with ONLY the Step 1a addition (minimal change to isolate the variable). Add this section to the top of the skill's creation instructions, BEFORE the existing directory selection process:
+변수를 격리하기 위해 단계 1a만 추가된 임시 테스트 버전의 스킬을 생성합니다. 기존 디렉터리 선택 프로세스 이전의 스킬 생성 지침 상단에 이 섹션을 추가합니다:
 
 ```markdown
 ## Step 1: Create Isolated Workspace
@@ -169,23 +169,23 @@ After using a native tool, skip to Step 3 (Project Setup).
 If no native tool is available, create a worktree manually using git.
 ```
 
-- [ ] **Step 4: Run GREEN phase — confirm agent now uses EnterWorktree**
+- [ ] **단계 4: GREEN 단계 실행 — 에이전트가 이제 EnterWorktree를 사용하는지 확인**
 
-Run: `cd tests/claude-code && bash test-worktree-native-preference.sh green`
+실행: `cd tests/claude-code && bash test-worktree-native-preference.sh green`
 
-Expected: `[PASS] Agent used native EnterWorktree tool`
+예상 결과: `[PASS] Agent used native EnterWorktree tool`
 
-If FAIL: Document the agent's exact output and rationalizations. This is a REFACTOR signal — the Step 1a text needs revision. Try up to 2 REFACTOR iterations. If still failing after 2 iterations, STOP and report back.
+실패 시: 에이전트의 정확한 출력과 합리화 문구를 기록하세요. 이는 REFACTOR 신호입니다 — 단계 1a 텍스트 수정이 필요합니다. 최대 2회의 REFACTOR 반복을 시도하세요. 2회 반복 후에도 여전히 실패하면 중단하고 보고하세요.
 
-- [ ] **Step 5: Run PRESSURE phase — confirm agent resists fallback under pressure**
+- [ ] **단계 5: PRESSURE 단계 실행 — 압박 상황에서도 에이전트가 폴백에 저항하는지 확인**
 
-Run: `cd tests/claude-code && bash test-worktree-native-preference.sh pressure`
+실행: `cd tests/claude-code && bash test-worktree-native-preference.sh pressure`
 
-Expected: `[PASS] Agent used native tool even under time pressure`
+예상 결과: `[PASS] Agent used native tool even under time pressure`
 
-If FAIL: Document rationalizations verbatim. Add explicit counters to Step 1a text (e.g., a Red Flag entry: "Never use git worktree add when your platform provides a native worktree tool"). Re-run.
+실패 시: 합리화 문구를 그대로 기록하세요. 단계 1a 텍스트에 명시적인 대응책을 추가하세요(예: 레드 플래그 항목: "플랫폼이 네이티브 워크트리 도구를 제공할 때는 절대로 git worktree add를 사용하지 마십시오"). 재실행하세요.
 
-- [ ] **Step 6: Commit test script**
+- [ ] **단계 6: 테스트 스크립트 커밋**
 
 ```bash
 git add tests/claude-code/test-worktree-native-preference.sh
@@ -197,18 +197,18 @@ git worktree add on Claude Code. Must pass before skill rewrite."
 
 ---
 
-### Task 2: Rewrite `using-git-worktrees` SKILL.md
+### 작업 2: `using-git-worktrees` SKILL.md 재작성
 
-Full rewrite of the creation skill. Replaces the existing file entirely.
+생성 스킬 전체 재작성. 기존 파일을 완전히 교체합니다.
 
-**Files:**
-- Modify: `skills/using-git-worktrees/SKILL.md` (full rewrite, 219 lines → ~210 lines)
+**파일:**
+- 수정: `skills/using-git-worktrees/SKILL.md` (전체 재작성, 219줄 → ~210줄)
 
-**Depends on:** Task 1 GREEN passing.
+**의존성:** 작업 1 GREEN 통과.
 
-- [ ] **Step 1: Write the complete new SKILL.md**
+- [ ] **단계 1: 완성된 새 SKILL.md 작성**
 
-Replace the entire contents of `skills/using-git-worktrees/SKILL.md` with:
+`skills/using-git-worktrees/SKILL.md`의 전체 내용을 다음으로 교체합니다:
 
 ```markdown
 ---
@@ -436,13 +436,13 @@ Ready to implement <feature-name>
 - **finishing-a-development-branch** - REQUIRED for cleanup after work complete
 ```
 
-- [ ] **Step 2: Verify the file reads correctly**
+- [ ] **단계 2: 파일이 올바르게 읽히는지 검증**
 
-Run: `wc -l skills/using-git-worktrees/SKILL.md`
+실행: `wc -l skills/using-git-worktrees/SKILL.md`
 
-Expected: Approximately 200-220 lines. Scan for any markdown formatting issues.
+예상 결과: 약 200-220줄. 마크다운 서식 오류가 있는지 스캔하세요.
 
-- [ ] **Step 3: Commit**
+- [ ] **단계 3: 커밋**
 
 ```bash
 git add skills/using-git-worktrees/SKILL.md
@@ -458,16 +458,16 @@ Platform-neutral instruction file references (#1049)"
 
 ---
 
-### Task 3: Rewrite `finishing-a-development-branch` SKILL.md
+### 작업 3: `finishing-a-development-branch` SKILL.md 재작성
 
-Full rewrite of the finishing skill. Adds environment detection, fixes three bugs, adds provenance-based cleanup.
+마무리 스킬 전체 재작성. 환경 감지 추가, 세 가지 버그 수정, 출처(provenance) 기반 정리 추가.
 
-**Files:**
-- Modify: `skills/finishing-a-development-branch/SKILL.md` (full rewrite, 201 lines → ~220 lines)
+**파일:**
+- 수정: `skills/finishing-a-development-branch/SKILL.md` (전체 재작성, 201줄 → ~220줄)
 
-- [ ] **Step 1: Write the complete new SKILL.md**
+- [ ] **단계 1: 완성된 새 SKILL.md 작성**
 
-Replace the entire contents of `skills/finishing-a-development-branch/SKILL.md` with:
+`skills/finishing-a-development-branch/SKILL.md`의 전체 내용을 다음으로 교체합니다:
 
 ```markdown
 ---
@@ -730,13 +730,13 @@ git worktree prune  # Self-healing: clean up any stale registrations
 - **using-git-worktrees** - Cleans up worktree created by that skill
 ```
 
-- [ ] **Step 2: Verify the file reads correctly**
+- [ ] **단계 2: 파일이 올바르게 읽히는지 검증**
 
-Run: `wc -l skills/finishing-a-development-branch/SKILL.md`
+실행: `wc -l skills/finishing-a-development-branch/SKILL.md`
 
-Expected: Approximately 210-230 lines.
+예상 결과: 약 210-230줄.
 
-- [ ] **Step 3: Commit**
+- [ ] **단계 3: 커밋**
 
 ```bash
 git add skills/finishing-a-development-branch/SKILL.md
@@ -753,58 +753,58 @@ Stale worktree pruning after removal (git worktree prune)"
 
 ---
 
-### Task 4: Integration Updates
+### 작업 4: 통합 업데이트
 
-One-line changes to three files that reference `using-git-worktrees`.
+using-git-worktrees를 참조하는 세 파일에 대한 한 줄 변경 사항.
 
-**Files:**
-- Modify: `skills/executing-plans/SKILL.md:68`
-- Modify: `skills/subagent-driven-development/SKILL.md:268`
-- Modify: `skills/writing-plans/SKILL.md:16`
+**파일:**
+- 수정: `skills/executing-plans/SKILL.md:68`
+- 수정: `skills/subagent-driven-development/SKILL.md:268`
+- 수정: `skills/writing-plans/SKILL.md:16`
 
-- [ ] **Step 1: Update executing-plans integration line**
+- [ ] **단계 1: executing-plans 통합 줄 업데이트**
 
-In `skills/executing-plans/SKILL.md`, change line 68 from:
-
-```markdown
-- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
-```
-
-to:
-
-```markdown
-- **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
-```
-
-- [ ] **Step 2: Update subagent-driven-development integration line**
-
-In `skills/subagent-driven-development/SKILL.md`, change line 268 from:
+`skills/executing-plans/SKILL.md`에서 68번째 줄을 다음에서:
 
 ```markdown
 - **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 ```
 
-to:
+다음으로 변경:
 
 ```markdown
 - **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 ```
 
-- [ ] **Step 3: Update writing-plans context line**
+- [ ] **단계 2: subagent-driven-development 통합 줄 업데이트**
 
-In `skills/writing-plans/SKILL.md`, change line 16 from:
+`skills/subagent-driven-development/SKILL.md`에서 268번째 줄을 다음에서:
+
+```markdown
+- **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
+```
+
+다음으로 변경:
+
+```markdown
+- **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
+```
+
+- [ ] **단계 3: writing-plans 컨텍스트 줄 업데이트**
+
+`skills/writing-plans/SKILL.md`에서 16번째 줄을 다음에서:
 
 ```markdown
 **Context:** This should be run in a dedicated worktree (created by brainstorming skill).
 ```
 
-to:
+다음으로 변경:
 
 ```markdown
 **Context:** If working in an isolated worktree, it should have been created via the using-git-worktrees skill at execution time.
 ```
 
-- [ ] **Step 4: Commit all three**
+- [ ] **단계 4: 세 파일 모두 커밋**
 
 ```bash
 git add skills/executing-plans/SKILL.md skills/subagent-driven-development/SKILL.md skills/writing-plans/SKILL.md
@@ -817,50 +817,50 @@ Fix stale 'created by brainstorming' claim in writing-plans."
 
 ---
 
-### Task 5: End-to-End Validation
+### 작업 5: 엔드투엔드 검증
 
-Verify the full rewritten skills work together. Run the existing test suite plus manual verification.
+재작성된 전체 스킬이 함께 잘 작동하는지 검증합니다. 기존 테스트 수트 실행 및 수동 검증을 진행합니다.
 
-**Files:**
-- Read: `tests/claude-code/run-skill-tests.sh`
-- Read: `skills/using-git-worktrees/SKILL.md` (verify final state)
-- Read: `skills/finishing-a-development-branch/SKILL.md` (verify final state)
+**파일:**
+- 읽기: `tests/claude-code/run-skill-tests.sh`
+- 읽기: `skills/using-git-worktrees/SKILL.md` (최종 상태 검증)
+- 읽기: `skills/finishing-a-development-branch/SKILL.md` (최종 상태 검증)
 
-- [ ] **Step 1: Run existing test suite**
+- [ ] **단계 1: 기존 테스트 수트 실행**
 
-Run: `cd tests/claude-code && bash run-skill-tests.sh`
+실행: `cd tests/claude-code && bash run-skill-tests.sh`
 
-Expected: All existing tests pass. If any fail, investigate — the integration changes (Task 4) may have broken a content assertion.
+예상 결과: 모든 기존 테스트 통과. 실패하는 항목이 있으면 조사하세요 — 통합 변경 사항(작업 4)이 콘텐츠 단정문을 깨뜨렸을 수 있습니다.
 
-- [ ] **Step 2: Re-run Step 1a GREEN test**
+- [ ] **단계 2: 단계 1a GREEN 테스트 재실행**
 
-Run: `cd tests/claude-code && bash test-worktree-native-preference.sh green`
+실행: `cd tests/claude-code && bash test-worktree-native-preference.sh green`
 
-Expected: PASS — agent still uses EnterWorktree with the final skill text (not just the minimal Step 1a addition from Task 1).
+예상 결과: 통과(PASS) — 에이전트가 최종 스킬 텍스트(작업 1의 최소 단계 1a 추가뿐만 아니라)로도 여전히 EnterWorktree를 사용함.
 
-- [ ] **Step 3: Manual verification — read both rewritten skills end-to-end**
+- [ ] **단계 3: 수동 검증 — 재작성된 두 스킬 모두 처음부터 끝까지 읽기**
 
-Read `skills/using-git-worktrees/SKILL.md` and `skills/finishing-a-development-branch/SKILL.md` in their entirety. Check:
+`skills/using-git-worktrees/SKILL.md` 및 `skills/finishing-a-development-branch/SKILL.md` 전체를 읽으세요. 다음을 확인합니다:
 
-1. No references to old behavior (hardcoded `CLAUDE.md`, interactive directory prompt, "REQUIRED" language)
-2. Step numbering is consistent within each file
-3. Quick Reference tables match the prose
-4. Integration sections cross-reference correctly
-5. No markdown formatting issues
+1. 이전 동작에 대한 참조 없음(하드코딩된 `CLAUDE.md`, 대화형 디렉터리 프롬프트, "REQUIRED" 언어)
+2. 각 파일 내 단계 번호 지정이 일관됨
+3. 빠른 참조(Quick Reference) 표가 본문과 일치함
+4. 통합 섹션 상호 참조가 올바름
+5. 마크다운 서식 문제 없음
 
-- [ ] **Step 4: Verify git status is clean**
+- [ ] **단계 4: git status가 깨끗한지 검증**
 
-Run: `git status`
+실행: `git status`
 
-Expected: Clean working tree. All changes committed across Tasks 1-4.
+예상 결과: 깨끗한 작업 트리. 작업 1-4 전반의 모든 변경 사항이 커밋됨.
 
-- [ ] **Step 5: Final commit if any fixups needed**
+- [ ] **단계 5: 수정이 필요한 경우 최종 커밋**
 
-If manual verification found issues, fix them and commit:
+수동 검증에서 문제를 발견한 경우 수정하고 커밋하세요:
 
 ```bash
 git add -A
 git commit -m "fix: address review findings in worktree skill rewrite (PRI-974)"
 ```
 
-If no issues found, skip this step.
+문제가 발견되지 않으면 이 단계를 건너뜁니다.

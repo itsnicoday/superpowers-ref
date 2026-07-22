@@ -1,61 +1,60 @@
 # Superpowers
 
-Superpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
+Superpowers는 개발 에이전트를 위한 완전한 소프트웨어 개발 방법론으로, 조합 가능한 스킬 세트와 에이전트가 이를 확실히 사용하도록 안내하는 초기 지시사항을 기반으로 구축되었습니다.
 
+## 채용 안내
 
-## We're Hiring!
+Superpowers 커뮤니티 및 코드 작업을 상근으로 도와줄 인재를 채용 중입니다.  
+직무에 대한 자세한 내용은 https://primeradiant.com/jobs/superpowers-community-engineer/ 에서 확인하실 수 있습니다.  
+주변에 적합한 분이 계시다면 꼭 추천해 주시기 바랍니다.
 
-We're hiring someone to help out full time with Superpowers community and code work. 
-You can read about the job at https://primeradiant.com/jobs/superpowers-community-engineer/
-If this sounds like someone you know, definitely send them our way.
+## 빠른 시작 (Quickstart)
 
-## Quickstart
+개발 에이전트에 Superpowers를 부여하세요: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
+## 작동 방식
 
-## How it works
+개발 에이전트를 실행하는 순간부터 작동이 시작됩니다. 사용자가 무언가를 구축하려 한다는 것을 감지하면, 에이전트는 무작정 코드를 작성하려 들지 *않습니다*. 대신 한 걸음 물러서서 실제로 무엇을 하려는 것인지 질문합니다.
 
-It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do. 
+대화를 통해 스펙을 도출하고 나면, 실제로 읽고 이해할 수 있을 만큼 짧은 청크 단위로 사용자에게 이를 보여줍니다.
 
-Once it's teased a spec out of the conversation, it shows it to you in chunks short enough to actually read and digest. 
+설계에 대해 사용자가 승인하고 나면, 에이전트는 안목이 부족하고, 판단력이 없으며, 프로젝트 컨벤션을 잘 모르고, 테스트를 기피하는 열정적인 주니어 엔지니어도 쉽게 따를 수 있을 만큼 명확한 구현 플랜을 작성합니다. 이 플랜은 진정한 RED/GREEN TDD, YAGNI(You Aren't Gonna Need It), 그리고 DRY 원칙을 강조합니다.
 
-After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasizes true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY. 
+다음으로 사용자가 "시작(go)"을 명령하면, *서브에이전트 주도 개발(subagent-driven-development)* 프로세스를 출범시켜 에이전트들이 각 엔지니어링 작업을 검토 및 리뷰하면서 계속 전진해 나갑니다. 에이전트가 작성한 플랜에서 벗어나지 않고 한 번에 몇 시간씩 자율적으로 작업하는 경우도 흔합니다.
 
-Next up, once you say "go", it launches a *subagent-driven-development* process, having agents work through each engineering task, inspecting and reviewing their work, and continuing forward. It's not uncommon for your agent to work autonomously for a couple hours at a time without deviating from the plan you put together.
+이 외에도 많은 내용이 포함되어 있지만, 이것이 시스템의 핵심입니다. 스킬이 자동으로 트리거되므로 사용자가 별도로 특별한 조치를 취할 필요가 없습니다. 개발 에이전트가 자연스럽게 Superpowers를 갖추게 됩니다.
 
-There's a bunch more to it, but that's the core of the system. And because the skills trigger automatically, you don't need to do anything special. Your coding agent just has Superpowers.
+## 상업용 서비스
 
-## Commercial Services
+기업에서 Superpowers를 사용하고 계시며 상업용 지원, 추가 툴링, 또는 비용 관리의 혜택을 원하신다면 언제든지 sales@primeradiant.com으로 문의해 주시기 바랍니다.
 
-If you're using Superpowers in enterprise and could benefit from commercial support, additional tooling, or managed spending, please don't hesitate to drop us a line at sales@primeradiant.com.
+## 설치
 
-## Installation
-
-Installation differs by harness. If you use more than one, install Superpowers separately for each one.
+설치는 하네스(harness)에 따라 다릅니다. 하나 이상의 하네스를 사용하는 경우 각각에 대해 Superpowers를 별도로 설치하십시오.
 
 ### Claude Code
 
-Superpowers is available via the [official Claude plugin marketplace](https://claude.com/plugins/superpowers)
+Superpowers는 [공식 Claude 플러그인 마켓플레이스](https://claude.com/plugins/superpowers)를 통해 이용할 수 있습니다.
 
-#### Official Marketplace
+#### 공식 마켓플레이스
 
-- Install the plugin from Anthropic's official marketplace:
+- Anthropic 공식 마켓플레이스에서 플러그인을 설치합니다:
 
   ```bash
   /plugin install superpowers@claude-plugins-official
   ```
 
-#### Superpowers Marketplace
+#### Superpowers 마켓플레이스
 
-The Superpowers marketplace provides Superpowers and some other related plugins for Claude Code.
+Superpowers 마켓플레이스는 Claude Code를 위한 Superpowers 및 기타 관련 플러그인을 제공합니다.
 
-- Register the marketplace:
+- 마켓플레이스 등록:
 
   ```bash
   /plugin marketplace add obra/superpowers-marketplace
   ```
 
-- Install the plugin from this marketplace:
+- 이 마켓플레이스에서 플러그인 설치:
 
   ```bash
   /plugin install superpowers@superpowers-marketplace
@@ -63,60 +62,59 @@ The Superpowers marketplace provides Superpowers and some other related plugins 
 
 ### Antigravity
 
-Install Superpowers as a plugin from this repository:
+이 저장소에서 플러그인으로 Superpowers를 설치합니다:
 
 ```bash
 agy plugin install https://github.com/obra/superpowers
 ```
 
-Antigravity runs the plugin's session-start hook, so Superpowers is active from
-the first message. Reinstall with the same command to update.
+Antigravity는 플러그인의 세션 시작 훅을 실행하므로 Superpowers가 첫 메시지부터 활성화됩니다. 동일한 명령어로 재설치하여 업데이트할 수 있습니다.
 
 ### Codex App
 
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
+Superpowers는 [공식 Codex 플러그인 마켓플레이스](https://github.com/openai/plugins)를 통해 이용할 수 있습니다.
 
-- In the Codex app, click on Plugins in the sidebar.
-- You should see `Superpowers` in the Coding section.
-- Click the `+` next to Superpowers and follow the prompts.
+- Codex 앱의 사이드바에서 Plugins를 클릭합니다.
+- Coding 섹션에서 `Superpowers`를 볼 수 있습니다.
+- Superpowers 옆의 `+`를 클릭하고 안내를 따릅니다.
 
 ### Codex CLI
 
-Superpowers is available via the [official Codex plugin marketplace](https://github.com/openai/plugins).
+Superpowers는 [공식 Codex 플러그인 마켓플레이스](https://github.com/openai/plugins)를 통해 이용할 수 있습니다.
 
-- Open the plugin search interface:
+- 플러그인 검색 인터페이스를 엽니다:
 
   ```bash
   /plugins
   ```
 
-- Search for Superpowers:
+- Superpowers 검색:
 
   ```bash
   superpowers
   ```
 
-- Select `Install Plugin`.
+- `Install Plugin`을 선택합니다.
 
 ### Cursor
 
-- In Cursor Agent chat, install from marketplace:
+- Cursor Agent 채팅에서 마켓플레이스를 통해 설치:
 
   ```text
   /add-plugin superpowers
   ```
 
-- Or search for "superpowers" in the plugin marketplace.
+- 또는 플러그인 마켓플레이스에서 "superpowers"를 검색합니다.
 
 ### Factory Droid
 
-- Register the marketplace:
+- 마켓플레이스 등록:
 
   ```bash
   droid plugin marketplace add https://github.com/obra/superpowers
   ```
 
-- Install the plugin:
+- 플러그인 설치:
 
   ```bash
   droid plugin install superpowers@superpowers
@@ -124,13 +122,13 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 
 ### GitHub Copilot CLI
 
-- Register the marketplace:
+- 마켓플레이스 등록:
 
   ```bash
   copilot plugin marketplace add obra/superpowers-marketplace
   ```
 
-- Install the plugin:
+- 플러그인 설치:
 
   ```bash
   copilot plugin install superpowers@superpowers-marketplace
@@ -138,136 +136,135 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 
 ### Kimi Code
 
-Superpowers is available in Kimi Code's plugin marketplace.
+Superpowers는 Kimi Code의 플러그인 마켓플레이스에서 이용할 수 있습니다.
 
-- Open Kimi Code's plugin manager:
+- Kimi Code의 플러그인 관리자를 엽니다:
 
   ```text
   /plugins
   ```
 
-- Go to `Marketplace` > `Superpowers` and install it.
+- `Marketplace` > `Superpowers`로 이동하여 설치합니다.
 
-- Or install directly from this repository:
+- 또는 이 저장소에서 직접 설치합니다:
 
   ```text
   /plugins install https://github.com/obra/superpowers
   ```
 
-- Detailed docs: [docs/README.kimi.md](docs/README.kimi.md)
+- 상세 문서: [docs/README.kimi.md](docs/README.kimi.md)
 
 ### OpenCode
 
-OpenCode uses its own plugin install; install Superpowers separately even if you
-already use it in another harness.
+OpenCode는 자체 플러그인 설치 방식을 사용합니다; 이미 다른 하네스에서 사용 중이더라도 Superpowers를 별도로 설치하십시오.
 
-- Tell OpenCode:
+- OpenCode에 전달:
 
   ```
   Fetch and follow instructions from https://raw.githubusercontent.com/obra/superpowers/refs/heads/main/.opencode/INSTALL.md
   ```
 
-- Detailed docs: [docs/README.opencode.md](docs/README.opencode.md)
+- 상세 문서: [docs/README.opencode.md](docs/README.opencode.md)
 
 ### Pi
 
-Install Superpowers as a Pi package from this repository:
+이 저장소에서 Pi 패키지로 Superpowers를 설치합니다:
 
 ```bash
 pi install git:github.com/obra/superpowers
 ```
 
-For local development, run Pi with this checkout loaded as a temporary package:
+로컬 개발을 위해, 이 체크아웃을 임시 패키지로 로드하여 Pi를 실행합니다:
 
 ```bash
 pi -e /path/to/superpowers
 ```
 
-The Pi package loads the Superpowers skills and a small extension that injects the `using-superpowers` bootstrap at session startup and again after compaction. Pi has native skills, so no compatibility `Skill` tool is required. Subagent and task-list tools remain optional Pi companion packages.
+Pi 패키지는 Superpowers 스킬과 세션 시작 시 및 압축 후 `using-superpowers` 부트스트랩을 주입하는 소형 확장을 로드합니다. Pi에는 네이티브 스킬이 있으므로 호환성을 위한 `Skill` 도구가 필요하지 않습니다. 서브에이전트 및 작업 목록 도구는 선택적 Pi 동반 패키지로 남아 있습니다.
 
-## The Basic Workflow
+## 기본 워크플로우
 
-1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
+1. **brainstorming** - 코드를 작성하기 전에 활성화됩니다. 질문을 통해 대략적인 아이디어를 구체화하고, 대안을 탐색하며, 검증을 위해 설계를 섹션별로 제시합니다. 설계 문서를 저장합니다.
 
-2. **using-git-worktrees** - Activates after design approval. Creates isolated workspace on new branch, runs project setup, verifies clean test baseline.
+2. **using-git-worktrees** - 설계 승인 후 활성화됩니다. 새 브랜치에 격리된 작업 공간을 생성하고, 프로젝트 설정을 실행하며, 깨끗한 테스트 베이스라인을 검증합니다.
 
-3. **writing-plans** - Activates with approved design. Breaks work into bite-sized tasks (2-5 minutes each). Every task has exact file paths, complete code, verification steps.
+3. **writing-plans** - 승인된 설계와 함께 활성화됩니다. 작업을 한 입 크기(각 2-5분)로 나눕니다. 모든 작업에는 정확한 파일 경로, 완전한 코드, 검증 단계가 포함됩니다.
 
-4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes in batches with human checkpoints.
+4. **subagent-driven-development** 또는 **executing-plans** - 플랜과 함께 활성화됩니다. 2단계 리뷰(스펙 준수, 그 후 코드 품질)를 통해 작업당 신규 서브에이전트를 디스패치하거나, 인간 체크포인트와 함께 배치로 실행합니다.
 
-5. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, watch it pass, commit. Deletes code written before tests.
+5. **test-driven-development** - 구현 중에 활성화됩니다. RED-GREEN-REFACTOR를 강제합니다: 실패하는 테스트 작성, 실패 확인, 최소한의 코드 작성, 통과 확인, 커밋. 테스트 작성 전에 작성된 코드는 삭제합니다.
 
-6. **requesting-code-review** - Activates between tasks. Reviews against plan, reports issues by severity. Critical issues block progress.
+6. **requesting-code-review** - 작업 중간에 활성화됩니다. 플랜에 대비해 검토하고 심각도별로 이슈를 보고합니다. Critical 이슈는 진행을 블로킹합니다.
 
-7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests, presents options (merge/PR/keep/discard), cleans up worktree.
+7. **finishing-a-development-branch** - 작업 완료 시 활성화됩니다. 테스트를 검증하고, 옵션(merge/PR/keep/discard)을 제시하며, 워크트리를 정리합니다.
 
-**The agent checks for relevant skills before any task.** Mandatory workflows, not suggestions.
+**에이전트는 어떤 작업을 진행하기 전에 관련 스킬을 검사합니다.** 단순 권장 사항이 아닌 필수 워크플로우입니다.
 
-## What's Inside
+## 내부 구성 요소
 
-### Skills Library
+### 스킬 라이브러리
 
-**Testing**
-- **test-driven-development** - RED-GREEN-REFACTOR cycle (includes testing anti-patterns reference)
+**테스팅 (Testing)**
+- **test-driven-development** - RED-GREEN-REFACTOR 사이클 (테스팅 안티 패턴 참조 포함)
 
-**Debugging**
-- **systematic-debugging** - 4-phase root cause process (includes root-cause-tracing, defense-in-depth, condition-based-waiting techniques)
-- **verification-before-completion** - Ensure it's actually fixed
+**디버깅 (Debugging)**
+- **systematic-debugging** - 4단계 근본 원인 프로세스 (근본 원인 추적, 심층 방어, 조건 기반 대기 기법 포함)
+- **verification-before-completion** - 실제로 수정되었는지 확인
 
-**Collaboration** 
-- **brainstorming** - Socratic design refinement
-- **writing-plans** - Detailed implementation plans
-- **executing-plans** - Batch execution with checkpoints
-- **dispatching-parallel-agents** - Concurrent subagent workflows
-- **requesting-code-review** - Pre-review checklist
-- **receiving-code-review** - Responding to feedback
-- **using-git-worktrees** - Parallel development branches
-- **finishing-a-development-branch** - Merge/PR decision workflow
-- **subagent-driven-development** - Fast iteration with two-stage review (spec compliance, then code quality)
+**협업 (Collaboration)** 
+- **brainstorming** - 소크라테스식 설계 구체화
+- **writing-plans** - 상세 구현 플랜
+- **executing-plans** - 체크포인트를 포함한 배치 실행
+- **dispatching-parallel-agents** - 동시 서브에이전트 워크플로우
+- **requesting-code-review** - 사전 리뷰 체크리스트
+- **receiving-code-review** - 피드백에 응답하기
+- **using-git-worktrees** - 병렬 개발 브랜치
+- **finishing-a-development-branch** - 머지/PR 결정 워크플로우
+- **subagent-driven-development** - 2단계 리뷰(스펙 준수, 그 후 코드 품질)를 통한 빠른 반복
 
-**Meta**
-- **writing-skills** - Create new skills following best practices (includes testing methodology)
-- **using-superpowers** - Introduction to the skills system
+**메타 (Meta)**
+- **writing-skills** - 모범 사례를 따라 새로운 스킬 생성 (테스팅 방법론 포함)
+- **using-superpowers** - 스킬 시스템 소개
 
-## Philosophy
+## 철학 (Philosophy)
 
-- **Test-Driven Development** - Write tests first, always
-- **Systematic over ad-hoc** - Process over guessing
-- **Complexity reduction** - Simplicity as primary goal
-- **Evidence over claims** - Verify before declaring success
+- **테스트 주도 개발 (Test-Driven Development)** - 항상 테스트를 먼저 작성
+- **임시방편보다 체계적으로 (Systematic over ad-hoc)** - 임의의 추측보다 체계적 프로세스
+- **복잡성 감소 (Complexity reduction)** - 단순성을 최우선 목표로 설정
+- **주장보다 증거 (Evidence over claims)** - 성공을 선언하기 전에 검증
 
-Read [the original release announcement](https://blog.fsck.com/2025/10/09/superpowers/).
+[최초 릴리스 발표](https://blog.fsck.com/2025/10/09/superpowers/)를 읽어보세요.
 
-## Contributing
+## 기여하기 (Contributing)
 
-The general contribution process for Superpowers is below. Keep in mind that we don't generally accept contributions of new skills and that any updates to skills must work across all of the coding agents we support.
+Superpowers의 일반적인 기여 프로세스는 아래와 같습니다. 새로운 스킬 기여는 일반적으로 수락하지 않으며, 스킬 업데이트는 지원하는 모든 개발 에이전트 전반에서 작동해야 한다는 점을 유념해 주십시오.
 
-1. Fork the repository
-2. Switch to the 'dev' branch
-3. Create a branch for your work
-4. Follow the `writing-skills` skill for creating and testing new and modified skills
-5. Submit a PR, being sure to fill in the pull request template.
+1. 저장소 포크(Fork)
+2. 'dev' 브랜치로 전환
+3. 작업을 위한 브랜치 생성
+4. 신규 및 수정된 스킬을 생성하고 테스트할 때 `writing-skills` 스킬을 준수
+5. 풀 리퀘스트 템플릿을 반드시 작성하여 PR 제출
 
-Skill-behavior tests use the drill eval harness from [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/), cloned into `evals/` — see `evals/README.md` for setup. Plugin-infrastructure tests live at `tests/` and run via the relevant `run-*.sh` or `npm test`.
+스킬 동작 테스트는 [superpowers-evals](https://github.com/prime-radiant-inc/superpowers-evals/)에서 가져와 `evals/`에 클론된 drill 이발 하네스를 사용합니다 — 설정을 보려면 `evals/README.md`를 참조하십시오. 플러그인 인프라 테스트는 `tests/`에 위치하며 관련 `run-*.sh` 또는 `npm test`를 통해 실행됩니다.
 
-See `skills/writing-skills/SKILL.md` for the complete guide.
+전체 가이드는 `skills/writing-skills/SKILL.md`를 참조하십시오.
 
-## Updating
+## 업데이트
 
-Superpowers updates are somewhat coding-agent dependent, but are often automatic.
+Superpowers 업데이트는 개발 에이전트에 따라 다소 차이가 있지만, 종종 자동으로 수행됩니다.
 
-## License
+## 라이선스
 
-MIT License - see LICENSE file for details
+MIT 라이선스 - 자세한 내용은 LICENSE 파일을 참조하십시오.
 
-## Visual companion telemetry
+## Visual companion 텔레메트리 (Telemetry)
 
-Because skills and plugins don't provide any feedback to creators, we have no idea how many of you are using Superpowers. By default, the Prime Radiant logo on brainstorming's optional visual companion feature is loaded from our website. It includes the version of Superpowers in use. It does not include any details about your project, prompt, or coding agent. We don't see your clicks or anything about what you're building. This helps us have a rough idea of how many folks are using Superpowers and which version of Superpowers they're using. It's 100% optional. To disable this, set the environment variable `SUPERPOWERS_DISABLE_TELEMETRY` to any true value. Superpowers also honors Claude Code's `DISABLE_TELEMETRY` and `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` opt-outs.
+스킬과 플러그인은 제작자에게 피드백을 제공하지 않기 때문에 얼마나 많은 분들이 Superpowers를 사용하는지 알 수 없습니다. 기본적으로 브레인스토밍의 선택적 visual companion 기능에 포함된 Prime Radiant 로고는 당사 웹사이트에서 로드됩니다. 여기에는 사용 중인 Superpowers 버전이 포함됩니다. 프로젝트, 프롬프트 또는 개발 에이전트에 대한 어떠한 세부 정보도 포함되지 않습니다. 당사는 사용자의 클릭이나 구축 내용에 대한 어떠한 정보도 보지 않습니다. 이는 얼마나 많은 분들이 Superpowers를 사용하는지, 어떤 버전을 사용하는지 대략 파악하는 데 도움이 됩니다. 이는 100% 선택 사항입니다. 이를 비활성화하려면 환경 변수 `SUPERPOWERS_DISABLE_TELEMETRY`를 참에 해당하는 값으로 설정하십시오. Superpowers는 Claude Code의 `DISABLE_TELEMETRY` 및 `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC` 비활성화 설정도 존중합니다.
 
-## Community
+## 커뮤니티
 
-Superpowers is built by [Jesse Vincent](https://blog.fsck.com) and the rest of the folks at [Prime Radiant](https://primeradiant.com).
+Superpowers는 [Jesse Vincent](https://blog.fsck.com)와 [Prime Radiant](https://primeradiant.com)의 다른 팀원들에 의해 개발되었습니다.
 
-- **Discord**: [Join us](https://discord.gg/35wsABTejz) for community support, questions, and sharing what you're building with Superpowers
+- **Discord**: [참여하기](https://discord.gg/35wsABTejz) 커뮤니티 지원, 질문 및 Superpowers로 구축한 작업 공유
 - **Issues**: https://github.com/obra/superpowers/issues
-- **Release announcements**: [Sign up](https://primeradiant.com/superpowers/) to get notified about new versions
+- **릴리스 공지**: [등록하기](https://primeradiant.com/superpowers/) 새 버전에 대한 알림 받기

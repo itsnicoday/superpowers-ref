@@ -1,10 +1,10 @@
-# Plan Document Reviewer Prompt Template
+# 계획 문서 검토자 프롬프트 템플릿 (Plan Document Reviewer Prompt Template)
 
-Use this template when dispatching a plan document reviewer subagent.
+계획 문서 검토자 서브에이전트를 파견할 때 이 템플릿을 사용하세요.
 
-**Purpose:** Verify the plan is complete, matches the spec, and has proper task decomposition.
+**목적:** 계획이 완전하고, 명세서(spec)와 일치하며, 적절한 태스크 분해가 이루어졌는지 검증합니다.
 
-**Dispatch after:** The complete plan is written.
+**파견 시점:** 전체 계획 작성이 완료된 후
 
 ```
 Subagent (general-purpose):
@@ -46,4 +46,4 @@ Subagent (general-purpose):
     - [suggestions for improvement]
 ```
 
-**Reviewer returns:** Status, Issues (if any), Recommendations
+**검토자가 반환하는 내용:** Status, Issues (있는 경우), Recommendations

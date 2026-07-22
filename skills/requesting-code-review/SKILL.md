@@ -1,51 +1,51 @@
 ---
 name: requesting-code-review
-description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+description: 태스크를 완료할 때, 주요 기능을 구현할 때, 또는 작업이 요구사항을 충족하는지 검증하기 위해 머지하기 전에 사용합니다.
 ---
 
-# Requesting Code Review
+# 코드 검토 요청하기 (Requesting Code Review)
 
-Dispatch a code reviewer subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
+문제가 더 많은 작업으로 확산되기 전에 이를 잡아낼 수 있도록 코드 검토자 서브에이전트를 파견하세요. 검토자는 세션 히스토리가 아닌 검증에 정교하게 제작된 컨텍스트를 전달받습니다. 이는 검토자가 당신의 사고 과정이 아닌 작업 결과물에 집중할 수 있게 하며, 지속적인 작업을 위해 사용자의 자체 컨텍스트를 보존합니다.
 
-**Core principle:** Review early, review often.
+**핵심 원칙:** 일찍 검토하고, 자주 검토하라 (Review early, review often).
 
-## When to Request Review
+## 검토 요청 시점 (When to Request Review)
 
-**Mandatory:**
-- After each task in subagent-driven development
-- After completing major feature
-- Before merge to main
+**필수:**
+- 서브에이전트 기반 개발(subagent-driven development)에서 각 태스크 완료 후
+- 주요 기능 완료 후
+- main으로 머지하기 전
 
-**Optional but valuable:**
-- When stuck (fresh perspective)
-- Before refactoring (baseline check)
-- After fixing complex bug
+**선택 사항이지만 유용한 경우:**
+- 막혔을 때 (새로운 시각 필요)
+- 리팩토링 전 (기준선 점검)
+- 복잡한 버그를 수정한 후
 
-## How to Request
+## 요청 방법 (How to Request)
 
-**1. Get git SHAs:**
+**1. git SHA 가져오기:**
 ```bash
 BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
 HEAD_SHA=$(git rev-parse HEAD)
 ```
 
-**2. Dispatch code reviewer subagent:**
+**2. 코드 검토자 서브에이전트 파견:**
 
-Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md)
+[code-reviewer.md](code-reviewer.md) 템플릿의 내용을 채워서 `general-purpose` 서브에이전트를 파견하세요.
 
-**Placeholders:**
-- `{DESCRIPTION}` - Brief summary of what you built
-- `{PLAN_OR_REQUIREMENTS}` - What it should do
-- `{BASE_SHA}` - Starting commit
-- `{HEAD_SHA}` - Ending commit
+**플레이스홀더:**
+- `{DESCRIPTION}` - 구축한 내용에 대한 간단한 요약
+- `{PLAN_OR_REQUIREMENTS}` - 수행해야 할 작업
+- `{BASE_SHA}` - 시작 커밋
+- `{HEAD_SHA}` - 종료 커밋
 
-**3. Act on feedback:**
-- Fix Critical issues immediately
-- Fix Important issues before proceeding
-- Note Minor issues for later
-- Push back if reviewer is wrong (with reasoning)
+**3. 피드백 조치:**
+- Critical 이슈는 즉시 수정
+- Important 이슈는 진행 전에 수정
+- Minor 이슈는 나중을 위해 메모
+- 검토자가 틀렸다면 논거를 가지고 이의 제기
 
-## Example
+## 예시 (Example)
 
 ```
 [Just completed Task 2: Add verification function]
@@ -72,32 +72,32 @@ You: [Fix progress indicators]
 [Continue to Task 3]
 ```
 
-## Integration with Workflows
+## 워크플로우와의 통합 (Integration with Workflows)
 
-**Subagent-Driven Development:**
-- Review after EACH task
-- Catch issues before they compound
-- Fix before moving to next task
+**서브에이전트 기반 개발 (Subagent-Driven Development):**
+- 각 태스크 완료 후 검토
+- 문제가 복합되기 전에 잡아냄
+- 다음 태스크로 이동하기 전에 수정
 
-**Executing Plans:**
-- Review after each task or at natural checkpoints
-- Get feedback, apply, continue
+**계획 실행 (Executing Plans):**
+- 각 태스크 후 또는 자연스러운 체크포인트에서 검토
+- 피드백 수신, 적용, 지속
 
-**Ad-Hoc Development:**
-- Review before merge
-- Review when stuck
+**임의 개발 (Ad-Hoc Development):**
+- 머지 전 검토
+- 막혔을 때 검토
 
-## Red Flags
+## 주의 사항 (Red Flags)
 
-**Never:**
-- Skip review because "it's simple"
-- Ignore Critical issues
-- Proceed with unfixed Important issues
-- Argue with valid technical feedback
+**절대 금지:**
+- "단순하다"는 이유로 검토 건너뛰기
+- Critical 이슈 무시하기
+- 수정되지 않은 Important 이슈가 있는 상태로 진행하기
+- 타당한 기술 피드백에 대해 감정적으로 반박하기
 
-**If reviewer wrong:**
-- Push back with technical reasoning
-- Show code/tests that prove it works
-- Request clarification
+**검토자가 틀린 경우:**
+- 기술적 논거를 바탕으로 반박
+- 작동을 증명하는 코드/테스트 제시
+- 설명 명확화 요청
 
-See template at: [code-reviewer.md](code-reviewer.md)
+템플릿 참조: [code-reviewer.md](code-reviewer.md)

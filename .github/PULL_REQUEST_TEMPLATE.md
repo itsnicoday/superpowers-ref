@@ -1,143 +1,135 @@
 <!--
-BEFORE SUBMITTING: Read every word of this template. PRs that leave
-sections blank, contain multiple unrelated changes, or show no evidence
-of human involvement will be closed without review.
+제출 전 필독: 이 템플릿의 모든 단어를 읽으십시오. 섹션을 비워두거나,
+여러 무관한 변경 사항을 포함하거나, 인간의 참여 증거가 없는 PR은
+검토 없이 닫힙니다.
 -->
 
-> **This PR MUST target the `dev` branch, not `main`.** `main` is the
-> released branch; active work lands on `dev` first. PRs opened against
-> `main` will be asked to retarget `dev` before review.
+> **이 PR은 `main`이 아닌 `dev` 브랜치를 타겟으로 해야 합니다.** `main`은
+> 릴리스된 브랜치이며, 활성 작업은 먼저 `dev`에 제출됩니다. `main`을 타겟으로 생성된 PR은
+> 검토 전에 `dev`로 재설정하도록 요청받게 됩니다.
 
-## Who is submitting this PR? (required)
-<!-- Required. PRs that omit this will be closed. We assume an agent wrote
-     this PR — tell us which one and where it ran. We weigh contributions by
-     what produced them: content reasoned from documentation is held to a
-     different bar than work grounded in a real session. -->
+## 누가 이 PR을 제출하고 있나요? (필수)
+<!-- 필수. 이를 누락한 PR은 닫힙니다. 당사는 에이전트가 이 PR을 작성했다고 가정합니다 —
+     어떤 에이전트인지, 어디서 실행되었는지 알려주십시오. 당사는 기여물을 생성한 주체에 따라
+     가중치를 둡니다: 문서로부터 추론된 콘텐츠는 실제 세션에 기반한 작업과
+     다른 기준이 적용됩니다. -->
 
 | Field | Value |
 |-------|-------|
-| Your model + version | |
-| Harness + version | |
-| All plugins installed | |
-| Human partner who reviewed this diff | |
+| 사용한 모델 + 버전 | |
+| 하네스 + 버전 | |
+| 설치된 모든 플러그인 | |
+| 이 diff를 검토한 인간 파트너 | |
 
-## What problem are you trying to solve?
-<!-- Describe the specific problem you encountered. If this was a session
-     issue, include: what you were doing, what went wrong, the model's
-     exact failure mode, and ideally a transcript or session log.
+## 어떤 문제를 해결하려고 하나요?
+<!-- 발생한 구체적인 문제를 설명하십시오. 세션 이슈인 경우 다음을 포함하십시오:
+     수행 중이었던 작업, 잘못된 부분, 모델의 정확한 실패 모드,
+     그리고 가급적 트랜스크립트나 세션 로그.
 
-     "Improving" something is not a problem statement. What broke? What
-     failed? What was the user experience that motivated this? -->
+     무언가를 "개선"한다는 것은 문제 정의가 아닙니다. 무엇이 깨졌나요? 무엇이
+     실패했나요? 이 작업을 유발한 사용자 경험은 무엇이었나요? -->
 
-## What does this PR change?
-<!-- 1-3 sentences. What, not why — the "why" belongs above. -->
+## 이 PR은 무엇을 변경하나요?
+<!-- 1-3문장. "왜"가 아닌 "무엇"을 설명하십시오 — "왜"는 위 섹션에 해당합니다. -->
 
-## Is this change appropriate for the core library?
-<!-- Superpowers core contains general-purpose skills and infrastructure
-     that benefit all users. Ask yourself:
+## 이 변경이 코어 라이브러리에 적합한가요?
+<!-- Superpowers 코어는 모든 사용자에게 이점을 주는 범용 스킬과 인프라를 포함합니다.
+     스스로에게 질문해 보십시오:
 
-     - Would this be useful to someone working on a completely different
-       kind of project than yours?
-     - Is this project-specific, team-specific, or tool-specific?
-     - Does this integrate or promote a third-party service?
+     - 이것이 본인의 프로젝트와 완전히 다른 종류의 프로젝트 작업을 하는 사람에게도 유용할까요?
+     - 이것이 특정 프로젝트전용, 특정 팀전용, 또는 특정 도구전용인가요?
+     - 이것이 서드파티 서비스를 통합하거나 홍보하나요?
 
-     If your change is a new skill for a specific domain, workflow tool,
-     or third-party integration, it belongs in its own plugin — not here.
-     See the plugin development docs for how to publish it separately. -->
+     변경 사항이 특정 도메인, 워크플로우 도구, 또는 서드파티 통합을 위한 새로운 스킬이라면,
+     여기가 아닌 자체 플러그인에 속합니다. 별도로 게시하는 방법은 플러그인 개발 문서를 참조하십시오. -->
 
-## What alternatives did you consider?
-<!-- What other approaches did you try or evaluate before landing on this
-     one? Why were they worse? If you didn't consider alternatives, say so
-     — but know that's a red flag. -->
+## 어떤 대안을 고려했나요?
+<!-- 이 방안으로 결정하기 전에 어떤 다른 접근 방식을 시도하거나 평가했나요?
+     그 방식들이 왜 더 나빴나요? 대안을 고려하지 않았다면 그렇게 밝히십시오
+     — 단, 이는 위험 신호(red flag)라는 점을 인지하십시오. -->
 
-## Does this PR contain multiple unrelated changes?
-<!-- If yes: stop. Split it into separate PRs. Bundled PRs will be closed.
-     If you believe the changes are related, explain the dependency. -->
+## 이 PR에 여러 무관한 변경 사항이 포함되어 있나요?
+<!-- 만약 그렇다면: 중단하십시오. 별도의 PR로 분할하십시오. 묶음 PR은 닫힙니다.
+     변경 사항들이 관련되어 있다고 믿는다면, 의존성을 설명하십시오. -->
 
-## Existing PRs
-- [ ] I have reviewed all open AND closed PRs for duplicates or prior art
-- Related PRs: <!-- #number, #number, or "none found" -->
+## 기존 PR 목록
+- [ ] 동종 또는 이전 작업에 대해 열린 PR 및 닫힌 PR을 모두 검토했습니다.
+- 관련 PR: <!-- #번호, #번호, 또는 "발견되지 않음" -->
 
-<!-- If a related closed PR exists, explain what's different about your
-     approach and why it should succeed where the other didn't. -->
+<!-- 관련 닫힌 PR이 존재하는 경우, 본인의 접근 방식에서 다른 점이 무엇인지,
+     그리고 다른 PR이 성공하지 못한 부분에서 왜 이것이 성공해야 하는지 설명하십시오. -->
 
-## Environment tested
+## 테스트된 환경
 
 | Harness (e.g. Claude Code, Cursor) | Harness version | Model | Model version/ID |
 |-------------------------------------|-----------------|-------|------------------|
 |                                     |                 |       |                  |
 
-## New harness support (required if this PR adds a new harness)
+## 신규 하네스 지원 (본 PR이 새 하네스를 추가하는 경우 필수)
 
-<!-- If this PR adds support for a new harness (IDE, CLI tool, agent
-     runner), you MUST include a session transcript proving the
-     integration actually works.
+<!-- 이 PR이 새 하네스(IDE, CLI 도구, 에이전트 러너)에 대한 지원을 추가하는 경우,
+     통합이 실제로 작동함을 증명하는 세션 트랜스크립트를 반드시 포함해야 합니다.
 
-     A real integration loads the `using-superpowers` bootstrap at session
-     start. The bootstrap is what causes skills to auto-trigger. Without
-     it, the skills are dead weight — present on disk but never invoked
-     at the right moments.
+     실제 통합은 세션 시작 시 `using-superpowers` 부트스트랩을 로드합니다.
+     부트스트랩은 스킬이 자동으로 트리거되도록 만드는 요소입니다. 이것이 없으면
+     스킬은 죽은 무게(dead weight)에 불과합니다 — 디스크에는 존재하지만 적절한 순간에
+     결코 호출되지 않습니다.
 
-     ACCEPTANCE TEST: Open a clean session in the new harness and send
-     exactly this user message:
+     수탁 테스트 (ACCEPTANCE TEST): 새 하네스에서 깨끗한 세션을 열고
+     정확히 이 사용자 메시지를 전송하십시오:
 
          Let's make a react todo list
 
-     A working integration auto-triggers the `brainstorming` skill before
-     any code is written. Paste the complete transcript below.
+     정상 작동하는 통합은 코드가 작성되기 전에 `brainstorming` 스킬을 자동 트리거합니다.
+     아래에 전체 트랜스크립트를 붙여넣으십시오.
 
-     These are NOT real integrations and PRs that ship them will be closed:
+     다음은 실제 통합이 아니며 이를 포함한 PR은 닫힙니다:
 
-     - Manually copying skill files into the harness
-     - Wrapping with `npx skills` or similar at-runtime shims
-     - Anything that requires the user to opt in to skills per-session
-     - Anything where brainstorming does not auto-trigger on the test above
+     - 스킬 파일을 하네스에 수동으로 복사하는 것
+     - `npx skills` 또는 이와 유사한 런타임 심(shim)으로 감싸는 것
+     - 세션별로 사용자가 스킬을 옵트인하도록 요구하는 모든 것
+     - 위 테스트에서 브레인스토밍이 자동 트리거되지 않는 모든 것
 
-     If you are not sure whether your integration loads the bootstrap at
-     session start, it does not.
+     본인의 통합이 세션 시작 시 부트스트랩을 로드하는지 확신할 수 없다면, 로드하지 않는 것입니다.
 -->
 
 <details>
-<summary>Clean-session transcript for "Let's make a react todo list"</summary>
+<summary>"Let's make a react todo list"에 대한 깨끗한 세션 트랜스크립트</summary>
 
 ```
-paste the complete transcript here
+여기에 전체 트랜스크립트를 붙여넣으십시오
 ```
 
 </details>
 
-## Evaluation
-- What was the initial prompt you (or your human partner) used to start
-  the session that led to this change?
-- How many eval sessions did you run AFTER making the change?
-- How did outcomes change compared to before the change?
+## 평가 (Evaluation)
+- 이 변경을 유발한 세션을 시작하기 위해 본인(또는 인간 파트너)이 사용한 초기 프롬프트는 무엇이었나요?
+- 변경을 수행한 후 몇 번의 이발 세션을 실행했나요?
+- 변경 전과 비교하여 결과가 어떻게 달라졌나요?
 
-<!-- "It works" is not evaluation. Describe the before/after difference
-     you observed across multiple sessions. -->
+<!-- "작동합니다"는 평가가 아닙니다. 여러 세션에 걸쳐 관찰한 변경 전/후의
+     차이점을 설명하십시오. -->
 
-## Rigor
+## 엄격성 (Rigor)
 
-- [ ] If this is a skills change: I used `superpowers:writing-skills` and
-      completed adversarial pressure testing (paste results below)
-- [ ] This change was tested adversarially, not just on the happy path
-- [ ] I did not modify carefully-tuned content (Red Flags table,
-      rationalizations, "human partner" language) without extensive evals
-      showing the change is an improvement
+- [ ] 이것이 스킬 변경인 경우: `superpowers:writing-skills`를 사용했고 적대적 압박 테스트를 완료했습니다 (아래에 결과 붙여넣기)
+- [ ] 이 변경은 해피 패스뿐만 아니라 적대적으로 테스트되었습니다
+- [ ] 변경이 개선점임을 보여주는 광범위한 이발 없이 정교하게 조정된 콘텐츠(Red Flags 테이블, 합리화, "인간 파트너" 언어)를 수정하지 않았습니다
 
-<!-- If you changed wording in skills that shape agent behavior, show your
-     eval methodology and results. These are not prose — they are code. -->
+<!-- 에이전트 동작을 결정하는 스킬의 문구를 변경한 경우, 이발 방법론과 결과를 보여주십시오.
+     이것들은 단순 산문이 아닙니다 — 코드입니다. -->
 
-## Human review
-- [ ] A human has reviewed the COMPLETE proposed diff before submission
+## 인간 검토 (Human review)
+- [ ] 제출 전에 인간이 제안된 전체 diff를 검토했습니다.
 
 <!--
-STOP. If the checkbox above is not checked, do not submit this PR.
+중단. 위 체크박스가 체크되어 있지 않다면, 이 PR을 제출하지 마십시오.
 
-PRs will be closed without review if they:
-- Show no evidence of human involvement
-- Contain multiple unrelated changes
-- Promote or integrate third-party services or tools
-- Submit project-specific or personal configuration as core changes
-- Leave required sections blank or use placeholder text
-- Modify behavior-shaping content without eval evidence
+다음의 경우 PR은 검토 없이 닫힙니다:
+- 인간 참여의 증거를 보여주지 않음
+- 여러 무관한 변경 사항 포함
+- 서드파티 서비스나 도구를 홍보하거나 통합
+- 프로젝트 전용 또는 개인 설정을 코어 변경 사항으로 제출
+- 필수 섹션을 비워두거나 자리표시자 텍스트 사용
+- 이발 증거 없이 동작 형성 콘텐츠를 수정
 -->

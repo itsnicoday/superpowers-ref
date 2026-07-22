@@ -1,49 +1,49 @@
-# OpenCode Support Design
+# OpenCode 지원 설계
 
-**Date:** 2025-11-22
-**Author:** Bot & Jesse
-**Status:** Design Complete, Awaiting Implementation
+**날짜:** 2025-11-22
+**작성자:** Bot & Jesse
+**상태:** 설계 완료, 구현 대기 중
 
-## Overview
+## 개요
 
-Add full superpowers support for OpenCode.ai using a native OpenCode plugin architecture that shares core functionality with the existing Codex implementation.
+기존 Codex 구현과 핵심 기능을 공유하는 네이티브 OpenCode 플러그인 아키텍처를 사용하여 OpenCode.ai에 대한 전체 superpowers 지원을 추가합니다.
 
-## Background
+## 배경
 
-OpenCode.ai is a coding agent similar to Claude Code and Codex. Previous attempts to port superpowers to OpenCode (PR #93, PR #116) used file-copying approaches. This design takes a different approach: building a native OpenCode plugin using their JavaScript/TypeScript plugin system while sharing code with the Codex implementation.
+OpenCode.ai는 Claude Code 및 Codex와 유사한 코딩 에이전트입니다. superpowers를 OpenCode로 이식하려는 이전 시도(PR #93, PR #116)는 파일 복사 방식을 사용했습니다. 이 설계는 다른 접근 방식을 취합니다. Codex 구현과 코드를 공유하면서 JavaScript/TypeScript 플러그인 시스템을 사용하여 네이티브 OpenCode 플러그인을 구축합니다.
 
-### Key Differences Between Platforms
+### 플랫폼 간 주요 차이점
 
-- **Claude Code**: Native Anthropic plugin system + file-based skills
-- **Codex**: No plugin system → bootstrap markdown + CLI script
-- **OpenCode**: JavaScript/TypeScript plugins with event hooks and custom tools API
+- **Claude Code**: 네이티브 Anthropic 플러그인 시스템 + 파일 기반 스킬
+- **Codex**: 플러그인 시스템 없음 → 부트스트랩 마크다운 + CLI 스크립트
+- **OpenCode**: 이벤트 훅 및 커스텀 도구 API를 갖춘 JavaScript/TypeScript 플러그인
 
-### OpenCode's Agent System
+### OpenCode의 에이전트 시스템
 
-- **Primary agents**: Build (default, full access) and Plan (restricted, read-only)
-- **Subagents**: General (research, searching, multi-step tasks)
-- **Invocation**: Automatic dispatch by primary agents OR manual `@mention` syntax
-- **Configuration**: Custom agents in `opencode.json` or `~/.config/opencode/agent/`
+- **기본 에이전트**: Build (기본값, 전체 권한) 및 Plan (제한됨, 읽기 전용)
+- **서브에이전트**: General (리서치, 검색, 다단계 작업)
+- **호출**: 기본 에이전트에 의한 자동 디스패치 또는 수동 `@mention` 구문
+- **설정**: `opencode.json` 또는 `~/.config/opencode/agent/` 내 커스텀 에이전트
 
-## Architecture
+## 아키텍처
 
-### High-Level Structure
+### 상위 구조
 
-1. **Shared Core Module** (`lib/skills-core.js`)
-   - Common skill discovery and parsing logic
-   - Used by both Codex and OpenCode implementations
+1. **공유 핵심 모듈** (`lib/skills-core.js`)
+   - 공통 스킬 검색 및 파싱 로직
+   - Codex 및 OpenCode 구현 모두에서 사용
 
-2. **Platform-Specific Wrappers**
-   - Codex: CLI script (`.codex/superpowers-codex`)
-   - OpenCode: Plugin module (`.opencode/plugin/superpowers.js`)
+2. **플랫폼별 래퍼**
+   - Codex: CLI 스크립트 (`.codex/superpowers-codex`)
+   - OpenCode: 플러그인 모듈 (`.opencode/plugin/superpowers.js`)
 
-3. **Skill Directories**
-   - Core: `~/.config/opencode/superpowers/skills/` (or installed location)
-   - Personal: `~/.config/opencode/skills/` (shadows core skills)
+3. **스킬 디렉터리**
+   - Core: `~/.config/opencode/superpowers/skills/` (또는 설치된 위치)
+   - Personal: `~/.config/opencode/skills/` (코어 스킬을 오버라이드/shadowing)
 
-### Code Reuse Strategy
+### 코드 재사용 전략
 
-Extract common functionality from `.codex/superpowers-codex` into shared module:
+`.codex/superpowers-codex`에서 공통 기능을 추출하여 공유 모듈로 이동:
 
 ```javascript
 // lib/skills-core.js
@@ -56,9 +56,9 @@ module.exports = {
 };
 ```
 
-### Skill Frontmatter Format
+### 스킬 Frontmatter 형식
 
-Current format (no `when_to_use` field):
+현재 형식 (`when_to_use` 필드 없음):
 
 ```yaml
 ---
@@ -67,13 +67,13 @@ description: Use when [condition] - [what it does]; [additional context]
 ---
 ```
 
-## OpenCode Plugin Implementation
+## OpenCode 플러그인 구현
 
-### Custom Tools
+### 커스텀 도구
 
-**Tool 1: `use_skill`**
+**도구 1: `use_skill`**
 
-Loads a specific skill's content into the conversation (equivalent to Claude's Skill tool).
+특정 스킬의 내용을 대화에 로드합니다 (Claude의 Skill 도구와 동일).
 
 ```javascript
 {
@@ -96,9 +96,9 @@ ${content}`;
 }
 ```
 
-**Tool 2: `find_skills`**
+**도구 2: `find_skills`**
 
-Lists all available skills with metadata.
+메타데이터와 함께 사용 가능한 모든 스킬을 목록화합니다.
 
 ```javascript
 {
@@ -116,19 +116,19 @@ Lists all available skills with metadata.
 }
 ```
 
-### Session Startup Hook
+### 세션 시작 훅
 
-When a new session starts (`session.started` event):
+새 세션이 시작될 때 (`session.started` 이벤트):
 
-1. **Inject using-superpowers content**
-   - Full content of the using-superpowers skill
-   - Establishes mandatory workflows
+1. **using-superpowers 내용 주입**
+   - using-superpowers 스킬의 전체 내용
+   - 필수 워크플로 정립
 
-2. **Run find_skills automatically**
-   - Display full list of available skills upfront
-   - Include skill directories for each
+2. **find_skills 자동 실행**
+   - 사용 가능한 전체 스킬 목록을 미라 보여줌
+   - 각 스킬 디렉터리 경로 포함
 
-3. **Inject tool mapping instructions**
+3. **도구 매핑 지침 주입**
    ```markdown
    **Tool Mapping for OpenCode:**
    When skills reference tools you don't have, substitute:
@@ -143,11 +143,11 @@ When a new session starts (`session.started` event):
    - Utilities specific to that skill
    ```
 
-4. **Check for updates** (non-blocking)
-   - Quick git fetch with timeout
-   - Notify if updates available
+4. **업데이트 확인** (비동기/non-blocking)
+   - 타임아웃이 설정된 빠른 git fetch
+   - 업데이트가 있는 경우 알림
 
-### Plugin Structure
+### 플러그인 구조
 
 ```javascript
 // .opencode/plugin/superpowers.js
@@ -195,7 +195,7 @@ export const SuperpowersPlugin = async ({ client, directory, $ }) => {
 };
 ```
 
-## File Structure
+## 파일 구조
 
 ```
 superpowers/
@@ -212,83 +212,83 @@ superpowers/
 └── skills/                       # Unchanged
 ```
 
-## Implementation Plan
+## 구현 계획
 
-### Phase 1: Refactor Shared Core
+### Phase 1: 공유 Core 리팩터링
 
-1. Create `lib/skills-core.js`
-   - Extract frontmatter parsing from `.codex/superpowers-codex`
-   - Extract skill discovery logic
-   - Extract path resolution (with shadowing)
-   - Update to use only `name` and `description` (no `when_to_use`)
+1. `lib/skills-core.js` 생성
+   - `.codex/superpowers-codex`에서 frontmatter 파싱 추출
+   - 스킬 검색 로직 추출
+   - 경로 처리 로직(shadowing 포함) 추출
+   - `name` 및 `description`만 사용하도록 업데이트 (`when_to_use` 없음)
 
-2. Update `.codex/superpowers-codex` to use shared core
-   - Import from `../lib/skills-core.js`
-   - Remove duplicated code
-   - Keep CLI wrapper logic
+2. 공유 Core를 사용하도록 `.codex/superpowers-codex` 업데이트
+   - `../lib/skills-core.js`에서 가져오기
+   - 중복 코드 제거
+   - CLI 래퍼 로직 유지
 
-3. Test Codex implementation still works
-   - Verify bootstrap command
-   - Verify use-skill command
-   - Verify find-skills command
+3. Codex 구현 정상 동작 여부 테스트
+   - bootstrap 명령어 검증
+   - use-skill 명령어 검증
+   - find-skills 명령어 검증
 
-### Phase 2: Build OpenCode Plugin
+### Phase 2: OpenCode 플러그인 구축
 
-1. Create `.opencode/plugin/superpowers.js`
-   - Import shared core from `../../lib/skills-core.js`
-   - Implement plugin function
-   - Define custom tools (use_skill, find_skills)
-   - Implement session.started hook
+1. `.opencode/plugin/superpowers.js` 생성
+   - `../../lib/skills-core.js`에서 공유 코어 가져오기
+   - 플러그인 함수 구현
+   - 커스텀 도구 정의 (use_skill, find_skills)
+   - session.started 훅 구현
 
-2. Create `.opencode/INSTALL.md`
-   - Installation instructions
-   - Directory setup
-   - Configuration guidance
+2. `.opencode/INSTALL.md` 생성
+   - 설치 안내
+   - 디렉터리 설정
+   - 환경 설정 가이드
 
-3. Test OpenCode implementation
-   - Verify session startup bootstrap
-   - Verify use_skill tool works
-   - Verify find_skills tool works
-   - Verify skill directories are accessible
+3. OpenCode 구현 테스트
+   - 세션 시작 부트스트랩 검증
+   - use_skill 도구 작동 검증
+   - find_skills 도구 작동 검증
+   - 스킬 디렉터리 접근 가능 여부 검증
 
-### Phase 3: Documentation & Polish
+### Phase 3: 문서화 및 다듬기
 
-1. Update README with OpenCode support
-2. Add OpenCode installation to main docs
-3. Update RELEASE-NOTES
-4. Test both Codex and OpenCode work correctly
+1. OpenCode 지원 내용으로 README 업데이트
+2. 메인 문서에 OpenCode 설치 가이드 추가
+3. RELEASE-NOTES 업데이트
+4. Codex와 OpenCode 모두 정상 작동하는지 테스트
 
-## Next Steps
+## 다음 단계
 
-1. **Create isolated workspace** (using git worktrees)
-   - Branch: `feature/opencode-support`
+1. **격리된 작업 공간 생성** (git worktrees 사용)
+   - 브랜치: `feature/opencode-support`
 
-2. **Follow TDD where applicable**
-   - Test shared core functions
-   - Test skill discovery and parsing
-   - Integration tests for both platforms
+2. **가능한 경우 TDD 준수**
+   - 공유 코어 함수 테스트
+   - 스킬 검색 및 파싱 테스트
+   - 두 플랫폼 간 통합 테스트
 
-3. **Incremental implementation**
-   - Phase 1: Refactor shared core + update Codex
-   - Verify Codex still works before moving on
-   - Phase 2: Build OpenCode plugin
-   - Phase 3: Documentation and polish
+3. **점진적 구현**
+   - Phase 1: 공유 코어 리팩터링 + Codex 업데이트
+   - 계속 진행하기 전에 Codex가 여전히 작동하는지 확인
+   - Phase 2: OpenCode 플러그인 구축
+   - Phase 3: 문서화 및 마무리
 
-4. **Testing strategy**
-   - Manual testing with real OpenCode installation
-   - Verify skill loading, directories, scripts work
-   - Test both Codex and OpenCode side-by-side
-   - Verify tool mappings work correctly
+4. **테스트 전략**
+   - 실제 OpenCode 설치 환경에서 수동 테스트
+   - 스킬 로딩, 디렉터리, 스크립트 동작 검증
+   - Codex와 OpenCode 나란히 테스트
+   - 도구 매핑이 올바르게 작동하는지 확인
 
-5. **PR and merge**
-   - Create PR with complete implementation
-   - Test in clean environment
-   - Merge to main
+5. **PR 및 병합**
+   - 전체 구현 완료 후 PR 생성
+   - 깨끗한 환경에서 테스트
+   - main에 병합
 
-## Benefits
+## 기대 효과
 
-- **Code reuse**: Single source of truth for skill discovery/parsing
-- **Maintainability**: Bug fixes apply to both platforms
-- **Extensibility**: Easy to add future platforms (Cursor, Windsurf, etc.)
-- **Native integration**: Uses OpenCode's plugin system properly
-- **Consistency**: Same skill experience across all platforms
+- **코드 재사용**: 스킬 검색/파싱을 위한 단일 진실 출처(Single source of truth)
+- **유지보수성**: 버그 수정이 두 플랫폼 모두에 적용됨
+- **확장성**: 향후 플랫폼(Cursor, Windsurf 등) 추가 용이
+- **네이티브 통합**: OpenCode의 플러그인 시스템을 적절하게 활용
+- **일관성**: 모든 플랫폼에서 동일한 스킬 경험 제공

@@ -1,82 +1,82 @@
-# Visual Companion Final Hardening Fixup Implementation Plan
+# 비주얼 컴패니언 최종 강화 보완(Fixup) 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **에이전트 작업자 참고:** 필수 하위 스킬: 이 계획을 작업별로 구현하려면 superpowers:subagent-driven-development (권장) 또는 superpowers:executing-plans를 사용하세요. 각 단계는 추적을 위해 체크박스 (`- [ ]`) 구문을 사용합니다.
 
-**Goal:** Finish PR #1720's final hardening fixup with test-first changes, clean rebase state, and reviewer-ready evidence.
+**목표:** 테스트 우선 변경 사항, 깨끗한 리베이스 상태, 리뷰어 제공용 검증 근거를 바탕으로 PR #1720의 최종 강화 보완(fixup)을 완료합니다.
 
-**Spec:** `docs/superpowers/specs/2026-06-11-visual-companion-final-hardening-fixup-design.md`
+**스펙:** `docs/superpowers/specs/2026-06-11-visual-companion-final-hardening-fixup-design.md`
 
-**Architecture:** Keep the companion zero-dependency and local-first. Add focused guards to the existing server and shell scripts: root screen selection reuses the `/files/*` containment guard, fallback token handling tracks token source, and lifecycle shutdown uses a per-start command-line instance id for ownership proof.
+**아키텍처:** 컴패니언의 의존성 제로(zero-dependency) 및 로컬 우선(local-first) 특성을 유지합니다. 기존 서버 및 셸 스크립트에 집중적인 가드(guard)를 추가합니다: 루트 화면 선택 시 `/files/*` 격리 가드를 재사용하고, 폴백 토큰 처리는 토큰 소스를 추적하며, 수명 주기 종료(lifecycle shutdown) 시 소유권 증명을 위해 시작 시 생성된 커맨드라인 인스턴스 ID를 사용합니다.
 
-**Tech Stack:** Node.js built-ins (`http`, `fs`, `path`, `crypto`), existing `ws` test dependency, Bash scripts, Git Bash on Windows, `gh` CLI for PR metadata.
+**기술 스택:** Node.js 내장 모듈 (`http`, `fs`, `path`, `crypto`), 기존 `ws` 테스트 의존성, Bash 스크립트, Windows 환경의 Git Bash, PR 메타데이터용 `gh` CLI.
 
-**Commit discipline:** Each task includes a suggested commit. When using subagent-driven execution, the orchestrator reviews the worker diff, runs the task verification, and performs the commit.
+**커밋 지침:** 각 작업에는 제안된 커밋이 포함되어 있습니다. 하위 에이전트 기반 실행 시, 오케스트레이터는 작업자의 diff를 검토하고 작업 검증을 실행한 후 커밋을 수행합니다.
 
 ---
 
-## File Map
+## 파일 맵
 
-- Modify: `skills/brainstorming/scripts/server.cjs`
-  - Filter root screen candidates through `isRegularFileInsideContentDir()`.
-  - Track token source and rotate or fail closed on fallback.
-- Modify: `skills/brainstorming/scripts/start-server.sh`
-  - Generate `state/server-instance-id`.
-  - Pass `--brainstorm-server-id=<id>` after `server.cjs`.
+- 수정: `skills/brainstorming/scripts/server.cjs`
+  - `isRegularFileInsideContentDir()`를 통해 루트 화면 후보를 필터링합니다.
+  - 토큰 소스를 추적하고 폴백 시 순환(rotate)하거나 닫힌 상태로 실패(fail closed) 처리합니다.
+- 수정: `skills/brainstorming/scripts/start-server.sh`
+  - `state/server-instance-id`를 생성합니다.
+  - `server.cjs` 뒤에 `--brainstorm-server-id=<id>`를 전달합니다.
 - Modify: `skills/brainstorming/scripts/stop-server.sh`
-  - Require exact instance-id argv proof before signalling a PID.
-  - Remove stale `server.pid` and `server-instance-id` on stale/stopped outcomes.
-- Modify: `tests/brainstorm-server/server.test.js`
-  - Add fixed-port startup guard.
-  - Add skip-aware test harness for symlink capability.
-  - Add root symlink and hardlink escape regressions.
-- Modify: `tests/brainstorm-server/auth.test.js`
-  - Add fixed-port startup guard.
-- Modify: `tests/brainstorm-server/lifecycle.test.js`
-  - Add fallback token rotation, explicit-token fail-closed, and fallback-key rejection regressions.
-- Modify: `tests/brainstorm-server/stop-server.test.sh`
-  - Add top-level cleanup trap.
-  - Add positive and negative server-instance-id ownership tests.
-- Modify: `tests/brainstorm-server/start-server.test.sh`
-  - Assert Windows-like fake-node path receives exact server id argv and writes a valid id file.
-- Modify: `tests/brainstorm-server/windows-lifecycle.test.sh`
-  - Pass server id argv for direct Node stop-server coverage.
-  - Add Windows fake-node assertion for the id argv.
-- Modify: `skills/brainstorming/visual-companion.md`
-  - Add `--open` to platform commands that should preserve auto-open behavior.
-- Modify: `docs/superpowers/plans/2026-06-09-visual-companion-issues.md`
-  - Reconcile shipped scope, WS Origin wording, default timeout, and deferred feature items.
-- Update outside tracked files: PR #1720 body
-  - Record post-rebase diff state, RED/GREEN evidence, macOS/Windows verification, manual browser smoke, and external eval evidence.
+  - PID에 신호를 보내기 전에 정확한 instance-id argv 증명을 요구합니다.
+  - 오래되었거나 종료된 결과 발생 시 더 이상 유효하지 않은 `server.pid` 및 `server-instance-id`를 제거합니다.
+- 수정: `tests/brainstorm-server/server.test.js`
+  - 고정 포트 시작 가드를 추가합니다.
+  - 심볼릭 링크 기능에 대해 건너뛰기 지원(skip-aware) 테스트 하네스를 추가합니다.
+  - 루트 심볼릭 링크 및 하드 링크 탈출 회귀 테스트를 추가합니다.
+- 수정: `tests/brainstorm-server/auth.test.js`
+  - 고정 포트 시작 가드를 추가합니다.
+- 수정: `tests/brainstorm-server/lifecycle.test.js`
+  - 폴백 토큰 순환, 명시적 토큰 닫힌 실패(fail-closed), 폴백 키 거부 회귀 테스트를 추가합니다.
+- 수정: `tests/brainstorm-server/stop-server.test.sh`
+  - 최상위 정리 트랩(trap)을 추가합니다.
+  - 긍정 및 부정 server-instance-id 소유권 테스트를 추가합니다.
+- 수정: `tests/brainstorm-server/start-server.test.sh`
+  - Windows 스타일의 가짜 node 경로가 정확한 서버 ID argv를 수신하고 유효한 ID 파일을 쓰는지 단정(assert)합니다.
+- 수정: `tests/brainstorm-server/windows-lifecycle.test.sh`
+  - 직접 Node stop-server 커버리지를 위해 서버 ID argv를 전달합니다.
+  - ID argv에 대한 Windows 가짜 node 단정(assertion)을 추가합니다.
+- 수정: `skills/brainstorming/visual-companion.md`
+  - 자동 열기 동작을 유지해야 하는 플랫폼 명령에 `--open`을 추가합니다.
+- 수정: `docs/superpowers/plans/2026-06-09-visual-companion-issues.md`
+  - 배포된 범위, WS Origin 어휘, 기본 타임아웃 및 지연된 기능 항목을 조율합니다.
+- 추적 파일 외부 업데이트: PR #1720 본문
+  - 리베이스 후 diff 상태, RED/GREEN 증거, macOS/Windows 검증, 수동 브라우저 스모크 테스트 및 외부 평가 증거를 기록합니다.
 
-## Task 0: Rebase And Baseline State
+## 작업 0: 리베이스 및 베이스라인 상태
 
-**Files:**
-- No source edits
-- Verification target: git branch state
+**파일:**
+- 소스 수정 없음
+- 검증 대상: git 브랜치 상태
 
-- [ ] **Step 1: Fetch current dev**
+- [ ] **1단계: 최신 dev 가져오기**
 
-Run:
+실행:
 
 ```bash
 git fetch origin dev
 ```
 
-Expected: command exits 0.
+예상: 명령어 종료 코드 0.
 
-- [ ] **Step 2: Rebase onto current dev**
+- [ ] **2단계: 최신 dev 위로 리베이스**
 
-Run:
+실행:
 
 ```bash
 git rebase origin/dev
 ```
 
-Expected: command exits 0, or stops only on conflicts that must be resolved by taking `origin/dev` for `evals`.
+예상: 명령어 종료 코드 0, 또는 `evals`에 대해 `origin/dev`를 가져와서 해결해야 하는 충돌에서만 중단됨.
 
-- [ ] **Step 3: Resolve an evals conflict by taking dev**
+- [ ] **3단계: dev를 취하여 evals 충돌 해결**
 
-If the rebase stops on `evals`, run:
+`evals`에서 리베이스가 중단되면 다음을 실행합니다:
 
 ```bash
 git restore --source=origin/dev --staged --worktree evals
@@ -84,28 +84,28 @@ git add evals
 git rebase --continue
 ```
 
-Expected: rebase continues. After the rebase, `git diff --name-only origin/dev...HEAD -- evals` prints nothing.
+예상: 리베이스가 계속 진행됨. 리베이스 후 `git diff --name-only origin/dev...HEAD -- evals` 실행 시 아무것도 출력되지 않음.
 
-- [ ] **Step 4: Record baseline status**
+- [ ] **4단계: 베이스라인 상태 기록**
 
-Run:
+실행:
 
 ```bash
 git status --short --branch
 git diff --name-only origin/dev...HEAD -- evals
 ```
 
-Expected: status shows the branch on top of `origin/dev`; second command prints no paths.
+예상: status는 `origin/dev` 위의 브랜치를 표시함; 두 번째 명령어는 경로를 출력하지 않음.
 
-## Task 1: Root Screen Containment
+## 작업 1: 루트 화면 격리 (Containment)
 
-**Files:**
-- Modify: `tests/brainstorm-server/server.test.js`
-- Modify: `skills/brainstorming/scripts/server.cjs`
+**파일:**
+- 수정: `tests/brainstorm-server/server.test.js`
+- 수정: `skills/brainstorming/scripts/server.cjs`
 
-- [ ] **Step 1: Add fixed-port guard and skip-aware test helper**
+- [ ] **1단계: 고정 포트 가드 및 건너뛰기 지원 테스트 헬퍼 추가**
 
-In `tests/brainstorm-server/server.test.js`, add this helper after `waitForServer()`:
+`tests/brainstorm-server/server.test.js`에서 `waitForServer()` 다음에 다음 헬퍼를 추가합니다:
 
 ```js
 class SkipTest extends Error {
@@ -146,7 +146,7 @@ function ensureSymlinkWorks(target, link) {
 }
 ```
 
-Then change the startup section from:
+그 다음 시작 섹션을 다음에서:
 
 ```js
   const { stdout: initialStdout } = await waitForServer(server);
@@ -154,7 +154,7 @@ Then change the startup section from:
   let failed = 0;
 ```
 
-to:
+다음으로 변경합니다:
 
 ```js
   const { stdout: initialStdout } = await waitForServer(server);
@@ -164,7 +164,7 @@ to:
   let skipped = 0;
 ```
 
-Change the `test()` helper catch block to handle skips:
+건너뛰기를 처리하도록 `test()` 헬퍼 catch 블록을 변경합니다:
 
 ```js
     }).catch(e => {
@@ -180,15 +180,15 @@ Change the `test()` helper catch block to handle skips:
     });
 ```
 
-Change the summary line to:
+요약 줄을 다음으로 변경합니다:
 
 ```js
     console.log(`\n--- Results: ${passed} passed, ${failed} failed, ${skipped} skipped ---`);
 ```
 
-- [ ] **Step 2: Make the existing `/files/*` symlink test skip-capable**
+- [ ] **2단계: 기존 `/files/*` 심볼릭 링크 테스트를 건너뛰기 가능하도록 설정**
 
-Replace the setup inside `does not serve symlinks that escape content dir via /files/` with:
+`does not serve symlinks that escape content dir via /files/` 내부의 설정을 다음으로 교체합니다:
 
 ```js
       const target = path.join(STATE_DIR, 'server-info');
@@ -198,11 +198,11 @@ Replace the setup inside `does not serve symlinks that escape content dir via /f
       fs.symlinkSync(target, link);
 ```
 
-Expected behavior: hosts that cannot create usable symlinks skip only this assertion.
+예상 동작: 사용 가능한 심볼릭 링크를 생성할 수 없는 호스트는 이 단정문만 건너뜁니다.
 
-- [ ] **Step 3: Add RED tests for root symlink and hardlink escapes**
+- [ ] **3단계: 루트 심볼릭 링크 및 하드 링크 탈출에 대한 RED 테스트 추가**
 
-Add these tests after the existing `/files/*` hardlink test:
+기존 `/files/*` 하드 링크 테스트 뒤에 다음 테스트를 추가합니다:
 
 ```js
     await test('does not serve symlinks that escape content dir via root screen selection', async () => {
@@ -245,20 +245,20 @@ Add these tests after the existing `/files/*` hardlink test:
     });
 ```
 
-- [ ] **Step 4: Verify RED**
+- [ ] **4단계: RED 검증**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
 node server.test.js
 ```
 
-Expected: at least one new root containment test fails before the production fix because root screen selection can read `state/server-info`.
+예상: 루트 화면 선택이 `state/server-info`를 읽을 수 있으므로 프로덕션 수정 전 최소 하나의 새 루트 격리 테스트가 실패함.
 
-- [ ] **Step 5: Implement root containment**
+- [ ] **5단계: 루트 격리 구현**
 
-In `skills/brainstorming/scripts/server.cjs`, replace `getNewestScreen()` with:
+`skills/brainstorming/scripts/server.cjs`에서 `getNewestScreen()`을 다음으로 교체합니다:
 
 ```js
 function getNewestScreen() {
@@ -275,35 +275,35 @@ function getNewestScreen() {
 }
 ```
 
-- [ ] **Step 6: Verify GREEN**
+- [ ] **6단계: GREEN 검증**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
 node server.test.js
 ```
 
-Expected: root symlink and supported hardlink tests pass or skip only for unsupported host capabilities. Existing `/files/*` containment tests remain green.
+예상: 루트 심볼릭 링크 및 지원되는 하드 링크 테스트가 통과하거나 지원되지 않는 호스트 기능에 대해서만 건너뜁니다. 기존 `/files/*` 격리 테스트는 계속 성공 상태를 유지합니다.
 
-- [ ] **Step 7: Commit**
+- [ ] **7단계: 커밋**
 
-Run:
+실행:
 
 ```bash
 git add tests/brainstorm-server/server.test.js skills/brainstorming/scripts/server.cjs
 git commit -m "Harden root screen containment"
 ```
 
-## Task 2: Fallback Token Isolation
+## 작업 2: 폴백 토큰 격리
 
-**Files:**
-- Modify: `tests/brainstorm-server/lifecycle.test.js`
-- Modify: `skills/brainstorming/scripts/server.cjs`
+**파일:**
+- 수정: `tests/brainstorm-server/lifecycle.test.js`
+- 수정: `skills/brainstorming/scripts/server.cjs`
 
-- [ ] **Step 1: Add HTTP status helper**
+- [ ] **1단계: HTTP 상태 헬퍼 추가**
 
-In `tests/brainstorm-server/lifecycle.test.js`, add this helper after `openCaptureCommand()`:
+`tests/brainstorm-server/lifecycle.test.js`에서 `openCaptureCommand()` 다음에 이 헬퍼를 추가합니다:
 
 ```js
 function httpStatus(port, key) {
@@ -319,9 +319,9 @@ function httpStatus(port, key) {
 }
 ```
 
-- [ ] **Step 2: Add RED test for persisted-token fallback rotation**
+- [ ] **2단계: 지속 토큰(persisted-token) 폴백 순환에 대한 RED 테스트 추가**
 
-Add this test after `falls back to a random port when the preferred port is taken`:
+`falls back to a random port when the preferred port is taken` 다음에 이 테스트를 추가합니다:
 
 ```js
   await test('fallback with persisted token generates a fresh unpersisted key', async () => {
@@ -376,9 +376,9 @@ Add this test after `falls back to a random port when the preferred port is take
   });
 ```
 
-- [ ] **Step 3: Add RED test for explicit-token fallback fail-closed**
+- [ ] **3단계: 명시적 토큰(explicit-token) 폴백 닫힌 실패(fail-closed)에 대한 RED 테스트 추가**
 
-Add this test immediately after the persisted-token fallback test:
+지속 토큰 폴백 테스트 바로 뒤에 다음 테스트를 추가합니다:
 
 ```js
   await test('fallback with explicit BRAINSTORM_TOKEN fails closed', async () => {
@@ -429,20 +429,20 @@ Add this test immediately after the persisted-token fallback test:
   });
 ```
 
-- [ ] **Step 4: Verify RED**
+- [ ] **4단계: RED 검증**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
 node lifecycle.test.js
 ```
 
-Expected: persisted-token fallback test fails because fallback reuses `.last-token`, and explicit-token fallback test fails because fallback currently starts.
+예상: 지속 토큰 폴백 테스트는 폴백이 `.last-token`을 재사용하므로 실패하고, 명시적 토큰 폴백 테스트는 현재 폴백이 시작되므로 실패함.
 
-- [ ] **Step 5: Track token source in production code**
+- [ ] **5단계: 프로덕션 코드에서 토큰 소스 추적**
 
-In `skills/brainstorming/scripts/server.cjs`, replace the current `const TOKEN = (() => { ... })();` block with:
+`skills/brainstorming/scripts/server.cjs`에서 기존 `const TOKEN = (() => { ... })();` 블록을 다음으로 교체합니다:
 
 ```js
 function generateToken() {
@@ -467,9 +467,9 @@ let TOKEN = tokenInfo.value;
 let tokenSource = tokenInfo.source;
 ```
 
-- [ ] **Step 6: Rotate or fail closed on EADDRINUSE fallback**
+- [ ] **6단계: EADDRINUSE 폴백 시 순환(rotate)하거나 닫힌 상태로 실패(fail closed)**
 
-In the `server.on('error', ...)` handler, replace the `EADDRINUSE` branch with:
+`server.on('error', ...)` 핸들러에서 `EADDRINUSE` 분기를 다음으로 교체합니다:
 
 ```js
     if (err.code === 'EADDRINUSE' && !triedFallback) {
@@ -487,36 +487,36 @@ In the `server.on('error', ...)` handler, replace the `EADDRINUSE` branch with:
     } else {
 ```
 
-- [ ] **Step 7: Verify GREEN**
+- [ ] **7단계: GREEN 검증**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
 node lifecycle.test.js
 ```
 
-Expected: all lifecycle tests pass, including fallback token rotation and explicit-token fail-closed.
+예상: 폴백 토큰 순환 및 명시적 토큰 닫힌 실패를 포함하여 모든 라이프사이클 테스트가 통과함.
 
-- [ ] **Step 8: Commit**
+- [ ] **8단계: 커밋**
 
-Run:
+실행:
 
 ```bash
 git add tests/brainstorm-server/lifecycle.test.js skills/brainstorming/scripts/server.cjs
 git commit -m "Isolate companion fallback tokens"
 ```
 
-## Task 3: Stop-Server Instance-Id Ownership
+## 작업 3: stop-server 인스턴스 ID 소유권
 
-**Files:**
-- Modify: `tests/brainstorm-server/stop-server.test.sh`
-- Modify: `skills/brainstorming/scripts/start-server.sh`
-- Modify: `skills/brainstorming/scripts/stop-server.sh`
+**파일:**
+- 수정: `tests/brainstorm-server/stop-server.test.sh`
+- 수정: `skills/brainstorming/scripts/start-server.sh`
+- 수정: `skills/brainstorming/scripts/stop-server.sh`
 
-- [ ] **Step 1: Add cleanup tracking and id helpers to stop-server tests**
+- [ ] **1단계: stop-server 테스트에 정리 추적 및 id 헬퍼 추가**
 
-In `tests/brainstorm-server/stop-server.test.sh`, after `PASS=0; FAIL=0`, add:
+`tests/brainstorm-server/stop-server.test.sh`에서 `PASS=0; FAIL=0` 다음에 다음을 추가합니다:
 
 ```bash
 PIDS=()
@@ -540,14 +540,13 @@ new_server_id() {
 }
 ```
 
-When each test creates a `SESS="$(mktemp -d)"`, immediately add:
+각 테스트가 `SESS="$(mktemp -d)"`를 생성할 때 바로 다음을 추가합니다:
 
 ```bash
 track_dir "$SESS"
 ```
 
-When a test starts `UNRELATED`, `SRV`, or `IMPOSTOR`, immediately add the
-matching tracking call:
+테스트가 `UNRELATED`, `SRV`, 또는 `IMPOSTOR`를 시작할 때 즉시 상응하는 추적 호출을 추가합니다:
 
 ```bash
 track_pid "$UNRELATED"
@@ -555,9 +554,9 @@ track_pid "$SRV"
 track_pid "$IMPOSTOR"
 ```
 
-- [ ] **Step 2: Add RED ownership tests**
+- [ ] **2단계: RED 소유권 테스트 추가**
 
-Replace the current real-server and impostor sections with these cases:
+현재 실제 서버 및 가장(impostor) 섹션을 다음 케이스들로 교체합니다:
 
 ```bash
 # --- Test 2: a real brainstorm server with matching instance id IS stopped ---
@@ -638,28 +637,28 @@ else
 fi
 ```
 
-Keep the unrelated PID and missing PID tests.
+관련 없는 PID 및 누락된 PID 테스트는 유지합니다.
 
-- [ ] **Step 3: Verify RED**
+- [ ] **3단계: RED 검증**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers
 bash tests/brainstorm-server/stop-server.test.sh
 ```
 
-Expected: matching-instance-id real server is reported `stale_pid` before implementation, and one of the impostor cases may be killed by the old command-name proof.
+예상: 일치하는 instance-id를 가진 실제 서버가 구현 전에는 `stale_pid`로 보고되고, 가장(impostor) 케이스 중 하나는 기존 명령어 이름 증명에 의해 종료될 수 있음.
 
-- [ ] **Step 4: Generate and pass instance id in start-server**
+- [ ] **4단계: start-server에서 인스턴스 ID 생성 및 전달**
 
-In `skills/brainstorming/scripts/start-server.sh`, after `LOG_FILE="${STATE_DIR}/server.log"`, add:
+`skills/brainstorming/scripts/start-server.sh`에서 `LOG_FILE="${STATE_DIR}/server.log"` 다음에 다음을 추가합니다:
 
 ```bash
 SERVER_ID_FILE="${STATE_DIR}/server-instance-id"
 ```
 
-After `mkdir -p "${SESSION_DIR}/content" "$STATE_DIR"`, add:
+`mkdir -p "${SESSION_DIR}/content" "$STATE_DIR"` 다음에 다음을 추가합니다:
 
 ```bash
 SERVER_ID=""
@@ -673,27 +672,27 @@ printf '%s\n' "$SERVER_ID" > "$SERVER_ID_FILE"
 chmod 600 "$SERVER_ID_FILE" 2>/dev/null || true
 ```
 
-Update both Node launch commands to pass the argv:
+두 Node 실행 명령어 모두 argv를 전달하도록 업데이트합니다:
 
 ```bash
 env BRAINSTORM_DIR="$SESSION_DIR" BRAINSTORM_HOST="$BIND_HOST" BRAINSTORM_URL_HOST="$URL_HOST" BRAINSTORM_OWNER_PID="$OWNER_PID" node server.cjs "--brainstorm-server-id=$SERVER_ID" &
 ```
 
-and:
+그리고:
 
 ```bash
 nohup env BRAINSTORM_DIR="$SESSION_DIR" BRAINSTORM_HOST="$BIND_HOST" BRAINSTORM_URL_HOST="$URL_HOST" BRAINSTORM_OWNER_PID="$OWNER_PID" node server.cjs "--brainstorm-server-id=$SERVER_ID" > "$LOG_FILE" 2>&1 &
 ```
 
-- [ ] **Step 5: Require instance id in stop-server**
+- [ ] **5단계: stop-server에서 인스턴스 ID 필수화**
 
-In `skills/brainstorming/scripts/stop-server.sh`, add:
+`skills/brainstorming/scripts/stop-server.sh`에 다음을 추가합니다:
 
 ```bash
 SERVER_ID_FILE="${STATE_DIR}/server-instance-id"
 ```
 
-Replace `is_brainstorm_server()` with:
+`is_brainstorm_server()`를 다음으로 교체합니다:
 
 ```bash
 read_expected_server_id() {
@@ -742,48 +741,48 @@ is_brainstorm_server() {
 }
 ```
 
-In the stale PID branch, remove both metadata files:
+오래된 PID 분기에서 두 메타데이터 파일을 모두 제거합니다:
 
 ```bash
     rm -f "$PID_FILE" "$SERVER_ID_FILE"
 ```
 
-In the stopped branch, change the cleanup line to:
+종료된 분기에서 정리 줄을 다음으로 변경합니다:
 
 ```bash
   rm -f "$PID_FILE" "$SERVER_ID_FILE" "${STATE_DIR}/server.log"
 ```
 
-- [ ] **Step 6: Verify GREEN**
+- [ ] **6단계: GREEN 검증**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers
 bash tests/brainstorm-server/stop-server.test.sh
 ```
 
-Expected: real matching-id server stops, impostors survive, and all stale cases return `stale_pid`.
+예상: 일치하는 ID의 실제 서버는 중지되고 가장(impostor)은 생존하며, 모든 오래된 케이스는 `stale_pid`를 반환함.
 
-- [ ] **Step 7: Commit**
+- [ ] **7단계: 커밋**
 
-Run:
+실행:
 
 ```bash
 git add tests/brainstorm-server/stop-server.test.sh skills/brainstorming/scripts/start-server.sh skills/brainstorming/scripts/stop-server.sh
 git commit -m "Harden companion stop ownership proof"
 ```
 
-## Task 4: Platform And Fixed-Port Test Hardening
+## 작업 4: 플랫폼 및 고정 포트 테스트 강화
 
-**Files:**
-- Modify: `tests/brainstorm-server/auth.test.js`
-- Modify: `tests/brainstorm-server/start-server.test.sh`
-- Modify: `tests/brainstorm-server/windows-lifecycle.test.sh`
+**파일:**
+- 수정: `tests/brainstorm-server/auth.test.js`
+- 수정: `tests/brainstorm-server/start-server.test.sh`
+- 수정: `tests/brainstorm-server/windows-lifecycle.test.sh`
 
-- [ ] **Step 1: Add fixed-port guard to auth tests**
+- [ ] **1단계: auth 테스트에 고정 포트 가드 추가**
 
-In `tests/brainstorm-server/auth.test.js`, add this helper after `waitForServer()`:
+`tests/brainstorm-server/auth.test.js`에서 `waitForServer()` 다음에 다음 헬퍼를 추가합니다:
 
 ```js
 function serverStartedMessage(out) {
@@ -803,26 +802,26 @@ function assertStartedOnExpectedPort(out) {
 }
 ```
 
-After `const { stdout: initialStdout } = await waitForServer(server);`, add:
+`const { stdout: initialStdout } = await waitForServer(server);` 다음에 다음을 추가합니다:
 
 ```js
   assertStartedOnExpectedPort(initialStdout);
 ```
 
-- [ ] **Step 2: Verify auth fixed-port guard**
+- [ ] **2단계: auth 고정 포트 가드 검증**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
 node auth.test.js
 ```
 
-Expected: auth tests pass on a free `3335`, and would fail clearly if fallback occurred.
+예상: 자유 포트 `3335`에서 auth 테스트가 통과하며, 폴백 발생 시 명확하게 실패함.
 
-- [ ] **Step 3: Add start-server id argv assertion**
+- [ ] **3단계: start-server ID argv 단정문 추가**
 
-In `tests/brainstorm-server/start-server.test.sh`, change the first fake node body to:
+`tests/brainstorm-server/start-server.test.sh`에서 첫 번째 가짜 node 본문을 다음으로 변경합니다:
 
 ```bash
 cat > "$TEST_DIR/fake-bin/node" <<'EOF'
@@ -833,7 +832,7 @@ exit 0
 EOF
 ```
 
-After the owner PID assertion, add:
+소유자 PID 단정문 다음에 다음을 추가합니다:
 
 ```bash
 captured_argv=$(echo "$captured" | grep "CAPTURED_ARGV=" | head -1 | sed 's/CAPTURED_ARGV=//')
@@ -857,9 +856,9 @@ else
 fi
 ```
 
-- [ ] **Step 4: Add Windows lifecycle id argv assertions**
+- [ ] **4단계: Windows 라이프사이클 ID argv 단정문 추가**
 
-In `tests/brainstorm-server/windows-lifecycle.test.sh`, change the Test 2 fake node body to:
+`tests/brainstorm-server/windows-lifecycle.test.sh`에서 테스트 2의 가짜 node 본문을 다음으로 변경합니다:
 
 ```bash
 cat > "$FAKE_NODE_DIR/node" <<'FAKENODE'
@@ -870,7 +869,7 @@ exit 0
 FAKENODE
 ```
 
-After the owner PID check in Test 2, add:
+테스트 2의 소유자 PID 검사 다음에 다음을 추가합니다:
 
 ```bash
 captured_argv=$(echo "$captured" | grep "CAPTURED_ARGV=" | head -1 | sed 's/CAPTURED_ARGV=//')
@@ -882,51 +881,51 @@ else
 fi
 ```
 
-In Test 6, before launching direct Node, add:
+테스트 6에서 직접 Node를 실행하기 전에 다음을 추가합니다:
 
 ```bash
 STOP_TEST_ID="$(printf 'windowsstop%021d\n' "$RANDOM")"
 printf '%s\n' "$STOP_TEST_ID" > "$TEST_DIR/stop-test/state/server-instance-id"
 ```
 
-Change the direct Node launch in Test 6 to:
+테스트 6의 직접 Node 실행을 다음으로 변경합니다:
 
 ```bash
   node "$SERVER_SCRIPT" "--brainstorm-server-id=$STOP_TEST_ID" > "$TEST_DIR/stop-test/.server.log" 2>&1 &
 ```
 
-- [ ] **Step 5: Verify platform tests**
+- [ ] **5단계: 플랫폼 테스트 검증**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers
 bash tests/brainstorm-server/start-server.test.sh
 ```
 
-Expected: all start-server shell tests pass on macOS.
+예상: macOS에서 모든 start-server 셸 테스트 통과.
 
-Run the Windows lifecycle test later on `ballmer` as part of Task 6.
+Windows 라이프사이클 테스트는 추후 작업 6의 일환으로 `ballmer`에서 실행합니다.
 
-- [ ] **Step 6: Commit**
+- [ ] **6단계: 커밋**
 
-Run:
+실행:
 
 ```bash
 git add tests/brainstorm-server/auth.test.js tests/brainstorm-server/start-server.test.sh tests/brainstorm-server/windows-lifecycle.test.sh
 git commit -m "Harden companion platform tests"
 ```
 
-## Task 5: Docs And PR Consistency
+## 작업 5: 문서 및 PR 일관성
 
-**Files:**
-- Modify: `skills/brainstorming/visual-companion.md`
-- Modify: `docs/superpowers/plans/2026-06-09-visual-companion-issues.md`
-- Update: PR #1720 body through `gh pr edit`
+**파일:**
+- 수정: `skills/brainstorming/visual-companion.md`
+- 수정: `docs/superpowers/plans/2026-06-09-visual-companion-issues.md`
+- 업데이트: `gh pr edit`를 통해 PR #1720 본문 업데이트
 
-- [ ] **Step 1: Keep platform start commands aligned with auto-open behavior**
+- [ ] **1단계: 플랫폼 시작 명령을 자동 열기 동작에 맞게 유지**
 
-In `skills/brainstorming/visual-companion.md`, update platform-specific commands that start a user-approved companion session so they include `--open`:
+`skills/brainstorming/visual-companion.md`에서 사용자가 승인한 컴패니언 세션을 시작하는 플랫폼별 명령에 `--open`이 포함되도록 업데이트합니다:
 
 ```bash
 scripts/start-server.sh --project-dir /path/to/project --open
@@ -936,11 +935,11 @@ scripts/start-server.sh --project-dir /path/to/project --open
 scripts/start-server.sh --project-dir /path/to/project --open --foreground
 ```
 
-Do not add `--open` to remote bind examples where auto-open is intentionally skipped.
+의도적으로 자동 열기를 건너뛰는 원격 바인드 예시에는 `--open`을 추가하지 마세요.
 
-- [ ] **Step 2: Reconcile issue catalog disposition rows**
+- [ ] **2단계: 이슈 카탈로그 조치(disposition) 행 조율**
 
-In `docs/superpowers/plans/2026-06-09-visual-companion-issues.md`, replace the disposition rows for A2, D1, D2, D3, and D4 with:
+`docs/superpowers/plans/2026-06-09-visual-companion-issues.md`에서 A2, D1, D2, D3, D4에 대한 조치 행을 다음으로 교체합니다:
 
 ```markdown
 | A2 | Host allowlist; browser WS Origin check | PRs #1110/#1553 | Host allowlist dropped; WS Origin check retained after auth for browser confused-deputy defense |
@@ -950,62 +949,62 @@ In `docs/superpowers/plans/2026-06-09-visual-companion-issues.md`, replace the d
 | D4 | Light/dark contrast helpers in the frame | PR #1683 | Deferred - not in PR #1720 |
 ```
 
-- [ ] **Step 3: Reconcile A2 detail text**
+- [ ] **3단계: A2 세부 텍스트 조율**
 
-Replace the final sentence in the A2 section with:
+A2 섹션의 마지막 문장을 다음으로 교체합니다:
 
 ```markdown
 No `BRAINSTORM_ALLOWED_HOSTS` and no Host allowlist. The final implementation still checks browser WebSocket `Origin` after session auth so a cross-origin localhost tab cannot ride the companion cookie.
 ```
 
-- [ ] **Step 4: Reconcile timeout and feature grouping text**
+- [ ] **4단계: 타임아웃 및 기능 그룹화 텍스트 조율**
 
-In the C1 section, replace:
+C1 섹션에서 다음을:
 
 ```markdown
 - Raise the default (about 2h) and make it configurable:
 ```
 
-with:
+다음으로 교체합니다:
 
 ```markdown
 - Raise the default to 4 hours and make it configurable:
 ```
 
-In the suggested grouping section, replace item 4 with:
+제안된 그룹화 섹션에서 4번 항목을 다음으로 교체합니다:
 
 ```markdown
 4. **Deferred feature pass** - D1, D2, D4 are not part of PR #1720. D3 is shipped through the `--open` flow.
 ```
 
-- [ ] **Step 5: Verify docs diff**
+- [ ] **5단계: 문서 diff 검증**
 
-Run:
+실행:
 
 ```bash
 git diff -- skills/brainstorming/visual-companion.md docs/superpowers/plans/2026-06-09-visual-companion-issues.md
 ```
 
-Expected: diff only updates auto-open command consistency, shipped/deferred dispositions, WS Origin wording, and the 4 hour timeout statement.
+예상: diff가 자동 열기 명령 일관성, 출시/지연 조치, WS Origin 어휘 및 4시간 타임아웃 진술만 업데이트함.
 
-- [ ] **Step 6: Commit**
+- [ ] **6단계: 커밋**
 
-Run:
+실행:
 
 ```bash
 git add skills/brainstorming/visual-companion.md docs/superpowers/plans/2026-06-09-visual-companion-issues.md
 git commit -m "Align visual companion docs with shipped scope"
 ```
 
-## Task 6: Full Verification And Evidence
+## 작업 6: 전체 검증 및 증거 자료
 
-**Files:**
-- No required source edits
-- Update: PR #1720 body
+**파일:**
+- 소스 수정 요구 없음
+- 업데이트: PR #1720 본문
 
-- [ ] **Step 1: Run focused macOS checks**
+- [ ] **1단계: 집중적인 macOS 검사 실행**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
@@ -1016,22 +1015,22 @@ bash stop-server.test.sh
 bash start-server.test.sh
 ```
 
-Expected: all focused tests pass; symlink-only tests may report skipped only when host support is unavailable.
+예상: 집중 테스트 모두 통과; 심볼릭 링크 전용 테스트는 호스트 지원을 사용할 수 없을 때만 건너뜀으로 보고될 수 있음.
 
-- [ ] **Step 2: Run full macOS test suite**
+- [ ] **2단계: 전체 macOS 테스트 스위트 실행**
 
-Run:
+실행:
 
 ```bash
 cd /Users/drewritter/.codex/worktrees/59f6/superpowers/tests/brainstorm-server
 npm test
 ```
 
-Expected: full brainstorm-server test suite passes.
+예상: 전체 brainstorm-server 테스트 스위트 통과.
 
-- [ ] **Step 3: Run static checks**
+- [ ] **3단계: 정적 검사 실행**
 
-Run from repo root:
+저장소 루트에서 실행:
 
 ```bash
 git diff --check
@@ -1040,11 +1039,11 @@ node --check skills/brainstorming/scripts/helper.js
 bash scripts/lint-shell.sh skills/brainstorming/scripts/start-server.sh skills/brainstorming/scripts/stop-server.sh tests/brainstorm-server/start-server.test.sh tests/brainstorm-server/stop-server.test.sh tests/brainstorm-server/windows-lifecycle.test.sh
 ```
 
-Expected: all commands exit 0.
+예상: 모든 명령 종료 코드 0.
 
-- [ ] **Step 4: Run Windows validation on ballmer**
+- [ ] **4단계: ballmer에서 Windows 검증 실행**
 
-Copy or fetch the rebased branch on `ballmer`, then run:
+`ballmer`에서 리베이스된 브랜치를 복사하거나 가져온 후 실행합니다:
 
 ```bash
 cd superpowers
@@ -1053,74 +1052,74 @@ npm --prefix tests/brainstorm-server test
 bash tests/brainstorm-server/windows-lifecycle.test.sh
 ```
 
-Expected: full runnable Windows suite passes. If Git Bash lacks `lsof`, only the lsof-specific legacy port-cross-check test may skip; instance-id stop tests must still pass.
+예상: 실행 가능한 전체 Windows 스위트 통과. Git Bash에 `lsof`가 없는 경우 lsof 전용 레거시 포트 교차 검사 테스트만 건너뛸 수 있으며, instance-id 중지 테스트는 여전히 통과해야 합니다.
 
-- [ ] **Step 5: Verify PR diff and GitHub state**
+- [ ] **5단계: PR diff 및 GitHub 상태 검증**
 
-Run:
+실행:
 
 ```bash
 git diff --quiet origin/dev...HEAD -- evals
 gh pr view 1720 --json mergeStateStatus,statusCheckRollup,headRefOid
 ```
 
-Expected: first command exits 0. PR JSON no longer reports `DIRTY` or `CONFLICTING` after the branch is pushed.
+예상: 첫 번째 명령 종료 코드 0. 브랜치가 푸시된 후 PR JSON에 더 이상 `DIRTY`나 `CONFLICTING`이 보고되지 않음.
 
-- [ ] **Step 6: Collect external eval evidence**
+- [ ] **6단계: 외부 평가 증거 수집**
 
-Run:
+실행:
 
 ```bash
 git -C /Users/drewritter/.codex/worktrees/59f6/superpowers-evals rev-parse HEAD
 git -C /Users/drewritter/.codex/worktrees/59f6/superpowers-evals status --short --branch
 ```
 
-If the eval worktree is not at that path, run the same commands in `/Users/drewritter/prime-rad/superpowers-evals`.
+평가 워크트리가 해당 경로에 없는 경우 `/Users/drewritter/prime-rad/superpowers-evals`에서 동일한 명령을 실행합니다.
 
-Record the exact eval scenario path, command, result artifact path, and RED/GREEN outcome from the already-run eval evidence. Do not claim the eval submodule is included in PR #1720.
+이미 실행된 평가 증거에서 정확한 평가 시나리오 경로, 명령, 결과 아티팩트 경로 및 RED/GREEN 결과를 기록합니다. 이 PR #1720 diff에 eval 서브모듈이 포함되어 있다고 주장하지 마세요.
 
-- [ ] **Step 7: Run final manual/browser smoke**
+- [ ] **7단계: 최종 수동/브라우저 스모크 실행**
 
-After automated tests are green, start the companion with `--open`, push a small screen, verify the browser reaches a bare `/` URL after bootstrap, verify status reaches Connected, stop and restart the server with the same project dir, and verify the open tab reconnects. Record the exact commands and observed result.
+자동화된 테스트가 성공(green)으로 나오면 `--open`을 사용하여 컴패니언을 시작하고, 작은 화면을 푸시하고, 브라우저가 부트스트랩 후 순수 `/` URL에 도달하는지 확인하고, 상태가 Connected에 도달하는지 확인하고, 동일한 프로젝트 디렉터리로 서버를 중지 후 재시작하고, 열려 있는 탭이 재연결되는지 확인합니다. 정확한 명령어와 관찰된 결과를 기록합니다.
 
-- [ ] **Step 8: Update PR body**
+- [ ] **8단계: PR 본문 업데이트**
 
-Prepare `/tmp/pr-1720-body.md`, then run `gh pr edit 1720 --body-file /tmp/pr-1720-body.md` after the body includes:
+`/tmp/pr-1720-body.md`를 준비한 다음 본문에 아래 내용이 포함된 후 `gh pr edit 1720 --body-file /tmp/pr-1720-body.md`를 실행합니다:
 
-- model, harness, plugins, and Drew as human reviewer
-- duplicate/related PR search results
-- exact post-rebase note that `evals` is absent from this PR diff
-- focused RED/GREEN evidence table
-- macOS `npm test` evidence
-- Windows `ballmer` evidence
-- manual/browser smoke evidence
-- external eval repo commit, scenario path, command, artifact path, and outcome
+- 모델, 하네스, 플러그인 및 사람 리뷰어 Drew
+- 중복/관련 PR 검색 결과
+- 이 PR diff에 `evals`가 없음을 나타내는 정확한 리베이스 후 노트
+- 집중 RED/GREEN 증거 표
+- macOS `npm test` 증거
+- Windows `ballmer` 증거
+- 수동/브라우저 스모크 증거
+- 외부 eval 저장소 커밋, 시나리오 경로, 명령, 아티팩트 경로 및 결과
 
-- [ ] **Step 9: Push branch**
+- [ ] **9단계: 브랜치 푸시**
 
-Run:
+실행:
 
 ```bash
 git status --short --branch
 git push origin brainstorming-companion
 ```
 
-Expected: push succeeds and PR #1720 updates.
+예상: 푸시 성공 및 PR #1720 업데이트.
 
-- [ ] **Step 10: Final PR readiness check**
+- [ ] **10단계: 최종 PR 준비 상태 검사**
 
-Run:
+실행:
 
 ```bash
 gh pr view 1720 --json mergeStateStatus,statusCheckRollup,headRefOid,url
 ```
 
-Expected: PR points at the pushed head SHA, merge state is no longer conflict-blocked, and check status is recorded for Drew.
+예상: PR이 푸시된 HEAD SHA를 가리키고, 병합 상태가 더 이상 충돌에 의해 차단되지 않으며, Drew에 대한 검사 상태가 기록됨.
 
-## Self-Review Checklist
+## 자체 검토 체크리스트
 
-- [ ] Every requirement in `docs/superpowers/specs/2026-06-11-visual-companion-final-hardening-fixup-design.md` maps to one of the tasks above.
-- [ ] The plan contains no vague or incomplete steps.
-- [ ] Tests are added before production fixes in Tasks 1, 2, and 3.
-- [ ] The docs task does not add deferred features.
-- [ ] The verification task includes macOS, Windows, PR diff, PR metadata, external eval evidence, and final manual/browser smoke.
+- [ ] `docs/superpowers/specs/2026-06-11-visual-companion-final-hardening-fixup-design.md`의 모든 요구 사항이 위의 작업 중 하나에 매핑됩니다.
+- [ ] 계획에 모호하거나 불완전한 단계가 포함되어 있지 않습니다.
+- [ ] 작업 1, 2, 3에서는 프로덕션 수정 전에 테스트가 추가됩니다.
+- [ ] 문서 작업에 지연된 기능이 추가되지 않습니다.
+- [ ] 검증 작업에는 macOS, Windows, PR diff, PR 메타데이터, 외부 평가 증거 및 최종 수동/브라우저 스모크 테스트가 포함됩니다.

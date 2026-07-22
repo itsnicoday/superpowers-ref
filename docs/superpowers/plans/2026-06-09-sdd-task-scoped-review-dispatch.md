@@ -1,27 +1,27 @@
-# SDD Task-Scoped Review Dispatch Implementation Plan
+# SDD 작업 범위 지정 리뷰 디스패치 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **에이전트 작업자 참고:** 필수 하위 스킬: 이 계획을 작업별로 구현하려면 superpowers:subagent-driven-development (권장) 또는 superpowers:executing-plans를 사용하세요. 각 단계는 추적을 위해 체크박스 (`- [ ]`) 구문을 사용합니다.
 
-**Goal:** Scope SDD's per-task reviews to the task (diff-first reading, justified broadening, no redundant test runs) while final branch review stays broad.
+**목표:** SDD의 작업별 리뷰를 해당 작업 범위로 한정(diff 우선 읽기, 정당화된 범위 확장, 불필요한 중복 테스트 실행 없음)하는 동시에, 최종 브랜치 리뷰는 광범위하게 유지합니다.
 
-**Architecture:** Four prose edits to the subagent-driven-development skill (the per-task quality prompt becomes self-contained instead of delegating to the merge-readiness template; the spec prompt gets a third verdict channel and grounded skepticism; the implementer prompt gains a re-run-after-fix rule; SKILL.md gets controller guidance) plus one new eval scenario in the `evals/` submodule. `skills/requesting-code-review/` is deliberately untouched.
+**아키텍처:** subagent-driven-development 스킬에 대한 4가지 문장 수정(작업별 품질 프롬프트가 머지 준비 완료 템플릿에 위임하는 대신 자급자족형(self-contained)이 됨; 스펙 프롬프트에 세 번째 판정 채널과 근거 있는 회의론이 추가됨; 구현자 프롬프트에 수정 후 재실행 규칙이 추가됨; SKILL.md에 컨트롤러 지침이 추가됨)과 `evals/` 서브모듈에 1개의 새로운 평가(eval) 시나리오 추가. `skills/requesting-code-review/`는 의도적으로 수정하지 않습니다.
 
-**Tech Stack:** Markdown skill files; Python setup helper + bash checks + story.md for the quorum eval.
+**기술 스택:** 마크다운 스킬 파일; 쿼럼(quorum) 평가를 위한 Python 설정 헬퍼 + bash 검사 + story.md.
 
-**Spec:** `docs/superpowers/specs/2026-06-09-sdd-task-scoped-review-dispatch-design.md` — read it before starting. Decisions already settled there: full re-reviews stay; the two review stages stay separate; coordinator keeps model judgment; `requesting-code-review/` stays broad.
+**스펙:** `docs/superpowers/specs/2026-06-09-sdd-task-scoped-review-dispatch-design.md` — 시작하기 전에 읽어보세요. 이미 결정된 사항들: 전체 재리뷰 유지; 두 리뷰 단계는 분리된 상태 유지; 코디네이터가 모델 판단력을 유지; `requesting-code-review/`는 광범위한 상태 유지.
 
-**These are behavior-shaping prose files, not code.** There are no unit tests for them. Each task's verification steps are exact `grep` checks that the edit landed; behavioral verification is Task 6 (static) and Task 7 (live evals, maintainer-gated).
+**이 파일들은 코드가 아닌 행동을 형성하는 절문(prose) 파일입니다.** 단위 테스트가 없습니다. 각 작업의 검증 단계는 수정 사항이 반영되었는지 확인하는 정확한 `grep` 검사입니다. 행동 검증은 작업 6(정적 검사)과 작업 7(실시간 평가, 유지관리자 전용)입니다.
 
 ---
 
-### Task 1: Rewrite the per-task quality reviewer prompt as self-contained
+### 작업 1: 작업별 품질 리뷰어 프롬프트를 자급자족형으로 재작성
 
-The current file delegates to `../requesting-code-review/code-reviewer.md`, which is a merge-readiness review (architecture, security, production readiness, "Ready to merge?"). Replace the entire file with a self-contained, task-scoped template.
+현재 파일은 머지 준비 상태 리뷰(아키텍처, 보안, 프로덕션 준비 상태, "Ready to merge?")인 `../requesting-code-review/code-reviewer.md`에 위임하고 있습니다. 전체 파일을 자체 포함(self-contained)된 작업 범위 한정 템플릿으로 교체합니다.
 
-**Files:**
-- Rewrite: `skills/subagent-driven-development/code-quality-reviewer-prompt.md`
+**파일:**
+- 재작성: `skills/subagent-driven-development/code-quality-reviewer-prompt.md`
 
-- [ ] **Step 1: Replace the full file contents with:**
+- [ ] **1단계: 전체 파일 내용을 다음으로 교체:**
 
 ````markdown
 # Code Quality Reviewer Prompt Template
@@ -151,18 +151,18 @@ Subagent (general-purpose):
 **Reviewer returns:** Strengths, Issues (Critical/Important/Minor), Task quality verdict
 ````
 
-- [ ] **Step 2: Verify the rewrite landed**
+- [ ] **2단계: 재작성 반영 확인**
 
-Run: `grep -c "requesting-code-review" skills/subagent-driven-development/code-quality-reviewer-prompt.md || echo ABSENT`
-Expected: `ABSENT` (no more delegation)
+실행: `grep -c "requesting-code-review" skills/subagent-driven-development/code-quality-reviewer-prompt.md || echo ABSENT`
+예상: `ABSENT` (위임 없음)
 
-Run: `grep -n "Task quality:" skills/subagent-driven-development/code-quality-reviewer-prompt.md | head -2`
-Expected: one match (the Output Format verdict line; the "Reviewer returns" footer says "Task quality verdict" without a colon)
+실행: `grep -n "Task quality:" skills/subagent-driven-development/code-quality-reviewer-prompt.md | head -2`
+예상: 1개 일치 (Output Format verdict 줄; "Reviewer returns" 푸터는 콜론 없이 "Task quality verdict" 표시)
 
-Run: `grep -n "worktree add\|Ready to merge" skills/subagent-driven-development/code-quality-reviewer-prompt.md || echo CLEAN`
-Expected: `CLEAN`
+실행: `grep -n "worktree add\|Ready to merge" skills/subagent-driven-development/code-quality-reviewer-prompt.md || echo CLEAN`
+예상: `CLEAN`
 
-- [ ] **Step 3: Commit**
+- [ ] **3단계: 커밋**
 
 ```bash
 git add skills/subagent-driven-development/code-quality-reviewer-prompt.md
@@ -171,20 +171,20 @@ git commit -m "Make per-task quality reviewer prompt self-contained and task-sco
 
 ---
 
-### Task 2: Spec reviewer prompt cleanups
+### 작업 2: 스펙 리뷰어 프롬프트 정돈
 
-Four exact edits to `skills/subagent-driven-development/spec-reviewer-prompt.md`. Current line numbers refer to the file as of commit f55642e.
+`skills/subagent-driven-development/spec-reviewer-prompt.md` 파일에 대한 4가지 정확한 수정 사항입니다. 현재 줄 번호는 커밋 f55642e 시점의 파일 기준입니다.
 
-**Files:**
-- Modify: `skills/subagent-driven-development/spec-reviewer-prompt.md`
+**파일:**
+- 수정: `skills/subagent-driven-development/spec-reviewer-prompt.md`
 
-- [ ] **Step 1: Add the judge-from-the-diff clause.** After the line (currently line 31):
+- [ ] **1단계: diff 기반 판단 조항 추가.** 다음 줄(현재 31행) 다음에:
 
 ```
     Only read files in this diff. Do not crawl the broader codebase.
 ```
 
-insert a blank line and:
+빈 줄 하나와 다음 내용을 삽입:
 
 ```
     Spec compliance is judged by reading the diff against the requirements.
@@ -194,33 +194,33 @@ insert a blank line and:
     instead of broadening your search.
 ```
 
-- [ ] **Step 2: Trim the read-only section.** Replace (currently line 35):
+- [ ] **2단계: 읽기 전용 섹션 축소.** 다음 내용(현재 35행)을:
 
 ```
     Your review is read-only on this checkout. Do not mutate the working tree, the index, HEAD, or branch state in any way. Use tools like `git show`, `git diff`, and `git log` to inspect history. If you need a working copy of a different revision, check it out into a separate temporary directory (e.g. `git worktree add /tmp/review-[SHA] [SHA]`) — never move HEAD on this checkout.
 ```
 
-with:
+다음으로 교체:
 
 ```
     Your review is read-only on this checkout. Do not mutate the working tree, the index, HEAD, or branch state in any way. Use tools like `git show`, `git diff`, and `git log` to inspect history.
 ```
 
-- [ ] **Step 3: Ground the skepticism.** Replace (currently lines 39-40):
+- [ ] **3단계: 회의론의 근거 마련.** 다음 내용(현재 39-40행)을:
 
 ```
     The implementer finished suspiciously quickly. Their report may be incomplete,
     inaccurate, or optimistic. You MUST verify everything independently.
 ```
 
-with:
+다음으로 교체:
 
 ```
     Treat the implementer's report as unverified claims about the code. It may
     be incomplete, inaccurate, or optimistic. Verify the claims against the diff.
 ```
 
-- [ ] **Step 4: Add the third verdict channel.** Replace (currently lines 74-76):
+- [ ] **4단계: 세 번째 판정 채널 추가.** 다음 내용(현재 74-76행)을:
 
 ```
     Report:
@@ -228,7 +228,7 @@ with:
     - ❌ Issues found: [list specifically what's missing or extra, with file:line references]
 ```
 
-with:
+다음으로 교체:
 
 ```
     Report:
@@ -239,15 +239,15 @@ with:
       ✅/❌ verdict for everything you could verify]
 ```
 
-- [ ] **Step 5: Verify**
+- [ ] **5단계: 검증**
 
-Run: `grep -n "suspiciously\|worktree add" skills/subagent-driven-development/spec-reviewer-prompt.md || echo CLEAN`
-Expected: `CLEAN`
+실행: `grep -n "suspiciously\|worktree add" skills/subagent-driven-development/spec-reviewer-prompt.md || echo CLEAN`
+예상: `CLEAN`
 
-Run: `grep -c "⚠️" skills/subagent-driven-development/spec-reviewer-prompt.md`
-Expected: `2` (judge-from-diff clause + verdict channel)
+실행: `grep -c "⚠️" skills/subagent-driven-development/spec-reviewer-prompt.md`
+예상: `2` (diff 기반 판단 조항 + 판정 채널)
 
-- [ ] **Step 6: Commit**
+- [ ] **6단계: 커밋**
 
 ```bash
 git add skills/subagent-driven-development/spec-reviewer-prompt.md
@@ -256,20 +256,20 @@ git commit -m "Spec reviewer: judge from the diff, grounded skepticism, ⚠️ v
 
 ---
 
-### Task 3: Implementer prompt — re-run tests after fixing review findings
+### 작업 3: 구현자 프롬프트 — 리뷰 결과 수정 후 테스트 재실행
 
-The reviewers' "don't re-run the implementer's tests" rule assumes the implementer re-runs tests after every fix. Make that real.
+리뷰어의 "구현자의 테스트를 재실행하지 마라" 규칙은 구현자가 수정할 때마다 테스트를 재실행한다고 가정합니다. 이를 실제 동작으로 만듭니다.
 
-**Files:**
-- Modify: `skills/subagent-driven-development/implementer-prompt.md`
+**파일:**
+- 수정: `skills/subagent-driven-development/implementer-prompt.md`
 
-- [ ] **Step 1: Insert a new section.** Immediately before the line (currently line 100):
+- [ ] **1단계: 새 섹션 삽입.** 다음 줄(현재 100행) 바로 직전에:
 
 ```
     ## Report Format
 ```
 
-insert:
+다음 내용 삽입:
 
 ```
     ## After Review Findings
@@ -280,12 +280,12 @@ insert:
 
 ```
 
-- [ ] **Step 2: Verify**
+- [ ] **2단계: 검증**
 
-Run: `grep -n "After Review Findings" skills/subagent-driven-development/implementer-prompt.md`
-Expected: one match, on a line before `## Report Format`
+실행: `grep -n "After Review Findings" skills/subagent-driven-development/implementer-prompt.md`
+예상: `## Report Format` 앞 줄에 1개 일치
 
-- [ ] **Step 3: Commit**
+- [ ] **3단계: 커밋**
 
 ```bash
 git add skills/subagent-driven-development/implementer-prompt.md
@@ -294,22 +294,22 @@ git commit -m "Implementer prompt: re-run covering tests after fixing review fin
 
 ---
 
-### Task 4: SKILL.md controller changes
+### 작업 4: SKILL.md 컨트롤러 변경 사항
 
-Six exact edits to `skills/subagent-driven-development/SKILL.md`. Current line numbers refer to commit f55642e.
+`skills/subagent-driven-development/SKILL.md`에 대한 6가지 정확한 수정 사항입니다. 현재 줄 번호는 커밋 f55642e 기준입니다.
 
-**Files:**
-- Modify: `skills/subagent-driven-development/SKILL.md`
+**파일:**
+- 수정: `skills/subagent-driven-development/SKILL.md`
 
-- [ ] **Step 1: Point the final-review flowchart node at the broad template.** The node label `Dispatch final code reviewer subagent for entire implementation` appears 3 times (currently lines 65, 84, 85). In all 3 occurrences, replace the label string with:
+- [ ] **1단계: 최종 리뷰 순서도 노드가 광범위 템플릿을 가리키도록 수정.** 노드 라벨 `Dispatch final code reviewer subagent for entire implementation`은 3번 나타납니다(현재 65, 84, 85행). 3개 위치 모두에서 라벨 문자열을 다음으로 교체합니다:
 
 ```
 Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)
 ```
 
-(Graphviz nodes are matched by label text — all three must be byte-identical or the graph grows a phantom node.)
+(Graphviz 노드는 라벨 텍스트로 일치합니다 — 3개 모두 바이트 단위로 동일해야 하며 그렇지 않으면 그래프에 유령 노드가 생성됩니다.)
 
-- [ ] **Step 2: Model selection by judgment.** Replace (currently lines 97-99):
+- [ ] **2단계: 판단력에 따른 모델 선택.** 다음 내용(현재 97-99행)을:
 
 ```
 **Architecture, design, and review tasks**: use the most capable available model.
@@ -317,7 +317,7 @@ Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.m
 **Task complexity signals:**
 ```
 
-with:
+다음으로 교체:
 
 ```
 **Architecture and design tasks**: use the most capable available model.
@@ -329,13 +329,13 @@ most capable model; a subtle concurrency change does.
 **Task complexity signals (implementation tasks):**
 ```
 
-- [ ] **Step 3: Add controller guidance sections.** Immediately before the line (currently line 122):
+- [ ] **3단계: 컨트롤러 지침 섹션 추가.** 다음 줄(현재 122행) 바로 앞에:
 
 ```
 ## Prompt Templates
 ```
 
-insert:
+다음 내용 삽입:
 
 ```
 ## Handling Spec Reviewer ⚠️ Items
@@ -359,68 +359,68 @@ final whole-branch review. When you fill a reviewer template:
 
 ```
 
-- [ ] **Step 4: Prompt Templates list — add the final-review pointer.** Replace (currently line 126):
+- [ ] **4단계: 프롬프트 템플릿 목록 — 최종 리뷰 포인터 추가.** 다음 내용(현재 126행)을:
 
 ```
 - [code-quality-reviewer-prompt.md](code-quality-reviewer-prompt.md) - Dispatch code quality reviewer subagent
 ```
 
-with:
+다음으로 교체:
 
 ```
 - [code-quality-reviewer-prompt.md](code-quality-reviewer-prompt.md) - Dispatch code quality reviewer subagent
 - Final whole-branch review: use superpowers:requesting-code-review's [code-reviewer.md](../requesting-code-review/code-reviewer.md)
 ```
 
-- [ ] **Step 5: Example workflow verdict vocabulary.** Two replacements:
+- [ ] **5단계: 예시 워크플로 판정 어휘.** 2가지 교체 사항:
 
-Replace (currently line 157):
+다음 내용(현재 157행)을:
 ```
 Code reviewer: Strengths: Good test coverage, clean. Issues: None. Approved.
 ```
-with:
+다음으로 교체:
 ```
 Code reviewer: Strengths: Good test coverage, clean. Issues: None. Task quality: Approved.
 ```
 
-Replace (currently line 191):
+다음 내용(현재 191행)을:
 ```
 Code reviewer: ✅ Approved
 ```
-with:
+다음으로 교체:
 ```
 Code reviewer: ✅ Task quality: Approved
 ```
 
-(The final reviewer's "ready to merge" line, currently line 199, stays.)
+(현재 199행의 최종 리뷰어의 "ready to merge" 줄은 유지됩니다.)
 
-- [ ] **Step 6: Integration section.** Replace (currently line 272):
+- [ ] **6단계: 통합 섹션.** 다음 내용(현재 272행)을:
 
 ```
 - **superpowers:requesting-code-review** - Code review template for reviewer subagents
 ```
 
-with:
+다음으로 교체:
 
 ```
 - **superpowers:requesting-code-review** - Code review template for the final whole-branch review
 ```
 
-- [ ] **Step 7: Verify**
+- [ ] **7단계: 검증**
 
-Run: `grep -c "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" skills/subagent-driven-development/SKILL.md`
-Expected: `3`
+실행: `grep -c "Dispatch final code reviewer subagent (../requesting-code-review/code-reviewer.md)" skills/subagent-driven-development/SKILL.md`
+예상: `3`
 
-Run: `grep -n "most capable available model" skills/subagent-driven-development/SKILL.md`
-Expected: exactly one match (architecture/design bullet)
+실행: `grep -n "most capable available model" skills/subagent-driven-development/SKILL.md`
+예상: 정확히 1개 일치 (아키텍처/디자인 항목)
 
-Run: `grep -n "Handling Spec Reviewer\|Constructing Reviewer Prompts" skills/subagent-driven-development/SKILL.md`
-Expected: two section headers, both before `## Prompt Templates`
+실행: `grep -n "Handling Spec Reviewer\|Constructing Reviewer Prompts" skills/subagent-driven-development/SKILL.md`
+예상: 2개 섹션 헤더, 모두 `## Prompt Templates` 앞
 
-Run: `grep -c "Task quality: Approved" skills/subagent-driven-development/SKILL.md`
-Expected: `2`
+실행: `grep -c "Task quality: Approved" skills/subagent-driven-development/SKILL.md`
+예상: `2`
 
-- [ ] **Step 8: Commit**
+- [ ] **8단계: 커밋**
 
 ```bash
 git add skills/subagent-driven-development/SKILL.md
@@ -429,27 +429,27 @@ git commit -m "SDD controller: reviewer prompt budgets, ⚠️ handling, final-r
 
 ---
 
-### Task 5: New eval scenario — per-task quality reviewer catches a planted defect
+### 작업 5: 새로운 평가 시나리오 — 작업별 품질 리뷰어가 심어둔 결함 포착
 
-Lives in the `evals/` **submodule** (separate repo, `superpowers-evals`). Work on a branch there; the parent submodule-pointer bump happens at finishing time per `evals/CLAUDE.md`.
+`evals/` **서브모듈**(별도 저장소, `superpowers-evals`)에 위치합니다. 해당 위치의 브랜치에서 작업하세요. 상위 서브모듈 포인터 상향(bump)은 `evals/CLAUDE.md`에 따라 완료 시점에 일어납니다.
 
-The fixture plan's Task 2 implementation snippet duplicates Task 1's formatting logic verbatim. The duplication is spec-compliant, so the spec reviewer should pass it — the per-task quality reviewer is the gate under test (DRY violation).
+픽스처 계획의 작업 2 구현 스니펫은 작업 1의 포맷팅 로직을 그대로 중복합니다. 중복 자체는 스펙을 준수하므로 스펙 리뷰어는 통과시켜야 합니다 — 테스트 대상 게이트는 작업별 품질 리뷰어입니다(DRY 위반).
 
-**Files:**
-- Create: `evals/setup_helpers/sdd_quality_defect_plan.py`
-- Modify: `evals/setup_helpers/__init__.py`
-- Create: `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/story.md`
-- Create: `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/setup.sh`
-- Create: `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/checks.sh`
+**파일:**
+- 생성: `evals/setup_helpers/sdd_quality_defect_plan.py`
+- 수정: `evals/setup_helpers/__init__.py`
+- 생성: `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/story.md`
+- 생성: `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/setup.sh`
+- 생성: `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/checks.sh`
 
-- [ ] **Step 0: Branch in the submodule**
+- [ ] **0단계: 서브모듈 브랜치 생성**
 
 ```bash
 cd evals
 git checkout -b sdd-quality-defect-scenario
 ```
 
-- [ ] **Step 1: Create `evals/setup_helpers/sdd_quality_defect_plan.py`:**
+- [ ] **1단계: `evals/setup_helpers/sdd_quality_defect_plan.py` 생성:**
 
 ````python
 """Setup helper for the sdd-quality-reviewer-catches-planted-defect scenario.
@@ -568,30 +568,29 @@ def scaffold_sdd_quality_defect_plan(workdir: Path) -> None:
     _git(["git", "commit", "-m", "initial: report formatter plan"], cwd=workdir)
 ````
 
-(Note the `\\n` in the JS snippets inside PLAN_BODY: the Python source must
-produce a literal `\n` in the markdown so the JS reads `lines.join("\n")`.)
+(PLAN_BODY 내부의 JS 스니펫에 있는 `\\n`을 참고하세요: Python 소스가 마크다운 내에 리터럴 `\n`을 생성하여 JS가 `lines.join("\n")`으로 읽히도록 해야 합니다.)
 
-- [ ] **Step 2: Register the helper.** In `evals/setup_helpers/__init__.py`:
+- [ ] **2단계: 헬퍼 등록.** `evals/setup_helpers/__init__.py` 파일에서:
 
-After the line:
+다음 줄 다음에:
 ```python
 from setup_helpers.sdd_real_projects import scaffold_sdd_go_fractals, scaffold_sdd_svelte_todo
 ```
-add:
+다음 내용 추가:
 ```python
 from setup_helpers.sdd_quality_defect_plan import scaffold_sdd_quality_defect_plan
 ```
 
-After the registry entry:
+다음 레지스트리 항목 다음에:
 ```python
     "scaffold_sdd_yagni_plan": scaffold_sdd_yagni_plan,
 ```
-add:
+다음 내용 추가:
 ```python
     "scaffold_sdd_quality_defect_plan": scaffold_sdd_quality_defect_plan,
 ```
 
-- [ ] **Step 3: Create `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/story.md`:**
+- [ ] **3단계: `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/story.md` 생성:**
 
 ```markdown
 ---
@@ -654,7 +653,7 @@ you are done.
   *per-task quality review* was the mechanism that kept the code clean.
 ```
 
-- [ ] **Step 4: Create `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/setup.sh`:**
+- [ ] **4단계: `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/setup.sh` 생성:**
 
 ```bash
 #!/usr/bin/env bash
@@ -662,9 +661,9 @@ set -euo pipefail
 uv run setup-helpers run scaffold_sdd_quality_defect_plan
 ```
 
-Then: `chmod +x evals/scenarios/sdd-quality-reviewer-catches-planted-defect/setup.sh`
+그 다음: `chmod +x evals/scenarios/sdd-quality-reviewer-catches-planted-defect/setup.sh`
 
-- [ ] **Step 5: Create `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/checks.sh`** (no executable bit):
+- [ ] **5단계: `evals/scenarios/sdd-quality-reviewer-catches-planted-defect/checks.sh` 생성** (실행 권한 없음):
 
 ```bash
 pre() {
@@ -686,11 +685,9 @@ post() {
 }
 ```
 
-(The last check is the deterministic DRY gate: the banner construction
-`"=".repeat(40)` must appear at most once in the final file — shared, not
-duplicated per function.)
+(마지막 검사는 확정적(deterministic) DRY 게이트입니다: 배너 생성 `"=".repeat(40)`은 최종 파일에서 최대 1번만 나타나야 합니다 — 함수별 중복이 아닌 공유.)
 
-- [ ] **Step 6: Validate and test in the evals repo**
+- [ ] **6단계: evals 저장소에서 검증 및 테스트**
 
 ```bash
 cd evals
@@ -699,9 +696,9 @@ uv run ruff check
 uv run pytest -x -q
 ```
 
-Expected: all pass; `quorum check` lists the new scenario without errors.
+예상: 모두 통과; `quorum check`가 오류 없이 새 시나리오 목록을 표시함.
 
-- [ ] **Step 7: Commit (in the submodule)**
+- [ ] **7단계: 커밋 (서브모듈 내)**
 
 ```bash
 cd evals
@@ -711,35 +708,35 @@ git commit -m "Add sdd-quality-reviewer-catches-planted-defect scenario"
 
 ---
 
-### Task 6: Static verification sweep
+### 작업 6: 정적 검증 스윕
 
-**Files:** none modified — verification only.
+**파일:** 수정된 파일 없음 — 검증 전용.
 
-- [ ] **Step 1: No dangling references in the parent repo**
+- [ ] **1단계: 상위 저장소에 남은 참조가 없는지 확인**
 
-Run: `grep -rn "requesting-code-review" skills/subagent-driven-development/`
-Expected: matches only in SKILL.md (final-review flowchart node ×3, Prompt Templates pointer, Integration bullet). None in code-quality-reviewer-prompt.md.
+실행: `grep -rn "requesting-code-review" skills/subagent-driven-development/`
+예상: SKILL.md에만 일치 (최종 리뷰 순서도 노드 ×3, Prompt Templates 포인터, Integration 항목). code-quality-reviewer-prompt.md에는 없음.
 
-Run: `grep -rn "Ready to merge" skills/subagent-driven-development/ || echo CLEAN`
-Expected: `CLEAN`
+실행: `grep -rn "Ready to merge" skills/subagent-driven-development/ || echo CLEAN`
+예상: `CLEAN`
 
-- [ ] **Step 2: Plugin infrastructure tests**
+- [ ] **2단계: 플러그인 인프라 테스트**
 
-Run: `bash tests/shell-lint/test-lint-shell.sh`
-Expected: all PASS (we added `setup.sh` only inside the evals submodule, which has its own checks).
+실행: `bash tests/shell-lint/test-lint-shell.sh`
+예상: 모두 PASS (`setup.sh`는 자체 검사가 있는 evals 서브모듈 내부에만 추가함).
 
-- [ ] **Step 3: Cross-platform tool tables still coherent**
+- [ ] **3단계: 크로스 플랫폼 도구 테이블의 일관성 확인**
 
-Run: `grep -n "code-quality-reviewer" skills/using-superpowers/references/antigravity-tools.md skills/using-superpowers/references/gemini-tools.md`
-Expected: both tables still list `code-quality-reviewer` as a reviewer template (the new prompt's "If you cannot run commands in this environment, name the test you would run" line keeps the read-only `research` mapping valid — no table edits needed).
+실행: `grep -n "code-quality-reviewer" skills/using-superpowers/references/antigravity-tools.md skills/using-superpowers/references/gemini-tools.md`
+예상: 두 테이블 모두 여전히 `code-quality-reviewer`를 리뷰어 템플릿으로 나열함 (새 프롬프트의 "이 환경에서 명령을 실행할 수 없는 경우 실행할 테스트 이름을 지정하세요" 줄이 읽기 전용 `research` 매핑을 유효하게 유지하므로 테이블 수정 불필요).
 
 ---
 
-### Task 7: Live before/after evals (maintainer-gated)
+### 작업 7: 라이브 사전/사후 평가 (유지관리자 전용)
 
-Live quorum runs launch agent CLIs in permissive modes — **trusted-maintainer operation; Jesse launches these**, per `evals/CLAUDE.md`. Requires `ANTHROPIC_API_KEY`.
+라이브 쿼럼 실행은 에이전트 CLI를 허용 모드로 실행합니다 — `evals/CLAUDE.md`에 따라 **신뢰할 수 있는 유지관리자 작업; Jesse가 실행**합니다. `ANTHROPIC_API_KEY`가 필요합니다.
 
-- [ ] **Step 1: Baseline (skills as released on dev)** — from the main checkout (`/Users/jesse/git/superpowers/superpowers`, on dev), or any checkout without this branch's changes:
+- [ ] **1단계: 베이스라인 (dev에 출시된 상태의 스킬)** — 메인 체크아웃 (`/Users/jesse/git/superpowers/superpowers`, dev 상) 또는 이 브랜치의 변경 사항이 없는 임의의 체크아웃에서:
 
 ```bash
 cd evals
@@ -750,7 +747,7 @@ uv run quorum run scenarios/sdd-svelte-todo --coding-agent claude
 uv run quorum run scenarios/spec-reviewer-catches-planted-flaws --coding-agent claude
 ```
 
-- [ ] **Step 2: After (this branch's skills)** — point `SUPERPOWERS_ROOT` at this worktree:
+- [ ] **2단계: 사후 (이 브랜치의 스킬)** — `SUPERPOWERS_ROOT`를 이 워크트리로 지정:
 
 ```bash
 cd evals
@@ -763,12 +760,12 @@ uv run quorum run scenarios/sdd-quality-reviewer-catches-planted-defect --coding
 uv run quorum show
 ```
 
-- [ ] **Step 3: Compare**
+- [ ] **3단계: 비교**
 
-Pass bar: all four pre-existing scenarios still pass after the change (no regression in catch rate); the new planted-defect scenario passes. For exploration cost, compare reviewer-subagent tool-call counts between the before/after run transcripts (no automated check exists — the spec calls this out as a known gap).
+통과 기준: 기존 4개 시나리오 모두 변경 후에도 계속 통과해야 하며(포착률 저하 없음), 새로운 심어둔 결함 시나리오가 통과합니다. 탐색 비용의 경우, 사전/사후 실행 트랜스크립트 간 리뷰어 하위 에이전트 도구 호출 횟수를 비교합니다(자동화된 검사는 존재하지 않음 — 스펙에서 알려진 격차로 언급함).
 
 ---
 
-## Finishing
+## 마무리
 
-After all tasks pass: the evals submodule commit needs to land in `superpowers-evals` (PR to its `main`), then this branch bumps the `evals` submodule pointer — per `evals/CLAUDE.md`, the parent bump is part of propagation, not optional. Then use superpowers:finishing-a-development-branch. PRs against superpowers target `dev`.
+모든 작업이 통과된 후: evals 서브모듈 커밋이 `superpowers-evals`에 반영되어야 하고(해당 저장소의 `main`으로 PR), 그 후 이 브랜치에서 `evals` 서브모듈 포인터를 상향(bump)합니다 — `evals/CLAUDE.md`에 따라 상위 포인터 갱신은 전파 과정의 일부이며 필수사항입니다. 그 다음 superpowers:finishing-a-development-branch를 사용하세요. superpowers 대상 PR은 `dev`를 타겟으로 합니다.

@@ -1,16 +1,16 @@
-# Pi Tool Mapping
+# Pi 도구 맵핑 (Tool Mapping)
 
-Skills speak in actions ("dispatch a subagent", "create a todo", "read a file"). On Pi these resolve to the tools below.
+스킬은 동작 기반 언어("서브에이전트 디스패치", "할 일 생성", "파일 읽기")로 설명되어 있습니다. Pi 환경에서는 이러한 표현이 아래 도구들로 매핑되어 처리됩니다.
 
-| Action skills request | Pi equivalent |
+| 스킬이 요청하는 동작 | Pi 매핑 도구 |
 | --- | --- |
-| Dispatch a subagent (`Subagent (general-purpose):` template) | Use an installed subagent tool such as `subagent` from `pi-subagents` if available |
-| Task tracking ("create a todo", "mark complete") | Use an installed todo/task tool if available, otherwise track tasks in the plan or `TODO.md` |
+| 서브에이전트 디스패치 (`Subagent (general-purpose):` 템플릿) | 사용 가능한 경우 `pi-subagents`의 `subagent`와 같이 설치된 서브에이전트 도구 사용 |
+| 작업 추적 ("할 일 목록 생성", "완료 표시") | 사용 가능한 경우 설치된 todo/task 도구를 사용하고, 그렇지 않은 경우 계획(plan) 내 체크리스트 또는 `TODO.md`에서 작업 추적 |
 
-## Subagents
+## 서브에이전트 (Subagents)
 
-Pi core does not ship a standard subagent tool. The `pi-subagents` package is a strong optional companion and provides a `subagent` tool with single-agent, chain, parallel, async, forked-context, and resume/status workflows. If no subagent tool is available, do not fabricate `Task` calls; execute sequentially in the current session or explain that the optional subagent capability is not installed.
+Pi 코어는 표준 서브에이전트 도구를 기본 제공하지 않습니다. `pi-subagents` 패키지는 훌륭한 옵션 콤패니언으로, 단일 에이전트, 체인, 병렬, 비동기, 컨텍스트 분기, 재개/상태 확인 워크플로우를 지원하는 `subagent` 도구를 제공합니다. 이용 가능한 서브에이전트 도구가 없는 경우 `Task` 호출을 임의로 만들어내지 마세요. 현재 세션에서 순차적으로 실행하거나 옵션인 서브에이전트 기능이 설치되지 않았음을 설명하세요.
 
-## Task lists
+## 작업 목록 (Task lists)
 
-Pi core does not ship a standard task-list tool. If a todo/task extension is installed, use its documented tool. Otherwise use Superpowers plan files, checklists in Markdown, or a repo-local `TODO.md` for task tracking. Older Superpowers docs may refer to `TodoWrite`; treat that as the task-tracking action above.
+Pi 코어는 표준 작업 목록(task-list) 도구를 기본 제공하지 않습니다. todo/task 확장 기능이 설치되어 있다면 문서화된 도구를 사용하세요. 그렇지 않다면 Superpowers 계획 파일, 마크다운 체크리스트, 또는 저장소 로컬 `TODO.md`를 사용하여 작업을 추적하세요. 이전 Superpowers 문서에서는 `TodoWrite`를 참조할 수 있으나, 이를 위에서 언급한 작업 추적 동작으로 다루시면 됩니다.

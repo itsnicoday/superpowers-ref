@@ -1,43 +1,43 @@
 # Visual Companion Auth Hardening Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> ** For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Harden the brainstorming visual companion auth and reconnect flow while preserving trusted same-origin screen JavaScript and future vendored UI libraries.
+**목표:** 신뢰할 수 있는 동일 출처(same-origin) 스크린 JavaScript 및 향후 벤더링될 UI 라이브러리를 보존하면서 브레인스토밍 visual companion의 인증 및 재연결 흐름을 강화합니다.
 
-**Architecture:** Keyed root loads become a bootstrap step that sets the cookie, stores the key in tab-scoped `sessionStorage`, and navigates to a bare `/` screen URL. WebSockets require valid auth plus browser same-origin `Origin`, while `/files/*` uses realpath containment to prevent content-directory escapes.
+**아키텍처:** 키가 포함된 루트 로드는 쿠키를 설정하고, 키를 탭 범주의 `sessionStorage`에 저장하며, 순수한 `/` 스크린 URL로 이동하는 부트스트랩 단계가 됩니다. WebSocket은 유효한 인증과 함께 브라우저의 동일 출처 `Origin`을 요구하며, `/files/*`는 콘텐츠 디렉토리 이탈을 방지하기 위해 realpath 격리(containment)를 사용합니다.
 
-**Tech Stack:** Node.js built-ins (`http`, `fs`, `path`, `crypto`), zero runtime dependencies, existing `ws` test dependency, Bash start/stop scripts, repo shell lint script.
+**기술 스택:** Node.js 내장 모듈 (`http`, `fs`, `path`, `crypto`), 런타임 의존성 없음, 기존 `ws` 테스트 의존성, Bash 시작/중지 스크립트, 저장소 shell lint 스크립트.
 
-**Important:** Do not commit during execution unless Drew explicitly asks. This repository's instructions override the generic plan template's commit cadence.
+**중요:** Drew가 명시적으로 요청하지 않는 한 실행 중에 커밋하지 마십시오. 이 저장소의 지침은 일반 플랜 템플릿의 커밋 주기를 재정의합니다.
 
 ---
 
 ## File Map
 
 - Modify: `skills/brainstorming/scripts/server.cjs`
-  - Add bootstrap response.
-  - Add shared security headers.
-  - Add WebSocket Origin validation.
-  - Add `/files/*` realpath containment.
+  - 부트스트랩 응답 추가.
+  - 공유 보안 헤더 추가.
+  - WebSocket Origin 검증 추가.
+  - `/files/*` realpath 격리 추가.
 - Modify: `skills/brainstorming/scripts/helper.js`
-  - Read the stored session key and append it to the WebSocket URL.
+  - 저장된 세션 키를 읽어 WebSocket URL에 추가.
 - Modify: `tests/brainstorm-server/auth.test.js`
-  - Add bootstrap, header, same-origin WS, cross-origin WS, and cookie/file auth regressions.
+  - 부트스트랩, 헤더, 동일 출처 WS, 교차 출처 WS, 쿠키/파일 인증 회귀 테스트 추가.
 - Modify: `tests/brainstorm-server/helper.test.js`
-  - Add mocked-browser coverage for sessionStorage-backed WS URLs.
+  - sessionStorage 기반 WS URL에 대한 모의 브라우저 커버리지 추가.
 - Modify: `tests/brainstorm-server/server.test.js`
-  - Add symlink containment regression for `/files/*`.
+  - `/files/*`에 대한 심볼릭 링크 격리 회귀 테스트 추가.
 - Modify: `tests/brainstorm-server/lifecycle.test.js`
-  - Make the start-server timeout flag test force background mode.
-  - Add restart reconnect credential coverage if it fits the existing lifecycle helper.
+  - 서버 시작 타임아웃 플래그 테스트가 백그라운드 모드를 강제하도록 수정.
+  - 기존 라이프사이클 헬퍼에 맞는 경우 재시작 재연결 자격 증명 커버리지 추가.
 - Modify: `skills/brainstorming/scripts/start-server.sh`
-  - Fix shell lint.
+  - shell lint 수정.
 - Modify: `skills/brainstorming/scripts/stop-server.sh`
-  - Fix shell lint.
+  - shell lint 수정.
 - Modify: `.gitignore`
-  - Add `.superpowers/`.
-- Optional docs update: `skills/brainstorming/visual-companion.md`
-  - Mention bootstrap URL stripping and trusted same-origin screen JS if the code behavior changes need operator-facing explanation.
+  - `.superpowers/` 추가.
+- 선택적 문서 업데이트: `skills/brainstorming/visual-companion.md`
+  - 코드 동작 변경에 운영자 대상 설명이 필요한 경우 부트스트랩 URL 제거 및 신뢰할 수 있는 동일 출처 스크린 JS 언급.
 
 ## Task 1: Bootstrap Keyed Root Loads
 

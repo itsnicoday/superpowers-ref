@@ -1,29 +1,29 @@
-# Document Review System Implementation Plan
+# 문서 리뷰 시스템 구현 계획
 
-> **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan.
+> **에이전트 작업자 참고:** 필수: 이 계획을 구현하려면 superpowers:subagent-driven-development (하위 에이전트를 사용할 수 있는 경우) 또는 superpowers:executing-plans를 사용하세요.
 
-**Goal:** Add spec and plan document review loops to the brainstorming and writing-plans skills.
+**목표:** 브레인스토밍(brainstorming) 및 계획 작성(writing-plans) 스킬에 스펙 및 계획 문서 리뷰 루프를 추가합니다.
 
-**Architecture:** Create reviewer prompt templates in each skill directory. Modify skill files to add review loops after document creation. Use Task tool with general-purpose subagent for reviewer dispatch.
+**아키텍처:** 각 스킬 디렉터리에 리뷰어 프롬프트 템플릿을 생성합니다. 문서 생성 후 리뷰 루프를 추가하도록 스킬 파일을 수정합니다. 리뷰어 디스패치를 위해 범용 하위 에이전트와 함께 Task 도구를 사용합니다.
 
-**Tech Stack:** Markdown skill files, subagent dispatch via Task tool
+**기술 스택:** 마크다운 스킬 파일, Task 도구를 통한 하위 에이전트 디스패치
 
-**Spec:** docs/superpowers/specs/2026-01-22-document-review-system-design.md
+**스펙:** docs/superpowers/specs/2026-01-22-document-review-system-design.md
 
 ---
 
-## Chunk 1: Spec Document Reviewer
+## 청크 1: 스펙 문서 리뷰어
 
-This chunk adds the spec document reviewer to the brainstorming skill.
+이 청크는 브레인스토밍 스킬에 스펙 문서 리뷰어를 추가합니다.
 
-### Task 1: Create Spec Document Reviewer Prompt Template
+### 작업 1: 스펙 문서 리뷰어 프롬프트 템플릿 생성
 
-**Files:**
-- Create: `skills/brainstorming/spec-document-reviewer-prompt.md`
+**파일:**
+- 생성: `skills/brainstorming/spec-document-reviewer-prompt.md`
 
-- [ ] **Step 1:** Create the reviewer prompt template file
+- [ ] **1단계:** 리뷰어 프롬프트 템플릿 파일 생성
 
-```markdown
+````markdown
 # Spec Document Reviewer Prompt Template
 
 Use this template when dispatching a spec document reviewer subagent.
@@ -71,14 +71,14 @@ Task tool (general-purpose):
 ```
 
 **Reviewer returns:** Status, Issues (if any), Recommendations
-```
+````
 
-- [ ] **Step 2:** Verify the file was created correctly
+- [ ] **2단계:** 파일이 올바르게 생성되었는지 확인
 
-Run: `cat skills/brainstorming/spec-document-reviewer-prompt.md | head -20`
-Expected: Shows the header and purpose section
+실행: `cat skills/brainstorming/spec-document-reviewer-prompt.md | head -20`
+예상: 헤더 및 목적 섹션 표시
 
-- [ ] **Step 3:** Commit
+- [ ] **3단계:** 커밋
 
 ```bash
 git add skills/brainstorming/spec-document-reviewer-prompt.md
@@ -87,18 +87,18 @@ git commit -m "feat: add spec document reviewer prompt template"
 
 ---
 
-### Task 2: Add Review Loop to Brainstorming Skill
+### 작업 2: 브레인스토밍 스킬에 리뷰 루프 추가
 
-**Files:**
-- Modify: `skills/brainstorming/SKILL.md`
+**파일:**
+- 수정: `skills/brainstorming/SKILL.md`
 
-- [ ] **Step 1:** Read the current brainstorming skill
+- [ ] **1단계:** 현재 브레인스토밍 스킬 읽기
 
-Run: `cat skills/brainstorming/SKILL.md`
+실행: `cat skills/brainstorming/SKILL.md`
 
-- [ ] **Step 2:** Add the review loop section after "After the Design"
+- [ ] **2단계:** "After the Design" 다음에 리뷰 루프 섹션 추가
 
-Find the "After the Design" section and add a new "Spec Review Loop" section after documentation but before implementation:
+"After the Design" 섹션을 찾고 문서화 다음, 구현 전에 새로운 "Spec Review Loop" 섹션을 추가합니다:
 
 ```markdown
 **Spec Review Loop:**
@@ -116,12 +116,12 @@ After writing the spec document:
 - Reviewers are advisory - explain disagreements if you believe feedback is incorrect
 ```
 
-- [ ] **Step 3:** Verify the changes
+- [ ] **3단계:** 변경 사항 검증
 
-Run: `grep -A 15 "Spec Review Loop" skills/brainstorming/SKILL.md`
-Expected: Shows the new review loop section
+실행: `grep -A 15 "Spec Review Loop" skills/brainstorming/SKILL.md`
+예상: 새로운 리뷰 루프 섹션 표시
 
-- [ ] **Step 4:** Commit
+- [ ] **4단계:** 커밋
 
 ```bash
 git add skills/brainstorming/SKILL.md
@@ -130,18 +130,18 @@ git commit -m "feat: add spec review loop to brainstorming skill"
 
 ---
 
-## Chunk 2: Plan Document Reviewer
+## 청크 2: 계획 문서 리뷰어
 
-This chunk adds the plan document reviewer to the writing-plans skill.
+이 청크는 계획 작성(writing-plans) 스킬에 계획 문서 리뷰어를 추가합니다.
 
-### Task 3: Create Plan Document Reviewer Prompt Template
+### 작업 3: 계획 문서 리뷰어 프롬프트 템플릿 생성
 
-**Files:**
-- Create: `skills/writing-plans/plan-document-reviewer-prompt.md`
+**파일:**
+- 생성: `skills/writing-plans/plan-document-reviewer-prompt.md`
 
-- [ ] **Step 1:** Create the reviewer prompt template file
+- [ ] **1단계:** 리뷰어 프롬프트 템플릿 파일 생성
 
-```markdown
+````markdown
 # Plan Document Reviewer Prompt Template
 
 Use this template when dispatching a plan document reviewer subagent.
@@ -191,14 +191,14 @@ Task tool (general-purpose):
 ```
 
 **Reviewer returns:** Status, Issues (if any), Recommendations
-```
+````
 
-- [ ] **Step 2:** Verify the file was created
+- [ ] **2단계:** 파일이 생성되었는지 확인
 
-Run: `cat skills/writing-plans/plan-document-reviewer-prompt.md | head -20`
-Expected: Shows the header and purpose section
+실행: `cat skills/writing-plans/plan-document-reviewer-prompt.md | head -20`
+예상: 헤더 및 목적 섹션 표시
 
-- [ ] **Step 3:** Commit
+- [ ] **3단계:** 커밋
 
 ```bash
 git add skills/writing-plans/plan-document-reviewer-prompt.md
@@ -207,18 +207,18 @@ git commit -m "feat: add plan document reviewer prompt template"
 
 ---
 
-### Task 4: Add Review Loop to Writing-Plans Skill
+### 작업 4: Writing-Plans 스킬에 리뷰 루프 추가
 
-**Files:**
-- Modify: `skills/writing-plans/SKILL.md`
+**파일:**
+- 수정: `skills/writing-plans/SKILL.md`
 
-- [ ] **Step 1:** Read current skill file
+- [ ] **1단계:** 현재 스킬 파일 읽기
 
-Run: `cat skills/writing-plans/SKILL.md`
+실행: `cat skills/writing-plans/SKILL.md`
 
-- [ ] **Step 2:** Add chunk-by-chunk review section
+- [ ] **2단계:** 청크별 리뷰 섹션 추가
 
-Add before the "Execution Handoff" section:
+"Execution Handoff" 섹션 앞에 추가:
 
 ```markdown
 ## Plan Review Loop
@@ -236,9 +236,9 @@ After completing each chunk of the plan:
 **Chunk boundaries:** Use `## Chunk N: <name>` headings to delimit chunks. Each chunk should be ≤1000 lines and logically self-contained.
 ```
 
-- [ ] **Step 3:** Update task syntax examples to use checkboxes
+- [ ] **3단계:** 체크박스를 사용하도록 작업 구문 예시 업데이트
 
-Change the Task Structure section to show checkbox syntax:
+작업 구조(Task Structure) 섹션을 변경하여 체크박스 구문을 보여줍니다:
 
 ```markdown
 ### Task N: [Component Name]
@@ -248,17 +248,17 @@ Change the Task Structure section to show checkbox syntax:
   ...
 ```
 
-- [ ] **Step 4:** Verify the review loop section was added
+- [ ] **4단계:** 리뷰 루프 섹션이 추가되었는지 검증
 
-Run: `grep -A 15 "Plan Review Loop" skills/writing-plans/SKILL.md`
-Expected: Shows the new review loop section
+실행: `grep -A 15 "Plan Review Loop" skills/writing-plans/SKILL.md`
+예상: 새로운 리뷰 루프 섹션 표시
 
-- [ ] **Step 5:** Verify the task syntax examples were updated
+- [ ] **5단계:** 작업 구문 예시가 업데이트되었는지 검증
 
-Run: `grep -A 5 "Task N:" skills/writing-plans/SKILL.md`
-Expected: Shows checkbox syntax `### Task N:`
+실행: `grep -A 5 "Task N:" skills/writing-plans/SKILL.md`
+예상: 체크박스 구문 `### Task N:` 표시
 
-- [ ] **Step 6:** Commit
+- [ ] **6단계:** 커밋
 
 ```bash
 git add skills/writing-plans/SKILL.md
@@ -267,33 +267,33 @@ git commit -m "feat: add plan review loop and checkbox syntax to writing-plans s
 
 ---
 
-## Chunk 3: Update Plan Document Header
+## 청크 3: 계획 문서 헤더 업데이트
 
-This chunk updates the plan document header template to reference the new checkbox syntax requirements.
+이 청크는 새 체크박스 구문 요구사항을 참조하도록 계획 문서 헤더 템플릿을 업데이트합니다.
 
-### Task 5: Update Plan Header Template in Writing-Plans Skill
+### 작업 5: Writing-Plans 스킬의 계획 헤더 템플릿 업데이트
 
-**Files:**
-- Modify: `skills/writing-plans/SKILL.md`
+**파일:**
+- 수정: `skills/writing-plans/SKILL.md`
 
-- [ ] **Step 1:** Read current plan header template
+- [ ] **1단계:** 현재 계획 헤더 템플릿 읽기
 
-Run: `grep -A 20 "Plan Document Header" skills/writing-plans/SKILL.md`
+실행: `grep -A 20 "Plan Document Header" skills/writing-plans/SKILL.md`
 
-- [ ] **Step 2:** Update the header template to reference checkbox syntax
+- [ ] **2단계:** 체크박스 구문을 참조하도록 헤더 템플릿 업데이트
 
-The plan header should note that tasks and steps use checkbox syntax. Update the header comment:
+계획 헤더에는 작업과 단계가 체크박스 구문을 사용한다는 지침이 포함되어야 합니다. 헤더 주석을 업데이트합니다:
 
 ```markdown
 > **For agentic workers:** REQUIRED: Use superpowers:subagent-driven-development (if subagents available) or superpowers:executing-plans to implement this plan. Tasks and steps use checkbox (`- [ ]`) syntax for tracking.
 ```
 
-- [ ] **Step 3:** Verify the change
+- [ ] **3단계:** 변경 사항 검증
 
-Run: `grep -A 5 "For agentic workers:" skills/writing-plans/SKILL.md`
-Expected: Shows updated header with checkbox syntax mention
+실행: `grep -A 5 "For agentic workers:" skills/writing-plans/SKILL.md`
+예상: 체크박스 구문 언급이 포함된 업데이트된 헤더 표시
 
-- [ ] **Step 4:** Commit
+- [ ] **4단계:** 커밋
 
 ```bash
 git add skills/writing-plans/SKILL.md

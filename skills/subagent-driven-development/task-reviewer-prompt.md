@@ -1,11 +1,8 @@
-# Task Reviewer Prompt Template
+# 태스크 검토자 프롬프트 템플릿 (Task Reviewer Prompt Template)
 
-Use this template when dispatching a task reviewer subagent. The reviewer
-reads the task's diff once and returns two verdicts: spec compliance and
-code quality.
+태스크 검토자 서브에이전트를 파견할 때 이 템플릿을 사용하세요. 검토자는 태스크의 diff를 한 번 읽고 명세서 준수와 코드 품질이라는 두 가지 판정을 반환합니다.
 
-**Purpose:** Verify one task's implementation matches its requirements (nothing
-more, nothing less) and is well-built (clean, tested, maintainable)
+**목적:** 단일 태스크의 구현이 요구사항과 일치하는지(부족함도 과함도 없이) 및 잘 작성되었는지(깔끔하고, 테스트되었으며, 유지보수 용이함) 검증합니다.
 
 ```
 Subagent (general-purpose):
@@ -165,24 +162,15 @@ Subagent (general-purpose):
     **Reasoning:** [1-2 sentence technical assessment]
 ```
 
-**Placeholders:**
-- `[MODEL]` — REQUIRED: reviewer model per SKILL.md Model Selection
-- `[BRIEF_FILE]` — REQUIRED: the task brief file (`scripts/task-brief PLAN N`
-  prints the path; same file the implementer worked from)
-- `[GLOBAL_CONSTRAINTS]` — the binding requirements copied verbatim from
-  the plan's Global Constraints section or the spec: exact values, formats,
-  and stated relationships between components (not process rules — those
-  are already in this template)
-- `[REPORT_FILE]` — REQUIRED: the file the implementer wrote its detailed
-  report to
-- `[BASE_SHA]` — commit before this task
-- `[HEAD_SHA]` — current commit
-- `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
-  package to (`scripts/review-package BASE HEAD` prints the unique path it
-  wrote; the package never enters the controller's context)
+**플레이스홀더:**
+- `[MODEL]` — 필수: SKILL.md 모델 선택 기준에 따른 검토자 모델
+- `[BRIEF_FILE]` — 필수: 태스크 지침서 파일 (`scripts/task-brief PLAN N`이 경로 출력; 구현자가 구현 시 사용했던 것과 동일한 파일)
+- `[GLOBAL_CONSTRAINTS]` — 계획의 Global Constraints 섹션이나 명세서에서 그대로 복사한 구속력 있는 요구사항: 정확한 값, 포맷, 컴포넌트 간 명시된 관계 (프로세스 규칙이 아님 — 프로세스 규칙은 이 템플릿에 이미 있음)
+- `[REPORT_FILE]` — 필수: 구현자가 상세 보고서를 작성한 파일
+- `[BASE_SHA]` — 이 태스크 전 커밋
+- `[HEAD_SHA]` — 현재 커밋
+- `[DIFF_FILE]` — 필수: 컨트롤러가 검토 패키지를 작성한 경로 (`scripts/review-package BASE HEAD`가 생성한 독자적인 경로 출력; 이 패키지는 컨트롤러의 컨텍스트에 절대 들어가지 않음)
 
-**Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
-(Critical/Important/Minor), Task quality verdict
+**검토자가 반환하는 내용:** 명세서 준수 판정 (✅/❌/⚠️), Strengths, Issues (Critical/Important/Minor), 태스크 품질 판정
 
-A fix dispatch can address spec gaps and quality findings together;
-re-review after fixes covers both verdicts.
+수정 파견은 명세서 누락 항목과 품질 발견 사항을 함께 다룰 수 있습니다; 수정 후 재검토는 두 판정을 모두 다룹니다.

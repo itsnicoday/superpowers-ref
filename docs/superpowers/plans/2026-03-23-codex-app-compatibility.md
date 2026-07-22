@@ -1,41 +1,41 @@
-# Codex App Compatibility Implementation Plan
+# Codex App 호환성 구현 계획
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **에이전트 작업자 참고:** 필수 하위 스킬: 이 계획을 작업별로 구현하려면 superpowers:subagent-driven-development (권장) 또는 superpowers:executing-plans를 사용하세요. 각 단계는 추적을 위해 체크박스 (`- [ ]`) 구문을 사용합니다.
 
-**Goal:** Make `using-git-worktrees`, `finishing-a-development-branch`, and related skills work in the Codex App's sandboxed worktree environment without breaking existing behavior.
+**목표:** 기존 동작을 깨뜨리지 않으면서 Codex App의 샌드박스 처리된 워크트리 환경에서 `using-git-worktrees`, `finishing-a-development-branch` 및 관련 스킬이 잘 작동하도록 만듭니다.
 
-**Architecture:** Read-only environment detection (`git-dir` vs `git-common-dir`) at the start of two skills. If already in a linked worktree, skip creation. If on detached HEAD, emit a handoff payload instead of the 4-option menu. Sandbox fallback catches permission errors during worktree creation.
+**아키텍처:** 2개 스킬의 시작 부분에서 읽기 전용 환경 감지(`git-dir` 대 `git-common-dir`)를 수행합니다. 이미 연결된 워크트리에 있는 경우 생성을 건너뜁니다. 분리된 HEAD(detached HEAD) 상태인 경우 4가지 옵션 메뉴 대신 핸드오프 페이로드를 생성합니다. 샌드박스 폴백은 워크트리 생성 중 발생하는 권한 오류를 포착합니다.
 
-**Tech Stack:** Git, Markdown (skill files are instruction documents, not executable code)
+**기술 스택:** Git, 마크다운 (스킬 파일은 지침 문서이며 실행 가능한 코드가 아님)
 
-**Spec:** `docs/superpowers/specs/2026-03-23-codex-app-compatibility-design.md`
+**스펙:** `docs/superpowers/specs/2026-03-23-codex-app-compatibility-design.md`
 
 ---
 
-## File Structure
+## 파일 구조
 
-| File | Responsibility | Action |
+| 파일 | 책임 | 작업 |
 |---|---|---|
-| `skills/using-git-worktrees/SKILL.md` | Worktree creation + isolation | Add Step 0 detection + sandbox fallback |
-| `skills/finishing-a-development-branch/SKILL.md` | Branch finishing workflow | Add Step 1.5 detection + cleanup guard |
-| `skills/subagent-driven-development/SKILL.md` | Plan execution with subagents | Update Integration description |
-| `skills/executing-plans/SKILL.md` | Plan execution inline | Update Integration description |
-| `skills/using-superpowers/references/codex-tools.md` | Codex platform reference | Add detection + finishing docs |
+| `skills/using-git-worktrees/SKILL.md` | 워크트리 생성 + 격리 | 0단계 감지 + 샌드박스 폴백 추가 |
+| `skills/finishing-a-development-branch/SKILL.md` | 브랜치 마무리 워크플로 | 1.5단계 감지 + 정리 가드 추가 |
+| `skills/subagent-driven-development/SKILL.md` | 하위 에이전트를 통한 계획 실행 | Integration 설명 업데이트 |
+| `skills/executing-plans/SKILL.md` | 인라인 계획 실행 | Integration 설명 업데이트 |
+| `skills/using-superpowers/references/codex-tools.md` | Codex 플랫폼 참조 | 감지 + 마무리 문서 추가 |
 
 ---
 
-### Task 1: Add Step 0 to `using-git-worktrees`
+### 작업 1: `using-git-worktrees`에 0단계 추가
 
-**Files:**
-- Modify: `skills/using-git-worktrees/SKILL.md:14-15` (insert after Overview, before Directory Selection Process)
+**파일:**
+- 수정: `skills/using-git-worktrees/SKILL.md:14-15` (Overview 다음, Directory Selection Process 앞에 삽입)
 
-- [ ] **Step 1: Read the current skill file**
+- [ ] **1단계: 현재 스킬 파일 읽기**
 
-Read `skills/using-git-worktrees/SKILL.md` in full. Identify the exact insertion point: after the "Announce at start" line (line 14) and before "## Directory Selection Process" (line 16).
+`skills/using-git-worktrees/SKILL.md` 전체를 읽습니다. 정확한 삽입 지점을 확인합니다: "Announce at start" 줄(14행) 다음 및 "## Directory Selection Process"(16행) 앞.
 
-- [ ] **Step 2: Insert Step 0 section**
+- [ ] **2단계: 0단계 섹션 삽입**
 
-Insert the following between the Overview section and "## Directory Selection Process":
+Overview 섹션과 "## Directory Selection Process" 사이에 다음 내용을 삽입합니다:
 
 ```markdown
 ## Step 0: Check if Already in an Isolated Workspace
@@ -63,14 +63,14 @@ After reporting, STOP. Do not continue to Directory Selection or Creation Steps.
 **Sandbox fallback:** If you proceed to Creation Steps but `git worktree add -b` fails with a permission error (e.g., "Operation not permitted"), treat this as a late-detected restricted environment. Fall back to the behavior above — run setup and baseline tests in the current directory, report accordingly, and STOP.
 ```
 
-- [ ] **Step 3: Verify the insertion**
+- [ ] **3단계: 삽입 검증**
 
-Read the file again. Confirm:
-- Step 0 appears between Overview and Directory Selection Process
-- The rest of the file (Directory Selection, Safety Verification, Creation Steps, etc.) is unchanged
-- No duplicate sections or broken markdown
+파일을 다시 읽습니다. 확인 사항:
+- 0단계가 Overview와 Directory Selection Process 사이에 표시됨
+- 파일의 나머지 부분(Directory Selection, Safety Verification, Creation Steps 등)이 변경되지 않음
+- 중복 섹션이나 깨진 마크다운이 없음
 
-- [ ] **Step 4: Commit**
+- [ ] **4단계: 커밋**
 
 ```bash
 git add skills/using-git-worktrees/SKILL.md
@@ -82,14 +82,14 @@ sandbox fallback for permission errors on git worktree add."
 
 ---
 
-### Task 2: Update `using-git-worktrees` Integration section
+### 작업 2: `using-git-worktrees` 통합 섹션 업데이트
 
-**Files:**
-- Modify: `skills/using-git-worktrees/SKILL.md:211-215` (Integration > Called by)
+**파일:**
+- 수정: `skills/using-git-worktrees/SKILL.md:211-215` (Integration > Called by)
 
-- [ ] **Step 1: Update the three "Called by" entries**
+- [ ] **1단계: 3개의 "Called by" 항목 업데이트**
 
-Change lines 212-214 from:
+212-214행을 다음에서:
 
 ```markdown
 - **brainstorming** (Phase 4) - REQUIRED when design is approved and implementation follows
@@ -97,7 +97,7 @@ Change lines 212-214 from:
 - **executing-plans** - REQUIRED before executing any tasks
 ```
 
-To:
+다음으로 변경:
 
 ```markdown
 - **brainstorming** - REQUIRED: Ensures isolated workspace (creates one or verifies existing)
@@ -105,11 +105,11 @@ To:
 - **executing-plans** - REQUIRED: Ensures isolated workspace (creates one or verifies existing)
 ```
 
-- [ ] **Step 2: Verify the Integration section**
+- [ ] **2단계: Integration 섹션 검증**
 
-Read the Integration section. Confirm all three entries are updated, "Pairs with" is unchanged.
+Integration 섹션을 읽습니다. 3개 항목이 모두 업데이트되었고, "Pairs with"는 변경되지 않았는지 확인합니다.
 
-- [ ] **Step 3: Commit**
+- [ ] **3단계: 커밋**
 
 ```bash
 git add skills/using-git-worktrees/SKILL.md
@@ -120,18 +120,18 @@ Clarify that skill ensures a workspace exists, not that it always creates one."
 
 ---
 
-### Task 3: Add Step 1.5 to `finishing-a-development-branch`
+### 작업 3: `finishing-a-development-branch`에 1.5단계 추가
 
-**Files:**
-- Modify: `skills/finishing-a-development-branch/SKILL.md:38` (insert after Step 1, before Step 2)
+**파일:**
+- 수정: `skills/finishing-a-development-branch/SKILL.md:38` (1단계 다음, 2단계 앞에 삽입)
 
-- [ ] **Step 1: Read the current skill file**
+- [ ] **1단계: 현재 스킬 파일 읽기**
 
-Read `skills/finishing-a-development-branch/SKILL.md` in full. Identify the insertion point: after "**If tests pass:** Continue to Step 2." (line 38) and before "### Step 2: Determine Base Branch" (line 40).
+`skills/finishing-a-development-branch/SKILL.md` 전체를 읽습니다. 삽입 지점을 확인합니다: "**If tests pass:** Continue to Step 2."(38행) 다음 및 "### Step 2: Determine Base Branch"(40행) 앞.
 
-- [ ] **Step 2: Insert Step 1.5 section**
+- [ ] **2단계: 1.5단계 섹션 삽입**
 
-Insert the following between Step 1 and Step 2:
+1단계와 2단계 사이에 다음 내용을 삽입합니다:
 
 ```markdown
 ### Step 1.5: Detect Environment
@@ -179,15 +179,15 @@ Proceed to Step 2 and present the 4-option menu as normal.
 Proceed to Step 2 and present the 4-option menu as normal.
 ```
 
-- [ ] **Step 3: Verify the insertion**
+- [ ] **3단계: 삽입 검증**
 
-Read the file again. Confirm:
-- Step 1.5 appears between Step 1 and Step 2
-- Steps 2-5 are unchanged
-- Path A handoff includes commit SHA and data loss warning
-- Paths B and C proceed to Step 2 normally
+파일을 다시 읽습니다. 확인 사항:
+- 1.5단계가 1단계와 2단계 사이에 표시됨
+- 2~5단계는 변경되지 않음
+- Path A 핸드오프에 커밋 SHA 및 데이터 손실 경고 포함
+- Path B 및 C는 정 정상적으로 2단계로 진행됨
 
-- [ ] **Step 4: Commit**
+- [ ] **4단계: 커밋**
 
 ```bash
 git add skills/finishing-a-development-branch/SKILL.md
@@ -199,14 +199,14 @@ payload instead of 4-option menu. Includes commit SHA and data loss warning."
 
 ---
 
-### Task 4: Add Step 5 cleanup guard to `finishing-a-development-branch`
+### 작업 4: `finishing-a-development-branch`에 5단계 정리 가드 추가
 
-**Files:**
-- Modify: `skills/finishing-a-development-branch/SKILL.md` (Step 5: Cleanup Worktree — find by section heading, line numbers will have shifted after Task 3)
+**파일:**
+- 수정: `skills/finishing-a-development-branch/SKILL.md` (Step 5: Cleanup Worktree — 섹션 헤더로 찾기, 작업 3 이후 줄 번호가 이동됨)
 
-- [ ] **Step 1: Read the current Step 5 section**
+- [ ] **1단계: 현재 5단계 섹션 읽기**
 
-Find the "### Step 5: Cleanup Worktree" section in `skills/finishing-a-development-branch/SKILL.md` (line numbers will have shifted after Task 3's insertion). The current Step 5 is:
+`skills/finishing-a-development-branch/SKILL.md`에서 "### Step 5: Cleanup Worktree" 섹션을 찾습니다(작업 3의 삽입 후 줄 번호가 이동됨). 현재 5단계는 다음과 같습니다:
 
 ```markdown
 ### Step 5: Cleanup Worktree
@@ -226,9 +226,9 @@ git worktree remove <worktree-path>
 **For Option 3:** Keep worktree.
 ```
 
-- [ ] **Step 2: Add the cleanup guard before existing logic**
+- [ ] **2단계: 기존 로직 앞에 정리 가드 추가**
 
-Replace the Step 5 section with:
+5단계 섹션을 다음으로 교체합니다:
 
 ```markdown
 ### Step 5: Cleanup Worktree
@@ -257,16 +257,16 @@ git worktree remove <worktree-path>
 **For Option 3:** Keep worktree.
 ```
 
-Note: the original text said "For Options 1, 2, 4" but the Quick Reference table and Common Mistakes section say "Options 1 & 4 only." This edit aligns Step 5 with those sections.
+참고: 원문에는 "For Options 1, 2, 4"라고 되어 있었으나 빠른 참조(Quick Reference) 테이블과 흔한 실수(Common Mistakes) 섹션에는 "Options 1 & 4 only"라고 나와 있습니다. 이 수정으로 5단계가 해당 섹션들과 일치하게 됩니다.
 
-- [ ] **Step 3: Verify the replacement**
+- [ ] **3단계: 교체 검증**
 
-Read Step 5. Confirm:
-- Cleanup guard (re-detection) appears first
-- Existing removal logic preserved for non-externally-managed worktrees
-- "Options 1 and 4" (not "1, 2, 4") matches Quick Reference and Common Mistakes
+5단계를 읽습니다. 확인 사항:
+- 정리 가드(재감지)가 처음에 표시됨
+- 외부에서 관리되지 않는 워크트리에 대해 기존 제거 로직이 보존됨
+- "Options 1 and 4"("1, 2, 4"가 아님)가 빠른 참조 및 흔한 실수와 일치함
 
-- [ ] **Step 4: Commit**
+- [ ] **4단계: 커밋**
 
 ```bash
 git add skills/finishing-a-development-branch/SKILL.md
@@ -279,39 +279,39 @@ Options 1 and 4 only, matching Quick Reference and Common Mistakes."
 
 ---
 
-### Task 5: Update Integration lines in `subagent-driven-development` and `executing-plans`
+### 작업 5: `subagent-driven-development` 및 `executing-plans`의 Integration 항목 업데이트
 
-**Files:**
-- Modify: `skills/subagent-driven-development/SKILL.md:268`
-- Modify: `skills/executing-plans/SKILL.md:68`
+**파일:**
+- 수정: `skills/subagent-driven-development/SKILL.md:268`
+- 수정: `skills/executing-plans/SKILL.md:68`
 
-- [ ] **Step 1: Update `subagent-driven-development`**
+- [ ] **1단계: `subagent-driven-development` 업데이트**
 
-Change line 268 from:
+268행을 다음에서:
 ```
 - **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 ```
-To:
+다음으로 변경:
 ```
 - **superpowers:using-git-worktrees** - REQUIRED: Ensures isolated workspace (creates one or verifies existing)
 ```
 
-- [ ] **Step 2: Update `executing-plans`**
+- [ ] **2단계: `executing-plans` 업데이트**
 
-Change line 68 from:
+68행을 다음에서:
 ```
 - **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 ```
-To:
+다음으로 변경:
 ```
 - **superpowers:using-git-worktrees** - REQUIRED: Ensures isolated workspace (creates one or verifies existing)
 ```
 
-- [ ] **Step 3: Verify both files**
+- [ ] **3단계: 두 파일 검증**
 
-Read line 268 of `skills/subagent-driven-development/SKILL.md` and line 68 of `skills/executing-plans/SKILL.md`. Confirm both say "Ensures isolated workspace (creates one or verifies existing)".
+`skills/subagent-driven-development/SKILL.md` 268행과 `skills/executing-plans/SKILL.md` 68행을 읽습니다. 두 파일 모두 "Ensures isolated workspace (creates one or verifies existing)"으로 기술되어 있는지 확인합니다.
 
-- [ ] **Step 4: Commit**
+- [ ] **4단계: 커밋**
 
 ```bash
 git add skills/subagent-driven-development/SKILL.md skills/executing-plans/SKILL.md
@@ -323,18 +323,18 @@ always creating one."
 
 ---
 
-### Task 6: Add environment detection docs to `codex-tools.md`
+### 작업 6: `codex-tools.md`에 환경 감지 문서 추가
 
-**Files:**
-- Modify: `skills/using-superpowers/references/codex-tools.md:25` (append at end)
+**파일:**
+- 수정: `skills/using-superpowers/references/codex-tools.md:25` (끝부분에 덧붙임)
 
-- [ ] **Step 1: Read the current file**
+- [ ] **1단계: 현재 파일 읽기**
 
-Read `skills/using-superpowers/references/codex-tools.md` in full. Confirm it ends at line 25-26 after the multi_agent section.
+`skills/using-superpowers/references/codex-tools.md` 전체를 읽습니다. multi_agent 섹션 다음인 25-26행에서 끝나는지 확인합니다.
 
-- [ ] **Step 2: Append two new sections**
+- [ ] **2단계: 2개의 새 섹션 덧붙이기**
 
-Add at the end of the file:
+파일 끝에 다음 내용을 추가합니다:
 
 ```markdown
 
@@ -368,14 +368,14 @@ The agent can still run tests, stage files, and output suggested branch
 names, commit messages, and PR descriptions for the user to copy.
 ```
 
-- [ ] **Step 3: Verify the additions**
+- [ ] **3단계: 추가 사항 검증**
 
-Read the full file. Confirm:
-- Two new sections appear after the existing content
-- Bash code block renders correctly (not escaped)
-- Cross-references to Step 0 and Step 1.5 are present
+전체 파일을 읽습니다. 확인 사항:
+- 기존 내용 뒤에 2개의 새 섹션이 표시됨
+- Bash 코드 블록이 올바르게 렌더링됨 (이스케이프되지 않음)
+- 0단계 및 1.5단계에 대한 교차 참조가 존재함
 
-- [ ] **Step 4: Commit**
+- [ ] **4단계: 커밋**
 
 ```bash
 git add skills/using-superpowers/references/codex-tools.md
@@ -387,20 +387,20 @@ App's native finishing flow for skills that need to adapt."
 
 ---
 
-### Task 7: Automated test — environment detection
+### 작업 7: 자동화된 테스트 — 환경 감지
 
-**Files:**
-- Create: `tests/codex-app-compat/test-environment-detection.sh`
+**파일:**
+- 생성: `tests/codex-app-compat/test-environment-detection.sh`
 
-- [ ] **Step 1: Create test directory**
+- [ ] **1단계: 테스트 디렉터리 생성**
 
 ```bash
 mkdir -p tests/codex-app-compat
 ```
 
-- [ ] **Step 2: Write the detection test script**
+- [ ] **2단계: 감지 테스트 스크립트 작성**
 
-Create `tests/codex-app-compat/test-environment-detection.sh`:
+`tests/codex-app-compat/test-environment-detection.sh` 생성:
 
 ```bash
 #!/usr/bin/env bash
@@ -499,16 +499,16 @@ if [ "$FAIL" -gt 0 ]; then
 fi
 ```
 
-- [ ] **Step 3: Make it executable and run it**
+- [ ] **3단계: 실행 권한 부여 및 실행**
 
 ```bash
 chmod +x tests/codex-app-compat/test-environment-detection.sh
 ./tests/codex-app-compat/test-environment-detection.sh
 ```
 
-Expected output: 6 passed, 0 failed.
+예상 출력: 6 passed, 0 failed.
 
-- [ ] **Step 4: Commit**
+- [ ] **4단계: 커밋**
 
 ```bash
 git add tests/codex-app-compat/test-environment-detection.sh
@@ -520,47 +520,47 @@ worktree, detached HEAD, and cleanup guard scenarios."
 
 ---
 
-### Task 8: Final verification
+### 작업 8: 최종 검증
 
-**Files:**
-- Read: all 5 modified skill files
+**파일:**
+- 읽기: 수정된 스킬 파일 5개 전체
 
-- [ ] **Step 1: Run the automated detection tests**
+- [ ] **1단계: 자동화된 감지 테스트 실행**
 
 ```bash
 ./tests/codex-app-compat/test-environment-detection.sh
 ```
 
-Expected: 6 passed, 0 failed.
+예상: 6 passed, 0 failed.
 
-- [ ] **Step 2: Read each modified file and verify changes**
+- [ ] **2단계: 수정된 각 파일 읽기 및 변경 사항 확인**
 
-Read each file end-to-end:
-- `skills/using-git-worktrees/SKILL.md` — Step 0 present, rest unchanged
-- `skills/finishing-a-development-branch/SKILL.md` — Step 1.5 present, cleanup guard present, rest unchanged
-- `skills/subagent-driven-development/SKILL.md` — line 268 updated
-- `skills/executing-plans/SKILL.md` — line 68 updated
-- `skills/using-superpowers/references/codex-tools.md` — two new sections at end
+각 파일을 처음부터 끝까지 읽습니다:
+- `skills/using-git-worktrees/SKILL.md` — 0단계 존재, 나머지는 미변경
+- `skills/finishing-a-development-branch/SKILL.md` — 1.5단계 존재, 정리 가드 존재, 나머지는 미변경
+- `skills/subagent-driven-development/SKILL.md` — 268행 업데이트됨
+- `skills/executing-plans/SKILL.md` — 68행 업데이트됨
+- `skills/using-superpowers/references/codex-tools.md` — 끝에 2개 새 섹션 추가됨
 
-- [ ] **Step 3: Verify no unintended changes**
+- [ ] **3단계: 의도치 않은 변경 사항이 없는지 확인**
 
 ```bash
 git diff --stat HEAD~7
 ```
 
-Should show exactly 6 files changed (5 skill files + 1 test file). No other files modified.
+정확히 6개 파일이 변경(스킬 파일 5개 + 테스트 파일 1개)된 것으로 나타나야 합니다. 다른 파일은 수정되지 않습니다.
 
-- [ ] **Step 4: Run existing test suite**
+- [ ] **4단계: 기존 테스트 스위트 실행**
 
-If test runner exists:
+테스트 러너가 존재하는 경우:
 ```bash
-# Run skill-triggering tests
-# Note: tests/skill-triggering/ was lifted into drill scenarios on 2026-05-06.
-# See evals/scenarios/triggering-*.yaml. The reference below is a dated artifact.
+# 스킬 트리거링 테스트 실행
+# 참고: tests/skill-triggering/은 2026-05-06에 drill 시나리오로 이전되었습니다.
+# evals/scenarios/triggering-*.yaml을 참조하세요. 아래 참조는 과거 기록 아티팩트입니다.
 ./tests/skill-triggering/run-all.sh 2>/dev/null || echo "Skill triggering tests not available in this environment"
 
-# Run SDD integration test
+# SDD 통합 테스트 실행
 ./tests/claude-code/test-subagent-driven-development-integration.sh 2>/dev/null || echo "SDD integration test not available in this environment"
 ```
 
-Note: these tests require Claude Code with `--dangerously-skip-permissions`. If not available, document that regression tests should be run manually.
+참고: 이 테스트에는 `--dangerously-skip-permissions` 옵션이 설정된 Claude Code가 필요합니다. 사용할 수 없는 경우 회귀 테스트를 수동으로 실행하도록 문서화하세요.

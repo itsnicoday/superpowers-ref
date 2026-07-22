@@ -1,8 +1,8 @@
-# Code Reviewer Prompt Template
+# 코드 검토자 프롬프트 템플릿 (Code Reviewer Prompt Template)
 
-Use this template when dispatching a code reviewer subagent.
+코드 검토자 서브에이전트를 파견할 때 이 템플릿을 사용하세요.
 
-**Purpose:** Review completed work against requirements and code quality standards before it cascades into more work.
+**목적:** 완료된 작업이 더 많은 작업으로 확산되기 전에 계획 및 코드 품질 표준에 맞춰 검토합니다.
 
 ```
 Subagent (general-purpose):
@@ -125,15 +125,15 @@ Subagent (general-purpose):
     - Avoid giving a clear verdict
 ```
 
-**Placeholders:**
-- `[DESCRIPTION]` — brief summary of what was built
-- `[PLAN_OR_REQUIREMENTS]` — what it should do (plan file path, task text, or requirements)
-- `[BASE_SHA]` — starting commit
-- `[HEAD_SHA]` — ending commit
+**플레이스홀더:**
+- `[DESCRIPTION]` — 구현된 내용에 대한 간단한 요약
+- `[PLAN_OR_REQUIREMENTS]` — 수행해야 할 작업 (계획 파일 경로, 태스크 텍스트 또는 요구사항)
+- `[BASE_SHA]` — 시작 커밋
+- `[HEAD_SHA]` — 종료 커밋
 
-**Reviewer returns:** Strengths, Issues (Critical / Important / Minor), Recommendations, Assessment
+**검토자가 반환하는 내용:** Strengths, Issues (Critical / Important / Minor), Recommendations, Assessment
 
-## Example Output
+## 출력 예시 (Example Output)
 
 ```
 ### Strengths
